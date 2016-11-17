@@ -1,0 +1,23 @@
+{
+  "name": "sports-editor-server",
+  "version": "1.0.0",
+  "description": "Sports editor server",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/angularphantoms/sports-editor-server.git"
+  },
+  "keywords": [
+    "sports",
+    "editor"
+  ],
+  "author": "angular phantoms",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/angularphantoms/sports-editor-server/issues"
+  },
+  "homepage": "https://gitlab.com/angularphantoms/sports-editor-server#README"
+}
