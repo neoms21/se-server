@@ -2,7 +2,7 @@ var assert = require('assert');
 var actionMediator = require('./actionMediator');
 var sinon = require('sinon');
 var fs = require('fs');
-var registerUserActioner = require('./actioners/registerUserActioner');
+var registerUserActioner = require('./handlers/registerUserActioner');
 
 describe('Action mediator', function() {
     var fsStub;

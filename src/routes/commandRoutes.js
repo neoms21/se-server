@@ -1,4 +1,4 @@
-var commandVerifier = require('../verifiers/commandVerifier');
+var commandVerifier = require('./commandVerifier');
 var actionMediator = require('./actionMediator');
 
 var commandRoutes = function (server) {

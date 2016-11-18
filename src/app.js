@@ -3,7 +3,7 @@ var logger = require('bunyan');
 var uuid = require('uuid');
 var commandRoutes = require('./routes/commandRoutes');
 var createOrOpenDb = require('./db/createOrOpenDb');
-var actionMediator = require('./actioning/actionMediator');
+var actionMediator = require('./commands/actionMediator');
 
 // create our logger
 var log = new logger.createLogger({

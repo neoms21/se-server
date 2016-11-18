@@ -1,7 +1,7 @@
 var dbUtil = require('../../db/dbUtil');
 var q = require('q');
 var util = require('util');
-var Login = require('../../models/login');
+var Login = require('./login');
 
 function registerUserActioner(command, log) {
     var ret = q.defer();
