@@ -1,23 +1,23 @@
 {
-  "name": "sports-editor-server",
-  "version": "1.0.0",
-  "description": "Sports editor server",
-  "main": "index.js",
+  "name": "SportsEditorServer",
+  "version": "0.0.0",
+  "private": true,
   "scripts": {
-    "test": "test"
+    "start": "NODE_ENV=dev nodemon --harmony app.js | bunyan"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@gitlab.com/angularphantoms/sports-editor-server.git"
+  "dependencies": {
+    "bunyan": "^1.8.1",
+    "config": "^1.21.0",
+    "grunt": "^1.0.1",
+    "grunt-cli": "^1.2.0",
+    "grunt-contrib-watch": "^1.0.0",
+    "mongodb": "^2.2.10",
+    "q": "^1.4.1",
+    "restify": "^4.1.1",
+    "uuid": "^2.0.3"
   },
-  "keywords": [
-    "sports",
-    "editor"
-  ],
-  "author": "angular phantoms",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://gitlab.com/angularphantoms/sports-editor-server/issues"
-  },
-  "homepage": "https://gitlab.com/angularphantoms/sports-editor-server#README"
+  "devDependencies": {
+    "mocha": "^3.1.0",
+    "sinon": "^1.17.6"
+  }
 }
