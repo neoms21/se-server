@@ -1,5 +1,5 @@
 var assert = require('assert');
-var actionMediator = require('./actionMediator');
+var actionMediator = require('./commandMediator');
 var sinon = require('sinon');
 var fs = require('fs');
 var registerUserActioner = require('./handlers/registerUserActioner');

@@ -1,12 +1,10 @@
-var dbUtil = require('../../db/dbUtil');
+var dbUtil = require('.././dbUtil');
 var q = require('q');
 var util = require('util');
 var Login = require('./login');
 
 function registerUserActioner(command, log) {
-    var ret = q.defer();
-
-    // this is not strictly correct CQRS, as it should raise events
+    const ret = q.defer();
 
     // check whether user has a login
     dbUtil(log)

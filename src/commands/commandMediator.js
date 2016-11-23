@@ -1,21 +1,23 @@
-var fs = require('fs');
-var path = require('path');
-var q = require('q');
-var dbUtil = require('../db/dbUtil');
+const fs = import from 'fs';
+const path = require('path');
+const q = require('q');
+const dbUtil = require('../db/dbUtil');
 
 var mappings = [];
 
 function init(log) {
+    console.log('command mediator init');
+
     // find all the actions
-    fs.readdir(__dirname + '/actioners', function (err, filenames) {
+    fs.readdir(__dirname + '/handlers', function (err, filenames) {
         if (err) {
             log.error(err);
         } else {
             filenames.forEach(function (filename) {
-                if (filename.indexOf('Test') === -1) {
+                if (filename.indexOf('Test') === -1) { // it is real command handler
                     mappings.push({
                         code: path.basename(filename).slice(0, filename.length - 11),
-                        path: path.join('actioners', filename)
+                        path: path.join('handlers', filename)
                     });
                 }
             });
@@ -49,9 +51,10 @@ function dispatch(command, log) {
         return item.code === command.code;
     });
 
-    if (matchingActioner !== undefined) {
-        var verifier = require('../verifiers/' + matchingActioner.code + 'Verifier');
+    console.log(matchingActioner);
 
+    if (matchingActioner !== undefined) {
+        var verifier = require('./verifiers/' + matchingActioner.code + 'Verifier');
         var errors = verifier(command); //todo: maybe this should return promise as well
 
         if (errors.length === 0) {
@@ -59,24 +62,27 @@ function dispatch(command, log) {
 
             // find the actioner
             var resp;
-            var invoker = require('./' + matchingActioner.path);
+
+            let invoker = require('./' + matchingActioner.path);
 
             // actually action the command
-            invoker.action(command, log)
-                .then(function (success) {
-                    log.info('Dispatched ' + command.code);
-                    resp = success;
-                    return saveCommand(command, log);
-                })
-                .then(function () {
-                    // send back the response as everything has worked
-                    ret.resolve(resp);
-                })
-                .catch(function (err) {
-                    console.log('error in action mediator');
-                    log.error(err);
-                    ret.reject(err);
-                })
+            Rx.Observable.start(invoker, { command: command, log: log });
+            //invoker.action(command, log);
+
+                // .then(function (success) {
+                //     log.info('Dispatched ' + command.code);
+                //     resp = success;
+                //     return saveCommand(command, log);
+                // })
+                // .then(function () {
+                //     // send back the response as everything has worked
+                //     ret.resolve(resp);
+                // })
+                // .catch(function (err) {
+                //     console.log('error in action mediator');
+                //     log.error(err);
+                //     ret.reject(err);
+                // })
 
         } else {
             log.error(...errors);

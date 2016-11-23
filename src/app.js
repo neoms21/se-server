@@ -1,9 +1,9 @@
-var restify = require('restify');
-var logger = require('bunyan');
-var uuid = require('uuid');
-var commandRoutes = require('./routes/commandRoutes');
-var createOrOpenDb = require('./db/createOrOpenDb');
-var actionMediator = require('./commands/actionMediator');
+const restify = require('restify');
+const logger = require('bunyan');
+const uuid = require('uuid');
+const commandRoutes = require('./routes/commandRoutes');
+const createOrOpenDb = require('./db/createOrOpenDb');
+const commandMediator = require('./commands/commandMediator');
 
 // create our logger
 var log = new logger.createLogger({
@@ -26,14 +26,14 @@ server.use(restify.bodyParser());
 
 // log requests
 server.pre(function (request, response, next) {
-    log.info({req: JSON.stringify(request.body)}, 'REQUEST');
+    log.info({req: JSON.stringify(request.body)}, 'REQUEST' + JSON.stringify(request.body));
     // add correlation id
     response.header('correlation', uuid.v4());
     next();
 });
 
 // actions need init
-actionMediator.init(log);
+commandMediator.init(log);
 
 //check db
 createOrOpenDb(log);

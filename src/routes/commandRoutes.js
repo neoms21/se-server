@@ -1,12 +1,12 @@
-var commandVerifier = require('./commandVerifier');
-var actionMediator = require('./actionMediator');
+var commandVerifier = require('../commands/verifiers/commandVerifier');
+var actionMediator = require('../commands/commandMediator');
 
 var commandRoutes = function (server) {
 
     server.post('command', (req, res, next) => {
 
         // get param
-        var command = req.body.command;
+        var command = req.body;
         // check command basics
         var errs = commandVerifier(command);
 
@@ -17,13 +17,15 @@ var commandRoutes = function (server) {
             command.when = new Date(req.time());
 
             // go send it
-            actionMediator.dispatch(command, req.log)
-                .then(function (success) {
-                    res.send(200, {response: success});
-                })
-                .catch(function (err) {
-                    res.send(401, {response: err.join(',')});
-                });
+            var result = actionMediator.dispatch(command, req.log);
+            res.send(result.code, {response: result.message });
+
+                // .then(function (success) {
+                //     res.send(200, {response: success});
+                // })
+                // .catch(function (err) {
+                //     res.send(401, {response: err.join(',')});
+                // });
 
         } else {
             req.log.error(...errs);
