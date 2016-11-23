@@ -1,6 +1,7 @@
 const restify = require('restify');
 const logger = require('bunyan');
 const uuid = require('uuid');
+const socketio = require('socket.io');
 const commandRoutes = require('./routes/commandRoutes');
 const createOrOpenDb = require('./db/createOrOpenDb');
 const commandMediator = require('./commands/commandMediator');
@@ -13,11 +14,14 @@ var log = new logger.createLogger({
     }
 });
 
-server = restify.createServer({
+let server = restify.createServer({
     name: 'Sports Editor',
-    version: '0.1.0',
+    version: '0.0.1',
     log: log
 });
+
+// add socket.io
+const io = socketio.listen(server);
 
 // add middleware
 //server.use(restify.acceptParser(server.acceptable));
@@ -30,6 +34,14 @@ server.pre(function (request, response, next) {
     // add correlation id
     response.header('correlation', uuid.v4());
     next();
+});
+
+// socket io
+io.sockets.on('connection', function (socket) {
+    socket.emit('news', { hello: 'world' });
+    socket.on('my other event', function (data) {
+        console.log(data);
+    });
 });
 
 // actions need init

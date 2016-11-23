@@ -1,9 +1,10 @@
-const fs = import from 'fs';
+const fs = require('fs');
 const path = require('path');
 const q = require('q');
 const dbUtil = require('../db/dbUtil');
+const DispatcherResponse = require('./models/dispatch-response').DispatchResponse;
 
-var mappings = [];
+let mappings = [];
 
 function init(log) {
     console.log('command mediator init');
@@ -45,9 +46,9 @@ function saveCommand(command, log) {
 }
 
 function dispatch(command, log) {
-    var ret = q.defer();
+    let ret = new DispatcherResponse(200, '');
 
-    var matchingActioner = mappings.find(function (item) {
+    let matchingActioner = mappings.find(function (item) {
         return item.code === command.code;
     });
 
@@ -61,12 +62,11 @@ function dispatch(command, log) {
             log.info('Dispatching ' + command.code);
 
             // find the actioner
-            var resp;
-
-            let invoker = require('./' + matchingActioner.path);
+            let invoker = require('./' + matchingActioner.path)(log);
 
             // actually action the command
-            Rx.Observable.start(invoker, { command: command, log: log });
+            Rx.Observable.start(invoker.execute, command);
+            ret.message = 'Command ${command.code} being executed';
             //invoker.action(command, log);
 
                 // .then(function (success) {
@@ -85,15 +85,19 @@ function dispatch(command, log) {
                 // })
 
         } else {
-            log.error(...errors);
-            ret.reject(errors);
+            ret.status = 501;
+            console.log(errors);
+            ret.message = errors.toString();
         }
 
     } else {
-        ret.reject(['Couldn\'t find actioner']);
+        ret.message = 'Couldn\'t find actioner';
+        ret.status = 501;
     }
 
-    return ret.promise;
+    log.info(ret);
+
+    return ret;
 }
 
 
