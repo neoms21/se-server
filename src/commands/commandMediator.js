@@ -2,7 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const q = require('q');
 const dbUtil = require('../db/dbUtil');
-const DispatcherResponse = require('./models/dispatch-response').DispatchResponse;
 
 let mappings = [];
 
@@ -23,7 +22,7 @@ function init(log) {
                 }
             });
         }
-    })
+    });
 }
 
 function saveCommand(command, log) {
@@ -46,7 +45,7 @@ function saveCommand(command, log) {
 }
 
 function dispatch(command, log) {
-    let ret = new DispatcherResponse(200, '');
+    let ret = {status: 200, message: ''};
 
     let matchingActioner = mappings.find(function (item) {
         return item.code === command.code;
@@ -62,27 +61,27 @@ function dispatch(command, log) {
             log.info('Dispatching ' + command.code);
 
             // find the actioner
-            let invoker = require('./' + matchingActioner.path)(log);
+            let invoker = require('./' + matchingActioner.path);
 
             // actually action the command
-            Rx.Observable.start(invoker.execute, command);
+            Rx.Observable.start(invoker, { command: command, log: log });
             ret.message = 'Command ${command.code} being executed';
             //invoker.action(command, log);
 
-                // .then(function (success) {
-                //     log.info('Dispatched ' + command.code);
-                //     resp = success;
-                //     return saveCommand(command, log);
-                // })
-                // .then(function () {
-                //     // send back the response as everything has worked
-                //     ret.resolve(resp);
-                // })
-                // .catch(function (err) {
-                //     console.log('error in action mediator');
-                //     log.error(err);
-                //     ret.reject(err);
-                // })
+            // .then(function (success) {
+            //     log.info('Dispatched ' + command.code);
+            //     resp = success;
+            //     return saveCommand(command, log);
+            // })
+            // .then(function () {
+            //     // send back the response as everything has worked
+            //     ret.resolve(resp);
+            // })
+            // .catch(function (err) {
+            //     console.log('error in action mediator');
+            //     log.error(err);
+            //     ret.reject(err);
+            // })
 
         } else {
             ret.status = 501;
