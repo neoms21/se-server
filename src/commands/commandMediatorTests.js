@@ -1,12 +1,12 @@
-var assert = require('assert');
-var actionMediator = require('./commandMediator');
-var sinon = require('sinon');
-var fs = require('fs');
-var registerUserActioner = require('./handlers/registerUserCommand');
+const assert = require('assert');
+const commandMediator = require('./commandMediator');
+const sinon = require('sinon');
+const fs = require('fs');
+const registerUserActioner = require('./handlers/registerUserCommand');
 
 describe('Action mediator', function() {
-    var fsStub;
-    var actionMock;
+    let fsStub;
+    let actionMock;
 
     beforeEach(function() {
         fsStub = sinon.stub(fs, 'readdir', function(path, callback) {
@@ -23,18 +23,19 @@ describe('Action mediator', function() {
     });
 
     it('should be created', function() {
-        assert(actionMediator !== null && actionMediator !== undefined);
+        assert(commandMediator !== null && commandMediator !== undefined);
     });
 
     it('should add files in init', function() {
+        commandMediator.init();
 
-        actionMediator.init();
+        assert(commandMediator.)
     });
 
     it('should dispatch registerUserActioner', function() {
-        actionMediator.init();
+        commandMediator.init();
 
-        actionMediator.dispatch({name: 'registerUserActioner', payload: 'hhhhhh'});
+        commandMediator.dispatch({name: 'registerUserActioner', payload: 'hhhhhh'});
 
     });
 

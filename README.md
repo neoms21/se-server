@@ -7,7 +7,8 @@ To see all the use cases, see Docs folder
 
 ## Server
 The server side follows an architecture of CQRS (using event sourcing),
- Mongo and node.js (using microservices).
+ Mongo and node.js (using microservices). 
+ To run server, run `npm start`
 
 ## Desktop
 Angular2 front end
