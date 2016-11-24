@@ -27,19 +27,37 @@ describe('Action mediator', function () {
     });
 
     it('should add files in init', function (done) {
-        commandMediator.init()
-            .subscribe(() => {}, () => {}, () => {
-                assert(commandMediator.mappings.length > 0);
-                assert(commandMediator.mappings[0].code).equal('registerUserCommand');
+        let mappingsRead = 0;
+        commandMediator.getObservable()
+            .subscribe((r) => {
+                mappingsRead = r.commandCount;
+                assert(mappingsRead === 2);
+                done();
+            }, (err) => {
+                assert(err).equal('');
                 done();
             });
 
+        commandMediator.init();
     });
 
     it('should dispatch registerUserActioner', function () {
+        let mappingsRead = 0;
+        commandMediator.getObservable()
+            .subscribe((r) => {
+                if (r.constructor.name === 'CommandExecuted') {
+                    mappingsRead = r.commandCount;
+                    assert(mappingsRead === 2);
+                    done();
+                }
+            }, (err) => {
+                assert(err).equal('');
+                done();
+            });
+
         commandMediator.init();
 
-        commandMediator.dispatch({name: 'registerUserActioner', payload: 'hhhhhh'});
+        commandMediator.dispatch({code: 'registerUser', name: 'hhhhhh'});
 
     });
 

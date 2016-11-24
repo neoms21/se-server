@@ -3,17 +3,21 @@ const path = require('path');
 const q = require('q');
 const dbUtil = require('../db/dbUtil');
 const Rx = require('rx');
+const CommandExecuting = require('./models/command-executing');
+const CommandExecuted = require('./models/command-executed');
+const CommandMediatorInitiating = require('./models/command-mediator-initiated');
 
 let mappings = [];
+let propagator = new Rx.Subject();
 
 function init() {
-    let result = new Rx.Subject();
+
     console.log('command mediator init');
 
     // find all the actions
     fs.readdir(__dirname + '/handlers', function (err, filenames) {
         if (err) {
-            result.onError(err);
+            propagator.onError(err);
         } else {
             filenames.forEach(function (filename) {
                 if (filename.indexOf('Test') === -1) { // it is real command handler
@@ -22,14 +26,16 @@ function init() {
                         path: path.join('handlers', filename)
                     };
                     mappings.push(mapping);
-                    result.onNext(mapping);
                 }
             });
-            result.onCompleted();
+            propagator.onNext(new CommandMediatorInitiating(mappings.length));
         }
     });
 
-    return result;
+}
+
+function getObservable() {
+    return propagator;
 }
 
 function saveCommand(command, log) {
@@ -51,7 +57,7 @@ function saveCommand(command, log) {
     return ret.promise;
 }
 
-function dispatch(command, log) {
+function dispatch(command) {
     let ret = {status: 200, message: ''};
 
     let matchingActioner = mappings.find(function (item) {
@@ -60,32 +66,33 @@ function dispatch(command, log) {
 
     if (matchingActioner !== undefined) {
         var verifier = require('./verifiers/' + matchingActioner.code + 'Verifier');
-        var errors = verifier(command); //todo: maybe this should return promise as well
+        var errors = verifier(command);
 
         if (errors.length === 0) {
-            log.info('Dispatching ' + command.code);
+            let msg = new CommandExecuting(command.correlationId);
+            propagator.onNext(msg);
 
-            // find the actioner
+            // find the command handler
             let invoker = require('./' + matchingActioner.path);
-            // to send messages back
-            let responder = new Rx.Subject();
 
             // actually action the command
-            Rx.Observable.start(invoker, { command: command, log: log })
+            Rx.Observable.start(invoker, {command: command})
                 .subscribe(resp => {
-
+                    // put it on
+                    propagator.onNext(resp);
                 }, err => {
-
+                    propagator.onError(err);
                 }, () => {
                     // finished so send end response
-                    saveCommand(command, log);
+                    let msg = new CommandExecuted(command.correlationId);
+                    propagator.onNext(msg);
+                    saveCommand(command);
                 });
 
             // tell client we have executed command
             ret.message = 'Command ${command.code} being executed';
         } else {
             ret.status = 501;
-            console.log(errors);
             ret.message = errors.toString();
         }
 
@@ -94,13 +101,12 @@ function dispatch(command, log) {
         ret.status = 501;
     }
 
-    log.info(ret);
-
     return ret;
 }
 
 
 module.exports = {
     init: init,
-    dispatch: dispatch
+    dispatch: dispatch,
+    getObservable: getObservable
 };

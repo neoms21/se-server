@@ -2,7 +2,7 @@ const config = require('config');
 var mongoClient = require('mongodb').MongoClient;
 var q = require('q');
 
-function getDb(log) {
+function connectToDb(log) {
     var deferred = q.defer();
     var configDB = config.get("dbConfig");
 
@@ -25,4 +25,4 @@ function getDb(log) {
     return deferred.promise;
 }
 
-module.exports = getDb;
+module.exports = connectToDb;
