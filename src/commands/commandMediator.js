@@ -51,8 +51,6 @@ function dispatch(command, log) {
         return item.code === command.code;
     });
 
-    console.log(matchingActioner);
-
     if (matchingActioner !== undefined) {
         var verifier = require('./verifiers/' + matchingActioner.code + 'Verifier');
         var errors = verifier(command); //todo: maybe this should return promise as well
@@ -64,24 +62,18 @@ function dispatch(command, log) {
             let invoker = require('./' + matchingActioner.path);
 
             // actually action the command
-            Rx.Observable.start(invoker, { command: command, log: log });
-            ret.message = 'Command ${command.code} being executed';
-            //invoker.action(command, log);
+            Rx.Observable.start(invoker, { command: command, log: log })
+                .subscribe(resp => {
 
-            // .then(function (success) {
-            //     log.info('Dispatched ' + command.code);
-            //     resp = success;
-            //     return saveCommand(command, log);
-            // })
-            // .then(function () {
-            //     // send back the response as everything has worked
-            //     ret.resolve(resp);
-            // })
-            // .catch(function (err) {
-            //     console.log('error in action mediator');
-            //     log.error(err);
-            //     ret.reject(err);
-            // })
+                }, err => {
+
+                }, () => {
+                    // finished so send end response
+                    saveCommand(command, log);
+                });
+
+            // tell client we have executed command
+            ret.message = 'Command ${command.code} being executed';
 
         } else {
             ret.status = 501;
