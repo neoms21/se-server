@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const q = require('q');
 const dbUtil = require('../db/dbUtil');
+const Rx = require('rx');
 
 let mappings = [];
 
@@ -16,7 +17,7 @@ function init(log) {
             filenames.forEach(function (filename) {
                 if (filename.indexOf('Test') === -1) { // it is real command handler
                     mappings.push({
-                        code: path.basename(filename).slice(0, filename.length - 11),
+                        code: path.basename(filename).slice(0, filename.length - 10),
                         path: path.join('handlers', filename)
                     });
                 }
@@ -62,11 +63,12 @@ function dispatch(command, log) {
 
             // find the actioner
             let invoker = require('./' + matchingActioner.path);
+            // to send messages back
+            let responder = new Rx.Subject();
 
             // actually action the command
-            Rx.Observable.start(invoker, { command: command, log: log });
-            ret.message = 'Command ${command.code} being executed';
-            //invoker.action(command, log);
+            Rx.Observable.start(invoker, { command: command, responder: responder, log: log });
+            ret.message = `Command ${command.code} being executed`;
 
             // .then(function (success) {
             //     log.info('Dispatched ' + command.code);
@@ -90,7 +92,7 @@ function dispatch(command, log) {
         }
 
     } else {
-        ret.message = 'Couldn\'t find actioner';
+        ret.message = 'Couldn\'t find command';
         ret.status = 501;
     }
 
