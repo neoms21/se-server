@@ -6,24 +6,30 @@ const Rx = require('rx');
 
 let mappings = [];
 
-function init(log) {
+function init() {
+    let result = new Rx.Subject();
     console.log('command mediator init');
 
     // find all the actions
     fs.readdir(__dirname + '/handlers', function (err, filenames) {
         if (err) {
-            log.error(err);
+            result.onError(err);
         } else {
             filenames.forEach(function (filename) {
                 if (filename.indexOf('Test') === -1) { // it is real command handler
-                    mappings.push({
+                    let mapping = {
                         code: path.basename(filename).slice(0, filename.length - 10),
                         path: path.join('handlers', filename)
-                    });
+                    };
+                    mappings.push(mapping);
+                    result.onNext(mapping);
                 }
             });
+            result.onCompleted();
         }
     });
+
+    return result;
 }
 
 function saveCommand(command, log) {
