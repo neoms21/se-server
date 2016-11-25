@@ -30,6 +30,7 @@ describe('Action mediator', function () {
         let mappingsRead = 0;
         commandMediator.getObservable()
             .subscribe((r) => {
+                console.log(JSON.stringify(r));
                 mappingsRead = r.commandCount;
                 assert(mappingsRead === 2);
                 done();
@@ -41,10 +42,11 @@ describe('Action mediator', function () {
         commandMediator.init();
     });
 
-    it('should dispatch registerUserActioner', function () {
+    it('should dispatch registerUser command', function (done) {
         let mappingsRead = 0;
         commandMediator.getObservable()
             .subscribe((r) => {
+                //console.log(JSON.stringify(r));
                 if (r.constructor.name === 'CommandExecuted') {
                     mappingsRead = r.commandCount;
                     assert(mappingsRead === 2);

@@ -12,8 +12,6 @@ let propagator = new Rx.Subject();
 
 function init() {
 
-    console.log('command mediator init');
-
     // find all the actions
     fs.readdir(__dirname + '/handlers', function (err, filenames) {
         if (err) {
