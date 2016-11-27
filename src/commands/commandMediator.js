@@ -6,6 +6,7 @@ const Rx = require('rx');
 const CommandExecuting = require('./models/command-executing');
 const CommandExecuted = require('./models/command-executed');
 const CommandMediatorInitiating = require('./models/command-mediator-initiated');
+const CommandFactory = require('./commandFactory');
 
 let mappings = [];
 let propagator = new Rx.Subject();
@@ -63,18 +64,15 @@ function dispatch(command) {
     });
 
     if (matchingActioner !== undefined) {
-        var verifier = require('./verifiers/' + matchingActioner.code + 'Verifier');
-        var errors = verifier(command);
+        const verifier = require('./verifiers/' + matchingActioner.code + 'Verifier');
+        let errors = verifier(command);
 
         if (errors.length === 0) {
             let msg = new CommandExecuting(command.correlationId);
             propagator.onNext(msg);
 
-            // find the command handler
-            let invoker = require('./' + matchingActioner.path);
-
             // actually action the command
-            Rx.Observable.start(invoker, {command: command})
+            CommandFactory.start(command)
                 .subscribe(resp => {
                     // put it on
                     propagator.onNext(resp);
@@ -95,7 +93,7 @@ function dispatch(command) {
         }
 
     } else {
-        ret.message = 'Couldn\'t find command';
+        ret.message = "Couldn't find " + command.code + " command";
         ret.status = 501;
     }
 

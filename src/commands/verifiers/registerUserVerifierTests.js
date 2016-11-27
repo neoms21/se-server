@@ -1,10 +1,10 @@
-var assert = require('assert');
-var verifier = require('./registerUserVerifier');
+const assert = require('assert');
+const verifier = require('./registerUserVerifier');
 
 describe('register user verifier', function() {
 
     it('should check response is array', function() {
-        var resp = verifier(null);
+        var resp = verifier({});
 
         assert(typeof resp, 'array');
     });

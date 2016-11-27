@@ -1,10 +1,10 @@
-var assert = require('assert');
-var verifier = require('./commandVerifier');
+const assert = require('assert');
+const verifier = require('./commandVerifier');
 
 describe('command verifier', function() {
 
     it('should check response is array', function() {
-        var resp = verifier(null);
+        let resp = verifier(null);
 
         assert(typeof resp, 'array');
     });

@@ -3,10 +3,11 @@ var commandVerifier = function (command) {
 
     if (command === undefined || command === null) {
         errors.push('command was not defined');
-    }
+    } else {
 
-    if (command.code === undefined || command.code === null) {
-        errors.push('command needs a code');
+        if (command.code === undefined || command.code === null) {
+            errors.push('command needs a code');
+        }
     }
 
     return errors;
