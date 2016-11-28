@@ -1,26 +1,36 @@
 const assert = require('assert');
-const verifier = require('./commandVerifier');
+const command = require('./registerUserCommand');
+const sinon = require('sinon');
+const dbUtil = require('../../db/dbUtil');
+const Rx = require('rx');
 
-describe('Register user command', function() {
+describe('Register user command', function () {
+    let dbUtilStub;
+    let dbMock;
+    let insertOneMock;
+    let count = 0;
 
-    it('should check response is array', function() {
-        let resp = verifier(null);
+    before(function () {
+        dbMock = {
+            collection: function () {
+                return { count: (callback) => callback(null, count), insertOne: () => {} };
+            }
+        };
+        dbUtilStub = sinon.stub(dbUtil, 'connectToDb', function () {
+            // supply dummy observable
+            return Rx.Observable.from(dbMock);
+        });
 
-        assert(typeof resp, 'array');
+        insertOneMock = sinon.stub(dbMock.collection(), 'insertOne');
+
     });
 
-    it('should check command is null', function() {
-        var resp = verifier(null);
+    it('should allow add for non matching login', function () {
+        let resp = command();
 
-        assert.equal(resp.length, 1);
-        assert.equal(resp[0], 'command was not defined');
+        assert(insertOneMock.called);
     });
 
-    it('should check command is undefined', function() {
-        var resp = verifier(undefined);
 
-        assert.equal(resp.length, 1);
-        assert.equal(resp[0], 'command was not defined');
-    });
 
 });

@@ -26,4 +26,6 @@ function connectToDb() {
     // return deferred.promise;
 }
 
-module.exports = connectToDb;
+module.exports = {
+    connectToDb: connectToDb
+};

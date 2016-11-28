@@ -43,14 +43,6 @@ describe('Action mediator', function () {
         cmdMock.restore();
     });
 
-    beforeEach(function () {
-
-    });
-
-    afterEach(function () {
-
-    });
-
     it('should be created', function () {
         assert(commandMediator !== null && commandMediator !== undefined);
     });

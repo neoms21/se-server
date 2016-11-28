@@ -5,10 +5,10 @@ const Rx = require('rx');
 
 function registerUserCommand() {
 
-    const response = dbUtil.connectToDb();
+    let response = new Rx.Subject();
 
     // check whether user has a login
-    response.subscribe((db) => {
+    dbUtil.connectToDb().subscribe((db) => {
         db.collection('logins').count({userName: this.command.userName}, (err, count) => {
             if (count > 0) {
                 // oops duplicate
@@ -16,7 +16,8 @@ function registerUserCommand() {
             } else {
                 let login = new Login(this.command.name, this.command.userName, this.command.password);
                 db.collection('logins').insertOne(login);
-                response.onNext('Register user ' + login.name);
+                response.onNext('Registered user ' + login.name);
+                response.onCompleted();
             }
         });
     }, (err) => {
