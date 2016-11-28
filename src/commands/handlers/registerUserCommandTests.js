@@ -5,32 +5,47 @@ const dbUtil = require('../../db/dbUtil');
 const Rx = require('rx');
 
 describe('Register user command', function () {
-    let dbUtilStub;
-    let dbMock;
-    let insertOneMock;
+    let countStub;
+    let insertStub;
     let count = 0;
 
-    before(function () {
-        dbMock = {
-            collection: function () {
-                return { count: (callback) => callback(null, count), insertOne: () => {} };
-            }
-        };
-        dbUtilStub = sinon.stub(dbUtil, 'connectToDb', function () {
-            // supply dummy observable
-            return Rx.Observable.from(dbMock);
+    beforeEach(function () {
+        insertStub = sinon.stub(dbUtil, 'insert', () => {
         });
+    });
 
-        insertOneMock = sinon.stub(dbMock.collection(), 'insertOne');
+    afterEach(() => {
+        insertStub.restore();
 
     });
 
     it('should allow add for non matching login', function () {
-        let resp = command();
+        countStub = sinon.stub(dbUtil, 'getCount', () => {
+            // supply dummy observable
+            return Rx.Observable.from([count]);
+        });
 
-        assert(insertOneMock.called);
+        command.apply({userName: 'mark', name: 'mark s'});
+
+        assert(insertStub.called);
+        countStub.restore();
     });
 
+    it('should reject when login exists', function (done) {
+        countStub = sinon.stub(dbUtil, 'getCount', () => {
+            // supply dummy observable
+            return Rx.Observable.from([1]);
+        });
 
+        command.apply({userName: 'mark', name: 'mark s'})
+            .subscribe(succ => {
+                assert.fail('Should produce error');
+                done();
+            }, err => {
+                assert.equal(err, 'The username mark is a duplicate');
+                done();
+            });
 
+        countStub.restore();
+    });
 });

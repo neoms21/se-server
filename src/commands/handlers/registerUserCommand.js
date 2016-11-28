@@ -8,21 +8,20 @@ function registerUserCommand() {
     let response = new Rx.Subject();
 
     // check whether user has a login
-    dbUtil.connectToDb().subscribe((db) => {
-        db.collection('logins').count({userName: this.command.userName}, (err, count) => {
+    dbUtil.getCount('logins', {userName: this.userName})
+        .subscribe(count => {
             if (count > 0) {
                 // oops duplicate
-                response.onError([`The username ${this.command.userName} is a duplicate`]);
+                response.onError([`The username ${this.userName} is a duplicate`]);
             } else {
-                let login = new Login(this.command.name, this.command.userName, this.command.password);
-                db.collection('logins').insertOne(login);
+                let login = new Login(this.name, this.userName, this.password);
+                dbUtil.insert('logins', login);
                 response.onNext('Registered user ' + login.name);
                 response.onCompleted();
             }
+        }, (err) => {
+            response.onError(err); // pass it on
         });
-    }, (err) => {
-        response.onError(err);
-    });
 
     return response;
 }

@@ -10,22 +10,47 @@ function connectToDb() {
     //log.info('trying to connect to ' + uri + ' to initialise');
 
     // Connect to the db
-    return Rx.observable.fromNodeCallback(mongoClient.connect(uri));
+    return mongoClient.connect(uri);
+}
 
-    // , function (err, db) {
-    //
-    //     if (!err) {
-    //         log.info("We are connected to mongo");
-    //         deferred.resolve(db);
-    //     } else {
-    //         log.error(err);
-    //         deferred.reject(err);
-    //     }
-    // });
-    //
-    // return deferred.promise;
+function getCount(collectionName, param) {
+    // so many layers of rx!
+    let response = new Rx.Subject();
+
+    connectToDb()
+        .then(db => {
+            db.collection(collectionName).count(param, (err, count) => {
+                response.onNext(count);
+                response.onCompleted();
+            });
+        }, err => {
+            response.onError(err);
+        });
+
+    return response;
+}
+
+function insert(collectionName, insertion) {
+    let response = new Rx.Subject();
+
+    connectToDb()
+        .then(db => {
+            db.collection(collectionName).insertOne(insertion)
+                .then(succ => {
+                    response.onNext(succ);
+                    response.onCompleted();
+                })
+                .catch(errInsert => {
+                    response.onError(errInsert);
+                });
+        }, err => {
+            response.onError(err);
+        });
+
+    return response;
 }
 
 module.exports = {
-    connectToDb: connectToDb
+    getCount: getCount,
+    insert: insert
 };
