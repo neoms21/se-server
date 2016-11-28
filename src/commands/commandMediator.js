@@ -86,7 +86,7 @@ function dispatch(command) {
                 });
 
             // tell client we have executed command
-            ret.message = 'Command ${command.code} being executed';
+            ret.message = `Command ${command.code} being executed`;
         } else {
             ret.status = 501;
             ret.message = errors.toString();
