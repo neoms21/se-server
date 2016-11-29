@@ -59,12 +59,12 @@ function saveCommand(command, log) {
 function dispatch(command) {
     let ret = {status: 200, message: ''};
 
-    let matchingActioner = mappings.find(function (item) {
+    let matchingHandler = mappings.find(function (item) {
         return item.code === command.code;
     });
 
-    if (matchingActioner !== undefined) {
-        const verifier = require('./verifiers/' + matchingActioner.code + 'Verifier');
+    if (matchingHandler !== undefined) {
+        const verifier = require('./verifiers/' + matchingHandler.code + 'Verifier');
         let errors = verifier(command);
 
         if (errors.length === 0) {
@@ -72,7 +72,7 @@ function dispatch(command) {
             propagator.onNext(msg);
 
             // actually action the command
-            CommandFactory.start(command)
+            CommandFactory.start(matchingHandler.path, command)
                 .subscribe(resp => {
                     // put it on
                     propagator.onNext(resp);

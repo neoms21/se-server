@@ -3,7 +3,7 @@ const logger = require('bunyan');
 const uuid = require('uuid');
 const socketio = require('socket.io');
 const commandRoutes = require('./routes/commandRoutes');
-const createOrOpenDb = require('./db/createOrOpenDb');
+const dbUtil = require('./db/dbUtil');
 const commandMediator = require('./commands/commandMediator');
 
 // create our logger
@@ -38,7 +38,7 @@ server.pre(function (request, response, next) {
 
 // socket io
 io.sockets.on('connection', function (socket) {
-    socket.emit('news', { hello: 'world' });
+    socket.emit('news', {hello: 'world'});
     socket.on('my other event', function (data) {
         console.log(data);
     });
@@ -48,7 +48,8 @@ io.sockets.on('connection', function (socket) {
 commandMediator.init(log);
 
 //check db
-createOrOpenDb(log);
+dbUtil.createOrOpenDb();
+log.info("Collections checked (and maybe created)");
 
 //server.bodyParser();
 

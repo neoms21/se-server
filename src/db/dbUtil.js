@@ -50,7 +50,25 @@ function insert(collectionName, insertion) {
     return response;
 }
 
+function createOrOpenDb() {
+
+    connectToDb()
+        .then(function (db) {
+            db.createCollection('commands', function (err, collection) {
+            });
+            db.createCollection('checkpoints', function (err, collection) {
+            });
+            db.createCollection('clubs', function (err, collection) {
+            });
+            db.createCollection('teams', function (err, collection) {
+            });
+            db.createCollection('logins', function (err, collection) {
+            });
+        });
+
+}
 module.exports = {
     getCount: getCount,
-    insert: insert
+    insert: insert,
+    createOrOpenDb: createOrOpenDb
 };
