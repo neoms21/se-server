@@ -1,0 +1,8 @@
+{
+    "dbConfig": {
+      "host": "localhost",
+      "port": 27017,
+      "user": "spedit",
+      "password": "spedit01"
+    }
+}

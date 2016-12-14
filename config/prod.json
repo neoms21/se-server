@@ -1,0 +1,6 @@
+{
+  "dbConfig": {
+    "host": "aws-prod",
+    "port": 27017,
+  },
+}

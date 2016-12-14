@@ -5,9 +5,17 @@ It also has a members section, where they can their teams.
 
 To see all the use cases, see Docs folder
 
+## pre-requisites
+mongodb
+node
+
 ## Server
 The server side follows an architecture of CQRS (using event sourcing),
- Mongo and node.js (using microservices).
+ Mongo and node.js (using microservices). 
+ ### installing
+ yarn install
+ ### running
+ Run `npm start`
 
 ## Desktop
 Angular2 front end
