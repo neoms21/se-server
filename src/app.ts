@@ -4,7 +4,7 @@ import * as restify from 'restify';
 import * as socketio from 'socket.io';
 import MongoRepository from './db/mongo-repository';
 const commandRoutes = require('./routes/commandRoutes');
-const commandMediator = require('./cqrs/commandMediator');
+const commandMediator = require('./cqrs/command-mediator');
 
 // create our logger
 let log = logger.createLogger({

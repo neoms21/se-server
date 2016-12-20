@@ -1,5 +1,5 @@
 const assert = require('assert');
-const commandMediator = require('./commandMediator');
+const commandMediator = require('./command-mediator');
 const sinon = require('sinon');
 const fs = require('fs');
 const registerUserCommand = require('./../commands/register-user/registerUserCommand');
