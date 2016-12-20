@@ -1,13 +1,13 @@
-const restify = require('restify');
-const logger = require('bunyan');
-const uuid = require('uuid');
-const socketio = require('socket.io');
+import * as uuid from 'uuid';
+import * as logger from 'bunyan';
+import * as restify from 'restify';
+import * as socketio from 'socket.io';
+import MongoRepository from './db/mongo-repository';
 const commandRoutes = require('./routes/commandRoutes');
-const dbUtil = require('./db/dbUtil');
-const commandMediator = require('./commands/commandMediator');
+const commandMediator = require('./cqrs/commandMediator');
 
 // create our logger
-var log = new logger.createLogger({
+let log = logger.createLogger({
     name: 'Sports Editor',
     serializers: {
         req: logger.stdSerializers.req
@@ -48,7 +48,7 @@ io.sockets.on('connection', function (socket) {
 commandMediator.init(log);
 
 //check db
-dbUtil.createOrOpenDb();
+MongoRepository.createOrOpenDb();
 log.info("Collections checked (and maybe created)");
 
 //server.bodyParser();

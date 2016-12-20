@@ -1,7 +1,7 @@
 const assert = require('assert');
 const command = require('./registerUserCommand');
 const sinon = require('sinon');
-const dbUtil = require('../../db/dbUtil');
+const dbUtil = require('../../db/repository');
 const Rx = require('rx');
 
 describe('Register user command', function () {

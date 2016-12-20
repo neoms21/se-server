@@ -2,7 +2,7 @@ const assert = require('assert');
 const commandMediator = require('./commandMediator');
 const sinon = require('sinon');
 const fs = require('fs');
-const registerUserCommand = require('./handlers/registerUserCommand');
+const registerUserCommand = require('./../commands/register-user/registerUserCommand');
 const CommandFactory = require('./commandFactory');
 const Rx = require('rx');
 
