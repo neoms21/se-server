@@ -1,5 +1,5 @@
 
-let commandRoutes = function (server) {
+//let commandRoutes = function (server: any) {
 
     // server.post('command', (req, res, next) => {
     //
@@ -25,6 +25,6 @@ let commandRoutes = function (server) {
     //
     //     next();
     // });
-};
+//};
 
-module.exports = commandRoutes;
+//module.exports = commandRoutes;

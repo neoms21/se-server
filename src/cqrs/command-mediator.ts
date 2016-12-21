@@ -1,22 +1,22 @@
 import {Logger} from 'bunyan';
 import MongoRepository from '../db/mongo-repository';
 import {SaveCommandErrorEvent} from './events/Save-command-error-event';
-const fs = require('fs');
-const path = require('path');
-const q = require('q');
-const Rx = require('rx');
-const CommandExecuting = require('./../commands/models/command-executing');
-const CommandExecuted = require('./../commands/models/command-executed');
-const CommandMediatorInitiating = require('./events/command-mediator-initiated');
-const CommandFactory = require('./commandFactory');
+import {ICommand} from '../bases/ICommand';
+import {EventMediator} from './event-mediator';
+import {CommandVerificationFailedEvent} from './events/command-verification-failed-event';
+import fs = require('fs');
+import path = require('path');
+import {SaveCommandEvent} from './events/save-command-event';
+import {Rx} from 'rx';
 
 export class CommandMediator {
-    private static mappings = [];
+    private static mappings: Array<any>;
     private static logger: Logger;
-    public static propagator: Rx.Subject;
+    public static propagator: Rx.Subject<any>;
 
     constructor() {
-        CommandMediator.propagator = new Rx.Subject();
+        CommandMediator.mappings = [];
+        CommandMediator.propagator = new Rx.Subject<any>();
     }
 
     public static init(logger: Logger) {
@@ -40,29 +40,31 @@ export class CommandMediator {
                 console.info('CommandMediator has been initiated');
             }
         });
-
     }
 
-    // public static getObservable() {
-    //     return propagator;
-    // }
+    private static saveCommand(command: ICommand): void {
 
-    private static saveCommand(command) {
-        let ret = q.defer();
-        MongoRepository.insert(command)
-            .subscribe(r => this.propagator.onNext(new ),
-                        err => this.propagator.onError(new SaveCommandErrorEvent(command.correlationId))
-            })
-            .catch(function (err) {
-                ret.reject(err);
+        // save to db
+        MongoRepository.insert('commands', command)
+            .subscribe(r => EventMediator.dispatch(new SaveCommandEvent(command.correlationId)),
+                err => EventMediator.dispatch(new SaveCommandErrorEvent(command.correlationId))
+            );
+        // log it
+        this.logger.info('Saving command ' + command.code);
+    }
+
+    private static runCommand(commandPath: string, command: ICommand) {
+        // find the command handler
+        let invoker = require('./' + commandPath);
+
+        Rx.Observable.start(invoker, {command: command}) // context will be bound to this of invoker
+            .subscribe(resp => {
+                // worked it ok , so save it
+                this.saveCommand(command);
             });
-
-        return ret.promise;
     }
 
-    private static
-
-    public static dispatch(command) {
+    public static dispatch(command: ICommand) {
         let ret = {status: 200, message: ''};
 
         let matchingHandler = this.mappings.find(function (item) {
@@ -73,35 +75,41 @@ export class CommandMediator {
             // found handler entry
             const handler = require('./common/' + matchingHandler.code + 'Command');
             handler.command = command;
-            let errors = handler(command).verify()
-                .subscribe(r => {
+            handler(command).verify().toArray()
+                .subscribe(messages => {
+                        // verifier has run , so lets get its reults
+                        if (messages.length === 0) {
+                            this.runCommand(matchingHandler.path, command); // all ok, so run it
+                        } else {
+                            EventMediator.dispatch(new CommandVerificationFailedEvent(messages));
+                        }
+                    }, err => EventMediator.dispatch(new CommandVerificationFailedEvent(err.toString()))
+                );
 
-                }, );
-
-            if (errors.length === 0) {
-                let msg = new CommandExecuting(command.correlationId);
-                this.propagator.onNext(msg);
-
-                // actually action the command
-                CommandFactory.start(matchingHandler.path, command)
-                    .subscribe(resp => {
-                        // put it on
-                        this.propagator.onNext(resp);
-                    }, err => {
-                        this.propagator.onError(err);
-                    }, () => {
-                        // finished so send end response
-                        let msg = new CommandExecuted(command.correlationId);
-                        this.propagator.onNext(msg);
-                        this.saveCommand(command);
-                    });
-
-                // tell client we have executed command
-                ret.message = `Command ${command.code} being executed`;
-            } else {
-                ret.status = 501;
-                ret.message = errors.toString();
-            }
+            // if (errors.length === 0) {
+            //     let msg = new CommandExecuting(command.correlationId);
+            //     this.propagator.onNext(msg);
+            //
+            //     // actually action the command
+            //     CommandFactory.start(matchingHandler.path, command)
+            //         .subscribe(resp => {
+            //             // put it on
+            //             this.propagator.onNext(resp);
+            //         }, err => {
+            //             this.propagator.onError(err);
+            //         }, () => {
+            //             // finished so send end response
+            //             let msg = new CommandExecuted(command.correlationId);
+            //             this.propagator.onNext(msg);
+            //             this.saveCommand(command);
+            //         });
+            //
+            //     // tell client we have executed command
+            //     ret.message = `Command ${command.code} being executed`;
+            // } else {
+            //     ret.status = 501;
+            //     ret.message = errors.toString();
+            // }
 
         } else {
             ret.message = "Couldn't find " + command.code + " command";
@@ -111,10 +119,3 @@ export class CommandMediator {
         return ret;
     }
 }
-
-//
-// module.exports = {
-//     init: init,
-//     dispatch: dispatch,
-//     getObservable: getObservable
-// };

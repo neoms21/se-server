@@ -1,12 +1,12 @@
 import * as config from 'config';
-import {MongoClient as mongoClient} from 'mongodb';
+import {MongoClient as mongoClient, Db, Collection} from 'mongodb';
 import * as Rx from 'rx';
 import {DbConfig} from '../../config/dbConfig';
 
 export default class MongoRepository {
 
     private static connectToDb() {
-        const configDB:DbConfig = config.get<DbConfig>("dbConfig");
+        const configDB: DbConfig = config.get<DbConfig>("dbConfig");
 
         // create uri no user
         let uri = 'mongodb://' + configDB.host + ':' + configDB.port + '/' + configDB.name;
@@ -17,37 +17,37 @@ export default class MongoRepository {
         return mongoClient.connect(uri);
     }
 
-    public static getCount(collectionName, param) {
+    public static getCount(collectionName: string, param: any): Rx.Observable<number> {
         // so many layers of rx!
-        let response = new Rx.Subject();
+        let response = new Rx.Subject<number>();
 
         this.connectToDb()
-            .then(db => {
-                db.collection(collectionName).count(param, (err, count) => {
+            .then((db: Db) => {
+                db.collection(collectionName).count(param, (err: any, count: number) => {
                     response.onNext(count);
                     response.onCompleted();
                 });
-            }, err => {
+            }, (err: any) => {
                 response.onError(err);
             });
 
         return response;
     }
 
-    public static insert(collectionName, insertion) {
+    public static insert(collectionName: string, insertion: any) {
         let response = new Rx.Subject();
 
         this.connectToDb()
-            .then(db => {
+            .then((db: Db) => {
                 db.collection(collectionName).insertOne(insertion)
-                    .then(succ => {
+                    .then((succ: Collection) => {
                         response.onNext(succ);
                         response.onCompleted();
                     })
-                    .catch(errInsert => {
+                    .catch((errInsert: any) => {
                         response.onError(errInsert);
                     });
-            }, err => {
+            }, (err: any) => {
                 response.onError(err);
             });
 
@@ -56,18 +56,18 @@ export default class MongoRepository {
 
     public static createOrOpenDb() {
         this.connectToDb()
-            .then(function (db) {
-                db.createCollection('commands', function (err, collection) {
+            .then(function (db: Db) {
+                db.createCollection('commands', function (err: any, collection: any) {
                 });
-                db.createCollection('events', function (err, collection) {
+                db.createCollection('events', function (err: any, collection: any) {
                 });
-                db.createCollection('checkpoints', function (err, collection) {
+                db.createCollection('checkpoints', function (err: any, collection: any) {
                 });
-                db.createCollection('clubs', function (err, collection) {
+                db.createCollection('clubs', function (err: any, collection: any) {
                 });
-                db.createCollection('teams', function (err, collection) {
+                db.createCollection('teams', function (err: any, collection: any) {
                 });
-                db.createCollection('logins', function (err, collection) {
+                db.createCollection('logins', function (err: any, collection: any) {
                 });
             });
 

@@ -1,8 +1,9 @@
-import {ICommandHandler} from '../../bases/ICommandHandler';
 import {ICommand} from '../../bases/ICommand';
 import {CommandHandlerBase} from '../../bases/Command-handler-base';
 import MongoRepository from '../../db/mongo-repository';
 import {Rx} from 'rx';
+import {EventMediator} from '../../cqrs/event-mediator';
+import {RegisterUserEvent} from './register-user-event';
 
 export class RegisterUserCommandHandler extends CommandHandlerBase {
 
@@ -11,7 +12,6 @@ export class RegisterUserCommandHandler extends CommandHandlerBase {
     }
 
     verify() {
-
         let response = new Rx.Subject();
 
         if (this.command.name === undefined || this.command.name === null) {
@@ -37,13 +37,13 @@ export class RegisterUserCommandHandler extends CommandHandlerBase {
                     // oops duplicate
                     response.onNext(`The username ${this.command.userName} is a duplicate`);
                 }
-            });
+            }, err => response.onError(err));
 
         return response;
     }
 
-    public execute() {
-
+    public execute(command: ICommand) {
+        EventMediator.dispatch(new RegisterUserEvent(command.name));
     }
 
 }

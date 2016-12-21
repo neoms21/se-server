@@ -14,7 +14,7 @@ export class CommandHandlerBase implements ICommandHandler{
         return this.command;
     }
 
-    public execute() {
+    public execute(command: ICommand) {
     }
 
     public verify(): IObservable<string> {
