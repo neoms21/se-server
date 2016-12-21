@@ -1,6 +1,6 @@
 import * as config from 'config';
 import {MongoClient as mongoClient, Db, Collection} from 'mongodb';
-import * as Rx from 'rx';
+import * as Rx from 'rxjs';
 import {DbConfig} from '../../config/dbConfig';
 
 export default class MongoRepository {
@@ -24,11 +24,11 @@ export default class MongoRepository {
         this.connectToDb()
             .then((db: Db) => {
                 db.collection(collectionName).count(param, (err: any, count: number) => {
-                    response.onNext(count);
-                    response.onCompleted();
+                    response.next(count);
+                    response.complete();
                 });
             }, (err: any) => {
-                response.onError(err);
+                response.error(err);
             });
 
         return response;
@@ -41,14 +41,14 @@ export default class MongoRepository {
             .then((db: Db) => {
                 db.collection(collectionName).insertOne(insertion)
                     .then((succ: Collection) => {
-                        response.onNext(succ);
-                        response.onCompleted();
+                        response.next(succ);
+                        response.complete();
                     })
                     .catch((errInsert: any) => {
-                        response.onError(errInsert);
+                        response.error(errInsert);
                     });
             }, (err: any) => {
-                response.onError(err);
+                response.error(err);
             });
 
         return response;

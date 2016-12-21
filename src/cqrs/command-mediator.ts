@@ -7,7 +7,7 @@ import {CommandVerificationFailedEvent} from './events/command-verification-fail
 import fs = require('fs');
 import path = require('path');
 import {SaveCommandEvent} from './events/save-command-event';
-import {Rx} from 'rx';
+import '@reactivex/rxjs/dist/cjs/add/operator/st';
 
 export class CommandMediator {
     private static mappings: Array<any>;
@@ -76,14 +76,14 @@ export class CommandMediator {
             const handler = require('./common/' + matchingHandler.code + 'Command');
             handler.command = command;
             handler(command).verify().toArray()
-                .subscribe(messages => {
+                .subscribe((messages:Array<string>) => {
                         // verifier has run , so lets get its reults
                         if (messages.length === 0) {
                             this.runCommand(matchingHandler.path, command); // all ok, so run it
                         } else {
-                            EventMediator.dispatch(new CommandVerificationFailedEvent(messages));
+                            EventMediator.dispatch(new CommandVerificationFailedEvent(command.correlationId, messages));
                         }
-                    }, err => EventMediator.dispatch(new CommandVerificationFailedEvent(err.toString()))
+                    }, (err:any) => EventMediator.dispatch(new CommandVerificationFailedEvent(command.correlationId, err.toString()))
                 );
 
             // if (errors.length === 0) {
