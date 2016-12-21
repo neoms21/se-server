@@ -1,12 +1,13 @@
 import {ICommand} from './ICommand';
 import {ICommandHandler} from './ICommandHandler';
-import IObservable = Rx.IObservable;
+import {Observable} from 'rxjs';
 
-export class CommandHandlerBase implements ICommandHandler{
 
-    private command: ICommand;
+export class CommandHandlerBase<T extends ICommand> implements ICommandHandler<T>{
 
-    constructor(command: ICommand) {
+    private command: T;
+
+    constructor(command: T) {
         this.command = command;
     }
 
@@ -14,10 +15,10 @@ export class CommandHandlerBase implements ICommandHandler{
         return this.command;
     }
 
-    public execute(command: ICommand) {
+    public execute(command: T) {
     }
 
-    public verify(): IObservable<string> {
+    public verify(): Observable<string> {
         return null;
     }
 }

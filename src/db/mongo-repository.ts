@@ -1,5 +1,5 @@
 import * as config from 'config';
-import {MongoClient as mongoClient, Db, Collection} from 'mongodb';
+import {MongoClient as mongoClient, Db, Collection, InsertOneWriteOpResult} from 'mongodb';
 import * as Rx from 'rxjs';
 import {DbConfig} from '../../config/dbConfig';
 
@@ -40,7 +40,7 @@ export default class MongoRepository {
         this.connectToDb()
             .then((db: Db) => {
                 db.collection(collectionName).insertOne(insertion)
-                    .then((succ: Collection) => {
+                    .then((succ: InsertOneWriteOpResult) => {
                         response.next(succ);
                         response.complete();
                     })

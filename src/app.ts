@@ -1,10 +1,13 @@
 import * as uuid from 'uuid';
 import * as logger from 'bunyan';
-import * as restify from 'restify';
-import * as socketio from 'socket.io';
+var app = require('express')();
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
+
 import MongoRepository from './db/mongo-repository';
-const commandRoutes = require('./routes/commandRoutes');
-const commandMediator = require('./cqrs/command-mediator');
+import {CommandMediator} from './cqrs/command-mediator';
+//const commandRoutes = require('./routes/commandRoutes');
+//const commandMediator = require('./cqrs/command-mediator');
 
 // create our logger
 let log = logger.createLogger({
@@ -14,50 +17,55 @@ let log = logger.createLogger({
     }
 });
 
-let server = restify.createServer({
-    name: 'Sports Editor',
-    version: '0.0.1',
-    log: log
-});
-
-// add socket.io
-const io = socketio.listen(server);
-
-// add middleware
-//server.use(restify.acceptParser(server.acceptable));
-server.use(restify.queryParser());
-server.use(restify.bodyParser());
-
-// log requests
-server.pre(function (request, response, next) {
-    log.info({req: JSON.stringify(request.body)}, 'REQUEST' + JSON.stringify(request.body));
-    // add correlation id
-    response.header('correlation', uuid.v4());
-    next();
-});
-
-// socket io
-io.sockets.on('connection', function (socket) {
-    socket.emit('news', {hello: 'world'});
-    socket.on('command', function (command:any) {
-        console.log(command);
-    });
-});
-
 // actions need init
-commandMediator.init(log);
+CommandMediator.init(log);
 
 //check db
 MongoRepository.createOrOpenDb();
 log.info("Collections checked (and maybe created)");
 
-//server.bodyParser();
+app.get('/', function (req: any, res: any) {
+    res.sendfile('index.html');
+});
+
+io.on('connection', function (socket: any) {
+    console.log('a user connected');
+
+    socket.on('command', (msg: any) => {
+        log.info('command received: ' + JSON.stringify(msg));
+        CommandMediator.dispatch()
+    });
+});
+
+http.listen(8180, function () {
+    console.log('listening on *:8180');
+});
+
+
+// log requests
+// server.pre(function (request, response, next) {
+//     log.info({req: JSON.stringify(request.body)}, 'REQUEST ' + JSON.stringify(request.body));
+//     // add correlation id
+//     response.header('correlation', uuid.v4());
+//     next();
+// });
+//
+// // socket io
+// io.sockets.on('connection', function (socket) {
+//     log.info('connected socket');
+//
+//     socket.emit('news', {hello: 'world'});
+//     socket.on('command', function (command:any) {
+//         console.log(command);
+//     });
+// });
+
 
 // add routes
-commandRoutes(server);
+// commandRoutes(server);
 
-server.listen(8180, function () {
-    console.log('%s listening at %s', server.name, server.url);
-});
+// server.listen(8180, function () {
+//     console.log('%s listening at %s', server.name, server.url);
+// });
 
 

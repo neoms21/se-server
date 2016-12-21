@@ -1,7 +1,6 @@
 import {IEvent} from '../bases/IEvent';
-import IObservable = Rx.IObservable;
-import Subject = Rx.Subject;
 import MongoRepository from '../db/mongo-repository';
+import {Subject} from 'rxjs';
 
 export class EventMediator {
     public static propagator: Subject<IEvent>;
@@ -15,6 +14,6 @@ export class EventMediator {
         MongoRepository.insert('events', event);
 
         // publish it to whomever is listening
-        EventMediator.propagator.onNext(event);
+        EventMediator.propagator.next(event);
     }
 }

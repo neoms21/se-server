@@ -1,32 +1,36 @@
-import {ICommand} from '../../bases/ICommand';
-import {CommandHandlerBase} from '../../bases/Command-handler-base';
 import MongoRepository from '../../db/mongo-repository';
-import {Rx} from 'rx';
 import {EventMediator} from '../../cqrs/event-mediator';
 import {RegisterUserEvent} from './register-user-event';
+import {RegisterUserCommand} from './register-user-command';
+import {Observable, Subject} from 'rxjs';
+import {ICommandHandler} from '../../bases/ICommandHandler';
+import {CommandHandlerBase} from '../../bases/Command-handler-base';
 
-export class RegisterUserCommandHandler extends CommandHandlerBase {
+export class RegisterUserCommandHandler extends CommandHandlerBase<RegisterUserCommand> {
 
-    constructor(command: ICommand) {
+    execute() {
+    }
+
+    constructor(command: RegisterUserCommand) {
         super(command);
     }
 
-    verify() {
-        let response = new Rx.Subject();
+    verify(): Observable<string> {
+        let response = new Subject<string>();
 
         if (this.command.name === undefined || this.command.name === null) {
-            response.onNext('registerUser command name property was not defined');
+            response.next('registerUser command name property was not defined');
         }
 
         if (this.command.userName === undefined || this.command.userName === null) {
-            response.onNext('registerUser command userName property was not defined');
+            response.next('registerUser command userName property was not defined');
         }
 
         if (this.command.password === undefined || this.command.password === null) {
-            response.onNext('registerUser command password property was not defined');
+            response.next('registerUser command password property was not defined');
         } else {
             if (this.command.password.length < 6) {
-                response.onNext('password must be at least 6 characters long');
+                response.next('password must be at least 6 characters long');
             }
         }
 
@@ -35,14 +39,14 @@ export class RegisterUserCommandHandler extends CommandHandlerBase {
             .subscribe(count => {
                 if (count > 0) {
                     // oops duplicate
-                    response.onNext(`The username ${this.command.userName} is a duplicate`);
+                    response.next(`The username ${this.command.userName} is a duplicate`);
                 }
-            }, err => response.onError(err));
+            }, err => response.error(err));
 
         return response;
     }
 
-    public execute(command: ICommand) {
+    public execute(command: RegisterUserCommand) {
         EventMediator.dispatch(new RegisterUserEvent(command.name));
     }
 

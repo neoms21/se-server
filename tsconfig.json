@@ -13,7 +13,11 @@
             "node_modules/@types"
         ],
         "types" : [
-            "rx"
+            "rx",
+            "node",
+            "core-js",
+            "socket.io",
+            "restify"
         ]
     },
     "include": [

@@ -7,26 +7,29 @@ import {CommandVerificationFailedEvent} from './events/command-verification-fail
 import fs = require('fs');
 import path = require('path');
 import {SaveCommandEvent} from './events/save-command-event';
-import '@reactivex/rxjs/dist/cjs/add/operator/st';
+import 'rxjs/Rx';
+import {Subject} from 'rxjs';
 
 export class CommandMediator {
     private static mappings: Array<any>;
     private static logger: Logger;
-    public static propagator: Rx.Subject<any>;
+    public static propagator: Subject<any>;
 
     constructor() {
-        CommandMediator.mappings = [];
-        CommandMediator.propagator = new Rx.Subject<any>();
+
     }
 
     public static init(logger: Logger) {
         // save logger
         CommandMediator.logger = logger;
+        // create entries
+        CommandMediator.mappings = [];
+        CommandMediator.propagator = new Subject<any>();
 
         // find all the actions
         fs.readdir(__dirname + '/commands/*Command*.*', function (err, filenames) {
             if (err) {
-                this.propagator.onError(err);
+                CommandMediator.propagator.error(err);
             } else {
                 filenames.forEach(function (filename) {
                     if (filename.indexOf('Test') === -1) { // it is real command handler
@@ -49,6 +52,7 @@ export class CommandMediator {
             .subscribe(r => EventMediator.dispatch(new SaveCommandEvent(command.correlationId)),
                 err => EventMediator.dispatch(new SaveCommandErrorEvent(command.correlationId))
             );
+
         // log it
         this.logger.info('Saving command ' + command.code);
     }
@@ -57,17 +61,19 @@ export class CommandMediator {
         // find the command handler
         let invoker = require('./' + commandPath);
 
-        Rx.Observable.start(invoker, {command: command}) // context will be bound to this of invoker
-            .subscribe(resp => {
-                // worked it ok , so save it
-                this.saveCommand(command);
-            });
+        // Rx.Observable.start<any>(invoker, {command: command}) // context will be bound to this of invoker
+        //     .subscribe(resp => {
+        //         // worked it ok , so save it
+        //         this.saveCommand(command);
+        //     });
+
+        let result = invoker(command);
     }
 
     public static dispatch(command: ICommand) {
         let ret = {status: 200, message: ''};
 
-        let matchingHandler = this.mappings.find(function (item) {
+        let matchingHandler = this.mappings.find(function (item: any) {
             return item.code === command.code;
         });
 
@@ -75,15 +81,16 @@ export class CommandMediator {
             // found handler entry
             const handler = require('./common/' + matchingHandler.code + 'Command');
             handler.command = command;
-            handler(command).verify().toArray()
-                .subscribe((messages:Array<string>) => {
+            handler(command).verify() //.toArray()
+                .subscribe((messages: string[]) => {
                         // verifier has run , so lets get its reults
                         if (messages.length === 0) {
                             this.runCommand(matchingHandler.path, command); // all ok, so run it
                         } else {
                             EventMediator.dispatch(new CommandVerificationFailedEvent(command.correlationId, messages));
                         }
-                    }, (err:any) => EventMediator.dispatch(new CommandVerificationFailedEvent(command.correlationId, err.toString()))
+                    }
+                    , (err: any) => EventMediator.dispatch(new CommandVerificationFailedEvent(command.correlationId, err.toString()))
                 );
 
             // if (errors.length === 0) {
