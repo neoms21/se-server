@@ -1,15 +1,12 @@
 import MongoRepository from '../../db/mongo-repository';
 import {EventMediator} from '../../cqrs/event-mediator';
-import {RegisterUserEvent} from './register-user-event';
 import {RegisterUserCommand} from './register-user-command';
 import {Observable, Subject} from 'rxjs';
-import {ICommandHandler} from '../../bases/ICommandHandler';
 import {CommandHandlerBase} from '../../bases/Command-handler-base';
+import {UserRegisteredEvent} from './user-registered-event';
 
 export class RegisterUserCommandHandler extends CommandHandlerBase<RegisterUserCommand> {
 
-    execute() {
-    }
 
     constructor(command: RegisterUserCommand) {
         super(command);
@@ -22,8 +19,8 @@ export class RegisterUserCommandHandler extends CommandHandlerBase<RegisterUserC
             response.next('registerUser command name property was not defined');
         }
 
-        if (this.command.userName === undefined || this.command.userName === null) {
-            response.next('registerUser command userName property was not defined');
+        if (this.command.email === undefined || this.command.email === null) {
+            response.next('registerUser command email property was not defined');
         }
 
         if (this.command.password === undefined || this.command.password === null) {
@@ -35,11 +32,11 @@ export class RegisterUserCommandHandler extends CommandHandlerBase<RegisterUserC
         }
 
         // check that the user is not sending a duplicate
-        MongoRepository.getCount('logins', {userName: this.command.userName})
+        MongoRepository.getCount('logins', {userName: this.command.email})
             .subscribe(count => {
                 if (count > 0) {
                     // oops duplicate
-                    response.next(`The username ${this.command.userName} is a duplicate`);
+                    response.next(`The username ${this.command.email} is a duplicate`);
                 }
             }, err => response.error(err));
 
@@ -47,7 +44,10 @@ export class RegisterUserCommandHandler extends CommandHandlerBase<RegisterUserC
     }
 
     public execute(command: RegisterUserCommand) {
-        EventMediator.dispatch(new RegisterUserEvent(command.name));
+        // has been verified , so just need to create event
+        let event = EventMediator.create(UserRegisteredEvent.prototype, command);
+        Object.assign(event, command);
+        EventMediator.dispatch(event);
     }
 
 }

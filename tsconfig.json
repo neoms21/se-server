@@ -17,7 +17,7 @@
             "node",
             "core-js",
             "socket.io",
-            "restify"
+            "express"
         ]
     },
     "include": [

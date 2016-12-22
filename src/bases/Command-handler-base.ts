@@ -5,14 +5,14 @@ import {Observable} from 'rxjs';
 
 export class CommandHandlerBase<T extends ICommand> implements ICommandHandler<T>{
 
-    private command: T;
+    private _command: T;
 
     constructor(command: T) {
-        this.command = command;
+        this._command = command;
     }
 
     public get command() {
-        return this.command;
+        return this._command;
     }
 
     public execute(command: T) {

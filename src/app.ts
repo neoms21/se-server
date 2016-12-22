@@ -1,4 +1,3 @@
-import * as uuid from 'uuid';
 import * as logger from 'bunyan';
 var app = require('express')();
 var http = require('http').Server(app);
@@ -6,8 +5,10 @@ var io = require('socket.io')(http);
 
 import MongoRepository from './db/mongo-repository';
 import {CommandMediator} from './cqrs/command-mediator';
+import {CommandRequest} from './bases/CommandRequest';
+import {EventMediator} from './cqrs/event-mediator';
 //const commandRoutes = require('./routes/commandRoutes');
-//const commandMediator = require('./cqrs/command-mediator');
+
 
 // create our logger
 let log = logger.createLogger({
@@ -17,8 +18,9 @@ let log = logger.createLogger({
     }
 });
 
-// actions need init
+// our psuedo singletons need init
 CommandMediator.init(log);
+EventMediator.init(log);
 
 //check db
 MongoRepository.createOrOpenDb();
@@ -31,10 +33,17 @@ app.get('/', function (req: any, res: any) {
 io.on('connection', function (socket: any) {
     console.log('a user connected');
 
-    socket.on('command', (msg: any) => {
-        log.info('command received: ' + JSON.stringify(msg));
-        CommandMediator.dispatch()
+    socket.on('command', (cmdReq: CommandRequest) => {
+        log.info('command received: ' + JSON.stringify(cmdReq));
+        let cmd = CommandMediator.createCommand(cmdReq);
+        CommandMediator.dispatch(cmd);
     });
+
+});
+
+EventMediator.propagator.subscribe(ev =>  {
+    console.log('@@@' + ev);
+    io.emit(ev.name, ev);
 });
 
 http.listen(8180, function () {

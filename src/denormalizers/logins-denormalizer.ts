@@ -1,5 +1,5 @@
 import {MongoRepository} from '../db/mongo-repository';
-import {RegisterUserEvent} from '../commands/register-user/register-user-event';
+import {RegisterUserEvent} from '../commands/register-user/user-registered-event';
 
 function handleRegisterUser(event: RegisterUserEvent) {
     // check whether user has a login

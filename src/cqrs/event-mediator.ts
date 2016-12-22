@@ -1,12 +1,16 @@
 import {IEvent} from '../bases/IEvent';
 import MongoRepository from '../db/mongo-repository';
 import {Subject} from 'rxjs';
+import {Logger} from 'bunyan';
+import {ICommand} from '../bases/ICommand';
 
 export class EventMediator {
     public static propagator: Subject<IEvent>;
+    private static logger: Logger;
 
-    constructor() {
-        EventMediator.propagator = new Subject<IEvent>();
+    public static init(logger: Logger) {
+        this.logger = logger;
+        this.propagator = new Subject<IEvent>();
     }
 
     public static dispatch(event: IEvent) {
@@ -14,6 +18,16 @@ export class EventMediator {
         MongoRepository.insert('events', event);
 
         // publish it to whomever is listening
-        EventMediator.propagator.next(event);
+        this.propagator.next(event);
+
+        // log it
+        this.logger.info(`${event.toString()} dispatched`);
+    }
+
+    public static create<T extends IEvent>(prototype:any, command: ICommand): T {
+        let instance = <T>Object.create(prototype);
+        instance.constructor.call(instance, command.correlationId);
+
+        return instance;
     }
 }
