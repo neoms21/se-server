@@ -1,8 +1,7 @@
-import {CommandMediator} from './command-mediator';
-const assert = require('assert');
-const fs = require('fs');
-const Rx = require('rx');
 import {Logger} from 'bunyan';
+import {CommandMediator} from './command-mediator';
+import * as assert from 'assert';
+import * as sinon from 'sinon';
 
 describe('Action mediator', function () {
 
@@ -30,7 +29,7 @@ describe('Action mediator', function () {
                 subs.unsubscribe();
                 done();
             }, (err: any) => {
-                assert(err).equal('');
+                assert.equal(err, '');
                 done();
             });
 
@@ -38,7 +37,7 @@ describe('Action mediator', function () {
     });
 
     after(function () {
-        fs.readdir.restore();
+        //fs.readdir.r();
         actionMock.verify();
         actionMock.restore();
         cmdMock.restore();
@@ -51,7 +50,7 @@ describe('Action mediator', function () {
 
 
     it('shouldnt find non matching command', function () {
-        var res = CommandMediator.dispatch({commandName: 'registerChelski', correlationId: '@'});
+        let res = CommandMediator.dispatch({commandName: 'registerChelski', correlationId: '@'});
         assert.equal(res.status, 501);
         assert.equal(res.message, "Couldn\'t find registerChelski command");
     });
@@ -75,11 +74,11 @@ describe('Action mediator', function () {
 
     it('should dispatch registerUser command', function (done) {
         let mappingsRead = 0;
-        let subs = commandMediator.getObservable()
+        let subs = CommandMediator.propagator
             .subscribe((r) => {
                 // not finished until commandexecuted message is sent
                 if (r.constructor.name === 'CommandExecuted') {
-                    subs.dispose();
+                    subs.unsubscribe();
                     done();
                 }
             }, (err) => {
@@ -87,7 +86,7 @@ describe('Action mediator', function () {
                 done();
             });
 
-        commandMediator.dispatch({code: 'registerUser', name: 'hhhhhh', userName: 'john', password: 'mammm000'});
+        CommandMediator.dispatch({commandName: 'registerUser', correlationId: '@'});
 
     });
 });

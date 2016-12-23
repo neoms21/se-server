@@ -1,6 +1,5 @@
-const sinon = require('sinon');
-const assert = require('assert');
-const dbUtil = require('../../db/repository');
+import sinon = require('sinon');
+import assert = require('assert');
 
 describe('Register user command', function () {
     let countStub: any;
