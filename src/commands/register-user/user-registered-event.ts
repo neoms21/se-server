@@ -8,7 +8,7 @@ export class UserRegisteredEvent extends EventBase {
     securityQuestion : string;
     securityAnswer : string;
 
-    constructor(correlationId: number) {
+    constructor(correlationId: string) {
         super(correlationId);
     }
 }

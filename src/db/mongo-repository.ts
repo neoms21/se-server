@@ -4,17 +4,24 @@ import * as Rx from 'rxjs';
 import {DbConfig} from '../../config/dbConfig';
 
 export default class MongoRepository {
+    private static connection: Promise<Db>;
 
-    private static connectToDb() {
-        const configDB: DbConfig = config.get<DbConfig>("dbConfig");
 
-        // create uri no user
-        let uri = 'mongodb://' + configDB.host + ':' + configDB.port + '/' + configDB.name;
-        //log.info('trying to connect to ' + uri + ' to initialise');
+    private static connectToDb(): Promise<Db> {
 
-        // Connect to the db
-        //noinspection TypeScriptUnresolvedFunction
-        return mongoClient.connect(uri);
+        if (this.connection === undefined) {
+
+            const configDB: DbConfig = config.get<DbConfig>("dbConfig");
+
+            // create uri no user
+            let uri = 'mongodb://' + configDB.host + ':' + configDB.port + '/' + configDB.name;
+            //console.log('trying to connect to ' + uri + ' to initialise');
+
+            // Connect to the db
+            this.connection = mongoClient.connect(uri);
+        }
+
+        return this.connection;
     }
 
     public static getCount(collectionName: string, param: any): Rx.Observable<number> {
@@ -54,7 +61,9 @@ export default class MongoRepository {
         return response;
     }
 
-    public static createOrOpenDb() {
+    public static createOrOpenDb(): Rx.Observable<string> {
+        let response = new Rx.Subject<string>();
+
         this.connectToDb()
             .then(function (db: Db) {
                 db.createCollection('commands', function (err: any, collection: any) {
@@ -69,8 +78,10 @@ export default class MongoRepository {
                 });
                 db.createCollection('logins', function (err: any, collection: any) {
                 });
-            });
+            })
+            .catch((err: any) => response.error(err.toString()));
 
+        return response;
     }
 }
 

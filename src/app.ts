@@ -7,6 +7,7 @@ import MongoRepository from './db/mongo-repository';
 import {CommandMediator} from './cqrs/command-mediator';
 import {CommandRequest} from './bases/CommandRequest';
 import {EventMediator} from './cqrs/event-mediator';
+import {IEvent} from './bases/IEvent';
 //const commandRoutes = require('./routes/commandRoutes');
 
 
@@ -23,8 +24,9 @@ CommandMediator.init(log);
 EventMediator.init(log);
 
 //check db
-MongoRepository.createOrOpenDb();
-log.info("Collections checked (and maybe created)");
+log.info("DB being checked for collections");
+MongoRepository.createOrOpenDb()
+    .subscribe((c:any) => log.info(c.name), (err:any) => log.error(err.toString()));
 
 app.get('/', function (req: any, res: any) {
     res.sendfile('index.html');
@@ -41,9 +43,9 @@ io.on('connection', function (socket: any) {
 
 });
 
-EventMediator.propagator.subscribe(ev =>  {
-    console.log('@@@' + ev);
-    io.emit(ev.name, ev);
+EventMediator.propagator.subscribe((ev: IEvent) =>  {
+    console.log('@@@ ' + ev.constructor.name);
+    io.emit(ev.constructor.name, ev);
 });
 
 http.listen(8180, function () {

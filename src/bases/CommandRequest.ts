@@ -1,4 +1,4 @@
 export class CommandRequest {
-    name: string;
+    commandName: string;
     payload: any;
 }

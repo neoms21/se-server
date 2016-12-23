@@ -17,7 +17,9 @@
             "node",
             "core-js",
             "socket.io",
-            "express"
+            "express",
+            "mongodb",
+            "mocha"
         ]
     },
     "include": [

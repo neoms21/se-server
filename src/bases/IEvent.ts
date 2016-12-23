@@ -1,6 +1,6 @@
 
 export interface IEvent {
-    name: string;
+    eventName: string;
     correlationId: string;
     isSystem: boolean;
 }

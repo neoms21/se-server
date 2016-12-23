@@ -14,6 +14,8 @@ export class EventMediator {
     }
 
     public static dispatch(event: IEvent) {
+        console.log('in event med dispatch');
+
         // save the event
         MongoRepository.insert('events', event);
 

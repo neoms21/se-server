@@ -1,6 +1,6 @@
 import {ICommand} from './ICommand';
 import {ICommandHandler} from './ICommandHandler';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 
 
 export class CommandHandlerBase<T extends ICommand> implements ICommandHandler<T>{
@@ -15,10 +15,11 @@ export class CommandHandlerBase<T extends ICommand> implements ICommandHandler<T
         return this._command;
     }
 
-    public execute(command: T) {
+    public execute(command: T): void {
+        return null;
     }
 
-    public verify(): Observable<string> {
+    public verify(): Observable<string[]> {
         return null;
     }
 }

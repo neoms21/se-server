@@ -1,0 +1,75 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SocketIO test</title>
+</head>
+<body>
+<h1>Simple socket.io sending</h1>
+<!--<button type="button" id="newKeyValuePair">Add another key-value pair</button>-->
+<form>
+    <label>Send command</label>
+    <div>
+        <select id="commandName"><option>RegisterUser</option></select>
+        <textarea rows="8" id="commandValue" placeholder="Command value"></textarea>
+    </div>
+    <button type="button" id="sendCommand">Send command</button>
+
+    <div></div>
+    <label>Send query</label>
+    <div>
+        <input type="text" name="name" placeholder="Property name"><input type="text" name="value" placeholder="Property value">
+    </div>
+
+</form>
+
+<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script>
+    var socketConnection,
+        events = ["CommandVerificationFailedEvent", "SaveCommandEvent"];
+    $(window).load(function() {
+        console.log("Listening to following events: ");
+        console.log(events);
+        socketConnection = io.connect("http://localhost:8180");
+        for (var i = 0; i < events.length; i++) {
+            socketConnection.on(events[i], function(msg) {
+                console.log(msg);
+            });
+        }
+    });
+
+//    $("#newKeyValuePair").click(function() {
+//        $("form").append("<div><input type='text' name='name' placeholder='Property name'><input type='text' name='value' placeholder='Property value'></div>");
+//    });
+
+    $("#sendCommand").click(function() {
+        var messageName = $('#commandName').val();
+        var message = { commandName: messageName};
+        message.payload = JSON.parse($('#commandValue').val());
+
+        //Elke key value pair toevoegen aan 'message'
+//        $("form div").each(function() {
+//            var name, val;
+//            $(this).children().each(function() {
+//                var nameAttr = $(this).attr("name");
+//                if (nameAttr === "name") {
+//                    name = $(this).val();
+//                } else if (nameAttr === "value") {
+//                    val = $(this).val();
+//                }
+//            });
+//            message[name] = val;
+//        });
+        console.log("I have emitted message name '" + messageName + "' with message:");
+        console.log(message);
+
+        //emitten naar server met message / eventname var 'messageName' en data var 'message'
+        socketConnection.emit("command", message, function(data) {
+            //schijnt dat je data kunt terugkrijgen direct na een emit, dit print die data uit
+            console.log("Received '" + data + "' as response on '" + messageName + " - " + messageContent + "'");
+        });
+    });
+</script>
+</body>
+</html>

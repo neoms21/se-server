@@ -1,7 +1,21 @@
+const sinon = require('sinon');
 const assert = require('assert');
-const verifier = require('./registerUserVerifier');
+const dbUtil = require('../../db/repository');
 
-describe('register user verifier', function() {
+describe('Register user command', function () {
+    let countStub: any;
+    let insertStub: any;
+    let count = 0;
+
+    beforeEach(function () {
+        insertStub = sinon.stub(dbUtil, 'insert', () => {
+        });
+    });
+
+    afterEach(() => {
+        insertStub.restore();
+
+    });
 
     it('should check response is array', function() {
         var resp = verifier({});
@@ -42,4 +56,33 @@ describe('register user verifier', function() {
         assert.equal(resp[1], 'registerUser command password property was not defined');
     });
 
+    it('should allow add for non matching login', function () {
+        countStub = sinon.stub(dbUtil, 'getCount', () => {
+            // supply dummy observable
+            return Rx.Observable.from([count]);
+        });
+
+        command.apply({userName: 'mark', name: 'mark s'});
+
+        assert(insertStub.called);
+        countStub.restore();
+    });
+
+    it('should reject when login exists', function (done) {
+        countStub = sinon.stub(dbUtil, 'getCount', () => {
+            // supply dummy observable
+            return Rx.Observable.from([1]);
+        });
+
+        command.apply({userName: 'mark', name: 'mark s'})
+            .subscribe(succ => {
+                assert.fail('Should produce error');
+                done();
+            }, err => {
+                assert.equal(err, 'The username mark is a duplicate');
+                done();
+            });
+
+        countStub.restore();
+    });
 });

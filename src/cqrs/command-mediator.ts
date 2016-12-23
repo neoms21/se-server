@@ -70,22 +70,22 @@ export class CommandMediator {
             );
 
         // log it
-        this.logger.info('Saving command ' + command.id);
+        this.logger.info('Saving command ' + command.commandName);
     }
 
     public static createCommand(request: CommandRequest): ICommand {
         // create it now
         //let proto = global[request.name + 'Command'].prototype;
         //console.log(proto);
-        let instance = new CommandMediator.commandFactory[request.name]();
+        let instance = new CommandMediator.commandFactory[request.commandName]();
 
         //let instance = Object.create(request.name + 'Command');
         Object.assign(instance, request.payload);
 
         // add the correlation
         instance.correlationId = uuid.v4();
-        // add the id
-        instance.id = request.name;
+        // add the command level stuff
+        instance.commandName = request.commandName;
 
         return instance;
     }
@@ -93,37 +93,34 @@ export class CommandMediator {
     public static dispatch(command: ICommand) {
         let ret = {status: 200, message: ''};
 
-        // create the handler based on naming convention,, for now!
-        //let proto = global[command.id + 'Command'].prototype;
-        //console.log(proto);
-        let handler = new CommandMediator.handlerFactory[command.id](command);
-        //let handler = Object.create(command.id + 'CommandHandler');
+        let handler = new CommandMediator.handlerFactory[command.commandName](command);
 
         if (handler === undefined) {
             // oops
-            this.logger.error('Unable to create handler for command ' + command.id);
+            this.logger.error('Unable to create handler for command ' + command.commandName);
             return;
         }
 
         // now verify and execute handler
 
-        // set command for use in handler
-        //handler.command = command;
+        this.logger.info('CommandMediator before running verify for ' + command.commandName);
 
-        handler.verify() //.toArray()
-            .subscribe((messages: string[]) => {
+        handler.verify()//.toArray()
+            .subscribe((messages: any) => {
+
                     // verifier has run , so lets get its reults
                     if (messages.length === 0) {
                         handler.execute(); // all ok, so run it
+                        this.saveCommand(command); // and save
                         this.propagator.next(`Command ${command.toString()} executed successfully`);
                     } else {
-
                         let event = EventMediator.create<CommandVerificationFailedEvent>(
                             CommandVerificationFailedEvent.prototype, command);
                         event.messages = messages;
                         EventMediator.dispatch(event);
                     }
                 }, (err: any) => {
+                    this.logger.error(err.toString());
                     let event = EventMediator.create<CommandVerificationFailedEvent>(
                         CommandVerificationFailedEvent.prototype, command);
                     event.messages = [...err.toString()];
@@ -134,60 +131,4 @@ export class CommandMediator {
 
         return ret;
     }
-
-// public static dispatch(command: ICommand) {
-//     let ret = {status: 200, message: ''};
-//
-//     let matchingHandler = this.mappings.find(function (item: any) {
-//         return item.code === command.code;
-//     });
-//
-//     if (matchingHandler !== undefined) {
-//         // found handler entry
-//         const handler = require('./common/' + matchingHandler.code + 'Command');
-//         handler.command = command;
-//         handler(command).verify() //.toArray()
-//             .subscribe((messages: string[]) => {
-//                     // verifier has run , so lets get its reults
-//                     if (messages.length === 0) {
-//                         this.runCommand(command); // all ok, so run it
-//                     } else {
-//                         EventMediator.dispatch(new CommandVerificationFailedEvent(command.correlationId, messages));
-//                     }
-//                 }
-//                 , (err: any) => EventMediator.dispatch(new CommandVerificationFailedEvent(command.correlationId, err.toString()))
-//             );
-//
-//         // if (errors.length === 0) {
-//         //     let msg = new CommandExecuting(command.correlationId);
-//         //     this.propagator.onNext(msg);
-//         //
-//         //     // actually action the command
-//         //     CommandFactory.start(matchingHandler.path, command)
-//         //         .subscribe(resp => {
-//         //             // put it on
-//         //             this.propagator.onNext(resp);
-//         //         }, err => {
-//         //             this.propagator.onError(err);
-//         //         }, () => {
-//         //             // finished so send end response
-//         //             let msg = new CommandExecuted(command.correlationId);
-//         //             this.propagator.onNext(msg);
-//         //             this.saveCommand(command);
-//         //         });
-//         //
-//         //     // tell client we have executed command
-//         //     ret.message = `Command ${command.code} being executed`;
-//         // } else {
-//         //     ret.status = 501;
-//         //     ret.message = errors.toString();
-//         // }
-//
-//     } else {
-//         ret.message = "Couldn't find " + command.code + " command";
-//         ret.status = 501;
-//     }
-//
-//     return ret;
-// }
 }

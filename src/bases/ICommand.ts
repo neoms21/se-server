@@ -1,4 +1,4 @@
 export interface ICommand {
     correlationId: string;
-    id: string;
+    commandName: string;
 }

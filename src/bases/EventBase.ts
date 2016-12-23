@@ -1,22 +1,30 @@
 import {IEvent} from './IEvent';
 
 export class EventBase implements IEvent {
+    private _eventName: string;
     private _isSystem: boolean;
-    private _name: string;
     private _correlationId: string;
 
     constructor(correlationId: string, isSystemEvent: boolean = false) {
         this._correlationId = correlationId;
-        this._name = this.toString();
         this._isSystem = isSystemEvent;
+        this.eventName = this.constructor.name;
     }
 
     get correlationId(): string {
         return this._correlationId;
     }
 
-    get name(): string {
-        return this._name;
+    set correlationId(id: string) {
+        this._correlationId = id;
+    }
+
+    get eventName(): string {
+        return this._eventName;
+    }
+
+    set eventName(eventName: string) {
+        this._eventName = eventName;
     }
 
     get isSystem(): boolean {
@@ -24,6 +32,6 @@ export class EventBase implements IEvent {
     }
 
     toString(): string {
-        return `Event ${this.constructor.name} corr id ${this.correlationId}`;
+        return `Event ${this.eventName} corr id ${this.correlationId}`;
     }
 }

@@ -1,39 +1,40 @@
+import {CommandMediator} from './command-mediator';
 const assert = require('assert');
-const commandMediator = require('./command-mediator');
-const sinon = require('sinon');
 const fs = require('fs');
-const registerUserCommand = require('./../commands/register-user/registerUserCommand');
-const CommandFactory = require('./commandFactory');
 const Rx = require('rx');
+import {Logger} from 'bunyan';
 
 describe('Action mediator', function () {
 
     let mappingsRead = 0;
-    let fsStub;
-    let actionMock;
-    let cmdMock;
+    let fsStub: any;
+    let actionMock: any;
+    let cmdMock: any;
+    let logMock: any;
 
     before(function (done) {
-        fsStub = sinon.stub(fs, 'readdir', function (path, callback) {
-            // supply dummy filenames
-            callback(null, ['registerUserCommand.js', 'loginUserCommand.js']);
-        });
-        actionMock = sinon.mock(registerUserCommand);
-        cmdMock = sinon.stub(CommandFactory, 'start', function() {
-            return Rx.Observable.from(['sample']);
-        });
+        // fsStub = sinon.stub(fs, 'readdir', function (path: string, callback: Function) {
+        //     // supply dummy filenames
+        //     callback(null, ['registerUserCommand.js', 'loginUserCommand.js']);
+        // });
+//        actionMock = sinon.mock(RegisterUserCommand);
+        // cmdMock = sinon.stub(CommandFactory, 'start', function() {
+        //     return Rx.Observable.from(['sample']);
+        // });
 
-        let subs = commandMediator.getObservable()
-            .subscribe((r) => {
+        logMock = sinon.stub(Logger);
+
+        let subs = CommandMediator.propagator
+            .subscribe((r: any) => {
                 mappingsRead = r.commandCount;
-                subs.dispose();
+                subs.unsubscribe();
                 done();
-            }, (err) => {
+            }, (err: any) => {
                 assert(err).equal('');
                 done();
             });
 
-        commandMediator.init();
+        CommandMediator.init(logMock);
     });
 
     after(function () {
@@ -43,16 +44,14 @@ describe('Action mediator', function () {
         cmdMock.restore();
     });
 
-    it('should be created', function () {
-        assert(commandMediator !== null && commandMediator !== undefined);
-    });
 
-    it('should add files in init', function () {
-        assert(mappingsRead === 2);
-    });
+    // it('should add files in init', function () {
+    //     assert(mappingsRead === 2);
+    // });
+
 
     it('shouldnt find non matching command', function () {
-        var res = commandMediator.dispatch({code: 'registerChelski', name: 'hhhhhh'});
+        var res = CommandMediator.dispatch({commandName: 'registerChelski', correlationId: '@'});
         assert.equal(res.status, 501);
         assert.equal(res.message, "Couldn\'t find registerChelski command");
     });
