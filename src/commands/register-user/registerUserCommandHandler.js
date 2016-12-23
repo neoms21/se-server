@@ -4,16 +4,11 @@ import {RegisterUserCommand} from './register-user-command';
 import {Observable, Subject} from 'rxjs';
 import {CommandHandlerBase} from '../../bases/Command-handler-base';
 import {UserRegisteredEvent} from './user-registered-event';
-import {isUndefined} from 'util';
+var isUndefined = require('util');
 
-export class RegisterUserCommandHandler extends CommandHandlerBase<RegisterUserCommand> {
+function RegisterUserCommandHandler() {
 
-
-    constructor(command: RegisterUserCommand) {
-        super(command);
-    }
-
-    verify(): Observable<string[]> {
+    var verify = function(command) {
 
         let response = new Subject<string[]>();
         let errors: Array<string> = [];
