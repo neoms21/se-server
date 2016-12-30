@@ -1,18 +1,17 @@
-import * as logger from 'bunyan';
+'use strict';
+var logger = require('bunyan');
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
-import MongoRepository from './db/mongo-repository';
-import {CommandMediator} from './cqrs/command-mediator';
-import {CommandRequest} from './bases/CommandRequest';
-import {EventMediator} from './cqrs/event-mediator';
-import {IEvent} from './bases/IEvent';
+var mongoRepository = require('./db/mongo-repository');
+var commandMediator = require('./cqrs/command-mediator');
+var eventMediator = require('./cqrs/event-mediator');
+
 //const commandRoutes = require('./routes/commandRoutes');
 
-
 // create our logger
-let log = logger.createLogger({
+var log = logger.createLogger({
     name: 'Sports Editor',
     serializers: {
         req: logger.stdSerializers.req
@@ -20,32 +19,32 @@ let log = logger.createLogger({
 });
 
 // our psuedo singletons need init
-CommandMediator.init(log);
-EventMediator.init(log);
+mongoRepository.init(log);
+commandMediator.init(log);
+eventMediator.init(log);
 
 //check db
 log.info("DB being checked for collections");
-MongoRepository.createOrOpenDb()
-    .subscribe((c:any) => log.info(c.name), (err:any) => log.error(err.toString()));
+mongoRepository.createOrOpenDb();
 
-app.get('/', function (req: any, res: any) {
+app.get('/', function (req, res) {
     res.sendfile('index.html');
 });
 
-io.on('connection', function (socket: any) {
+io.on('connection', function (socket) {
     console.log('a user connected');
 
-    socket.on('command', (cmdReq: CommandRequest) => {
+    socket.on('command', function(cmdReq) {
         log.info('command received: ' + JSON.stringify(cmdReq));
-        let cmd = CommandMediator.createCommand(cmdReq);
-        CommandMediator.dispatch(cmd);
+        var cmd = commandMediator.createCommand(cmdReq);
+        commandMediator.dispatch(cmd);
     });
 
 });
 
-EventMediator.propagator.subscribe((ev: IEvent) =>  {
-    console.log('@@@ ' + ev.constructor.name);
-    io.emit(ev.constructor.name, ev);
+eventMediator.propagator.subscribe(function(ev) {
+    console.log('@@@ ' + ev.eventName);
+    io.emit(ev.eventName, ev);
 });
 
 http.listen(8180, function () {

@@ -1,4 +1,4 @@
-var commandVerifier = require('../../commandVerifier');
+var commandVerifier = require('./commandVerifier');
 
 var commandExecutedEvent = function (command) {
     var checks = commandVerifier(command);
@@ -46,7 +46,6 @@ var commandSavedEvent = function (command) {
     } else {
         var event = {correlationId: command.correlationId};
         event.eventName = 'CommandSavedEvent';
-        event.error = '';
         return event;
     }
 };

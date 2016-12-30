@@ -27,7 +27,7 @@
 <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 <script>
     var socketConnection,
-        events = ["CommandVerificationFailedEvent", "SaveCommandEvent"];
+        events = ["CommandVerificationFailedEvent", "CommandSavedEvent", "UserRegisteredEvent"];
     $(window).load(function() {
         console.log("Listening to following events: ");
         console.log(events);

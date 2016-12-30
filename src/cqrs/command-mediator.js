@@ -2,87 +2,103 @@ var fs = require('fs');
 var path = require('path');
 var uuid = require('uuid');
 var Rx = require('rxjs');
+var Filehound = require('filehound');
+var mongoRepository = require('../db/mongo-repository');
+var eventMediator = require('./event-mediator');
+var cqrsEventCreator = require('./cqrs-event-creator');
 
-var MongoRepository = require('../db/mongo-repository');
-var EventMediator = require('./event-mediator');
-var cqrsEventCreator = require('./events/command-executed-event');
+var mappings = [];
+var logger;
+var propagator = new Rx.Subject();
 
-var commandMediator = {
-    mappings: [],
-    logger: {},
-    propagator: new Rx.Subject()
-};
-
-commandMediator.init = function (log) {
-    this.logger = log;
+function init(log) {
+    logger = log;
 
     // find all the handlers
-    fs.readdir(__dirname + '**/*CommandHandler.js', function (err, filenames) {
-        if (err) {
-            CommandMediator.propagator.error(err);
-        } else {
-            filenames.forEach(function (filename) {
-                if (filename.indexOf('Test') === -1) { // it is real command handler
+    Filehound.create()
+        .ext('js')
+        .paths(process.cwd() + '/src/commands')
+        .match('*CommandHandler*')
+        .find(function (err, filenames) {
+            if (err) {
+                logger.error("error finding handlers ", err);
+            } else {
+                filenames.forEach(function (filename) {
                     var mapping = {
-                        code: path.basename(filename).slice(0, filename.length - 10),
-                        path: path.join('handlers', filename)
+                        code: path.basename(filename).slice(0, path.basename(filename).length - 17),
+                        path: filename
                     };
                     mappings.push(mapping);
-                }
-            });
-            console.info('CommandMediator has been initiated');
-        }
-    });
-};
+                });
+            }
+        });
 
-commandMediator.saveCommand = function (command) {
+
+    // fs.readdir(__dirname + '/../commands/*CommandHandler.js', function (err, filenames) {
+    //     if (err) {
+    //         propagator.error(err);
+    //     } else {
+    //
+    //         console.info('CommandMediator has been initiated');
+    //     }
+    // });
+}
+
+function saveCommand(command) {
 
     // save to db
-    MongoRepository.insert('commands', command)
-        .subscribe(function (resp) {
+    mongoRepository.insert('commands', command)
+        .subscribe(function () {
                 var event = cqrsEventCreator.CommandSaved(command);
-                EventMediator.dispatch(event);
+                eventMediator.dispatch(event);
             }, function (err) {
                 var event = cqrsEventCreator.SaveCommandError(command);
                 event.error = err.toString();
-                EventMediator.dispatch(event);
+                eventMediator.dispatch(event);
             }
         );
 
     // log it
-    this.logger.info('Saving command ' + command.commandName);
-};
+    logger.info('Saving command ' + command.commandName);
+}
 
-commandMediator.createCommand = function (request) {
-    // create it now
+function createCommand(request) {
+    var instance;
 
-    var instance = {commandName: request.commandName};
+    // needs command name
+    if(request.hasOwnProperty("commandName")) {
 
-    // add extra props
-    Object.assign(instance, request.payload);
+        // create it now
+        instance = {commandName: request.commandName};
 
-    // add the correlation
-    instance.correlationId = uuid.v4();
+        // add extra props
+        Object.assign(instance, request.payload);
+
+        // add the correlation
+        instance.correlationId = uuid.v4();
+    }
 
     return instance;
-};
+}
 
-commandMediator.dispatch = function (command) {
+function dispatch(command) {
 
-    var handler = this.mappings.find(function (mapping) {
-        return mapping.code === command.commandName
+    var mapping = mappings.find(function (mapping) {
+        return mapping.code === command.commandName;
     });
 
-    if (handler === undefined) {
+    if (mapping === undefined) {
         // oops
-        this.logger.error('Unable to create handler for command ' + command.commandName);
+        logger.error('Unable to create handler for command ' + command.commandName);
         return;
     }
 
-    handler.command = command;
-    // now verify and execute handler
+    var handler = require(mapping.path);
 
-    this.logger.info('CommandMediator before running verify for ' + command.commandName);
+    handler.command = command;
+    // now verify and execute mapping
+
+    logger.info('CommandMediator before running verify for ' + command.commandName);
 
     handler.verify()//.toArray()
         .subscribe(function (messages) {
@@ -90,20 +106,25 @@ commandMediator.dispatch = function (command) {
                 // verifier has run , so lets get its reults
                 if (messages.length === 0) {
                     handler.execute(); // all ok, so run it
-                    this.saveCommand(command); // and save
-                    this.propagator.next('Command ' + command.commandName + ' executed successfully');
+                    saveCommand(command); // and save
+                    propagator.next('Command ' + command.commandName + ' executed successfully');
                 } else {
                     var event = cqrsEventCreator.CommandVerificationFailed(command);
                     event.messages = messages;
-                    EventMediator.dispatch(event);
+                    eventMediator.dispatch(event);
                 }
             }, function (err) {
-                this.logger.error(err.toString());
+                logger.error(err.toString());
                 var event = cqrsEventCreator.CommandVerificationFailed(command);
                 event.messages.push(err.toString());
-                EventMediator.dispatch(event);
+                eventMediator.dispatch(event);
             }
         );
-};
+}
 
-exports = commandMediator;
+module.exports = {
+    init: init,
+    dispatch: dispatch,
+    createCommand: createCommand,
+    saveCommand: saveCommand
+};

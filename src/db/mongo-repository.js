@@ -2,234 +2,102 @@
 var config = require('config');
 var mongoClient = require('mongodb');
 var Rx = require('rxjs');
+var util = require('util');
 
-var mongoRepository = {};
+var logger;
+var connection;
 
-mongoRepository.init = function (logger) {
-    this.logger = logger;
-};
+function init(log) {
+    logger = log;
+}
 
-mongoRepository.connectToDb = function () {
+function connectToDb() {
 
-    if (this.connection === undefined) {
-        var configDB = config.get < DbConfig > ("dbConfig");
+    if (connection === undefined) {
+        var configDB = config.get("dbConfig");
 
         // create uri no user
         var uri = 'mongodb://' + configDB.host + ':' + configDB.port + '/' + configDB.name;
-        this.logger.info('trying to connect to ' + uri + ' for db');
+        logger.info('trying to connect to ' + uri + ' for db');
 
         // Connect to the db
-        this.connection = mongoClient.connect(uri);
+        connection = mongoClient.connect(uri);
     }
 
-    return this.connection;
-};
-
-
-public
-static
-getCount(collectionName
-:
-string, param
-:
-any
-):
-Rx.Observable < number > {
-    // so many layers of rx!
-    let response = new Rx.Subject < number > ();
-
-this.connectToDb()
-    .then((db
-:
-Db
-)
-=
->
-{
-    db.collection(collectionName).count(param, (err
-:
-    any, count
-:
-    number
-)
-    =
->
-    {
-        response.next(count);
-        response.complete();
-    }
-)
-    ;
-}
-,
-(err
-:
-any
-)
-=
->
-{
-    response.error(err);
-}
-)
-;
-
-return response;
+    return connection;
 }
 
-public
-static
-insert(collectionName
-:
-string, insertion
-:
-any
-)
-{
-    let response = new Rx.Subject();
+function getCount(collectionName, param) {
+    var response = new Rx.Subject();
 
-    this.connectToDb()
-        .then((db
-:
-    Db
-)
-    =
->
-    {
-        db.collection(collectionName).insertOne(insertion)
-            .then((succ
-    :
-        InsertOneWriteOpResult
-    )
-        =
-    >
-        {
-            response.next(succ);
-            response.complete();
-        }
-    )
-    .
-        catch((errInsert
-    :
-        any
-    )
-        =
-    >
-        {
-            response.error(errInsert);
-        }
-    )
-        ;
-    }
-,
-    (err
-:
-    any
-)
-    =
->
-    {
-        response.error(err);
-    }
-)
-    ;
+    connectToDb()
+        .then(function (db) {
+            db.collection(collectionName).count(param)
+                .then(function (count) {
+                    response.next(count);
+                    response.complete();
+                });
+        });
 
     return response;
 }
 
-public
-static
-createOrOpenDb()
-:
-Rx.Observable < string > {
-    let response = new Rx.Subject < string > ();
+function insert(collectionName, insertion) {
+    var response = new Rx.Subject();
 
-this.connectToDb()
-    .then(function (db
-:
-Db
-)
-{
-    db.createCollection('commands', function (err
-:
-    any, collection
-:
-    any
-)
-    {
-    }
-)
-    ;
-    db.createCollection('events', function (err
-:
-    any, collection
-:
-    any
-)
-    {
-    }
-)
-    ;
-    db.createCollection('checkpoints', function (err
-:
-    any, collection
-:
-    any
-)
-    {
-    }
-)
-    ;
-    db.createCollection('clubs', function (err
-:
-    any, collection
-:
-    any
-)
-    {
-    }
-)
-    ;
-    db.createCollection('teams', function (err
-:
-    any, collection
-:
-    any
-)
-    {
-    }
-)
-    ;
-    db.createCollection('logins', function (err
-:
-    any, collection
-:
-    any
-)
-    {
-    }
-)
-    ;
-}
-)
-.
-catch((err
-:
-any
-)
-=
->
-response.error(err.toString())
-)
-;
+    this.connectToDb()
+        .then(function (db) {
+                db.collection(collectionName).insertOne(insertion)
+                    .then(function (succ) {
+                            response.next(succ);
+                            response.complete();
+                        }
+                    )
+                    .catch(function (errInsert) {
+                            response.error(errInsert);
+                        }
+                    );
+            }, function (err) {
+                response.error(err);
+            }
+        );
 
-return response;
-}
+    return response;
 }
 
-//
-// module.exports = {
-//     getCount: getCount,
-//     insert: insert,
-//     createOrOpenDb: createOrOpenDb
-// };
+var createCollection = function (db, name) {
+    db.createCollection(name, function (err, collection) {
+        if (util.isNullOrUndefined(err)) {
+            logger.info('[Db] - created ' + name + ' collection');
+        } else {
+            logger.error('[Db] - trying to create ' + name + ' collection, error ' + err.toString());
+        }
+    });
+};
+
+function createOrOpenDb() {
+    var response = new Rx.Subject();
+
+    this.connectToDb()
+        .then(function (db) {
+            createCollection(db, 'commands');
+            createCollection(db, 'events');
+            createCollection(db, 'clubs');
+            createCollection(db, 'teams');
+            createCollection(db, 'logins');
+        })
+        .catch(function (err) {
+                response.error(err.toString());
+            }
+        );
+
+    return response;
+}
+
+module.exports = {
+    createOrOpenDb: createOrOpenDb,
+    insert: insert,
+    getCount: getCount,
+    connectToDb: connectToDb,
+    init: init
+};
