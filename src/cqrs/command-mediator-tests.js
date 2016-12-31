@@ -6,6 +6,7 @@ var mongoRepository = require('../db/mongo-repository');
 var Rx = require('rxjs/Rx');
 var cqrsEventCreator = require('./cqrs-event-creator');
 var eventMediator = require('./event-mediator');
+var mockHandler = require('./mock-handler');
 
 var logStub = {
     info: function () {
@@ -111,6 +112,10 @@ describe('Command mediator', function () {
             CommandMediator.init(logStub);
         });
 
+        afterEach(function () {
+            fhMock.verify();
+        });
+
         it('should call insert on repository with success result', function () {
             var event = {id: 1};
             // give success response to insert on repository
@@ -139,6 +144,10 @@ describe('Command mediator', function () {
             fhMock.expects('find').yields(null, ['file.js', 'second.js', 'third.js']);
 
             CommandMediator.init(logStub);
+        });
+
+        afterEach(function () {
+            fhMock.verify();
         });
 
         it('should create the command with supplied info', function () {
@@ -174,49 +183,75 @@ describe('Command mediator', function () {
         });
     });
 
+    describe('dispatch', function () {
+        beforeEach(function () {
+            // set up our mocks
+            fhMock.expects('find').yields(null, [process.cwd() + '/src/cqrs/mock-handler.js', 'second.js', 'third.js']);
+            CommandMediator.init(logStub);
+        });
 
-    // it('shouldnt find non matching command', function () {
-    //     var res = CommandMediator.dispatch({commandName: 'registerChelski', correlationId: '@'});
-    //     assert.equal(res.status, 501);
-    //     assert.equal(res.message, "Couldn\'t find registerChelski command");
-    // });
+        afterEach(function () {
+            fhMock.verify();
+        });
 
-    // it('shouldnt find non matching command', function (done) {
-    //     var subs = commandMediator.getObservable()
-    //         .subscribe((r) => {
-    //             if (r.constructor.name === 'CommandExecuted') {
-    //                 subs.dispose();
-    //                 done();
-    //             }
-    //         }, (err) => {
-    //             fail(err);
-    //             assert(err).equal('');
-    //             done();
-    //         });
-    //
-    //     commandMediator.dispatch({code: 'registerChelski', name: 'hhhhhh'});
-    //
-    // });
+        it('should give error when command doesnt match', function () {
+            var command = {commandName: 'hhhh'};
+            logMock.expects('error').withArgs('Unable to create handler for command hhhh');
+            CommandMediator.dispatch(command);
+        });
 
-    // it('should dispatch command', function (done) {
-    //     var mappingsRead = 0;
-    //     var subs = CommandMediator.propagator
-    //         .subscribe(function (r) {
-    //                 // not finished until commandexecuted message is sent
-    //                 if (r.constructor.name === 'CommandExecuted') {
-    //                     subs.unsubscribe();
-    //                     done();
-    //                 }
-    //             },
-    //             function (err) {
-    //                 assert.equal(err, '');
-    //                 done();
-    //             }
-    //         );
-    //
-    //     CommandMediator.dispatch({commandName: 'registerUser', correlationId: '@'});
-    //
-    // });
+        it('should produce error event if verify fails', function () {
+            var verifyStub = sinon.stub(mockHandler, 'verify').returns(Rx.Observable.throw('Error'));
+
+            var command = {commandName: 'mock-handler', correlationId: 2};
+            logMock.expects('info').withArgs('CommandMediator before running verify for mock-handler');
+            var event = {eventName: 'CommandVerificationFailedEvent', correlationId: 2, messages: ['Error']};
+            cqrsEventMock.expects('CommandVerificationFailed').withArgs(command).returns(event);
+            eventMock.expects('dispatch').withArgs(event);
+
+            // act
+            CommandMediator.dispatch(command);
+
+            //tidy
+            verifyStub.restore();
+        });
+
+        it('should produce error event if verify has error messages', function () {
+            var verifyStub = sinon.stub(mockHandler, 'verify').returns(Rx.Observable.of(['#Error']));
+
+            var command = {commandName: 'mock-handler', correlationId: 3};
+            logMock.expects('info').withArgs('CommandMediator before running verify for mock-handler');
+            var event = {eventName: 'CommandVerificationFailedEvent', correlationId: 3, messages: ['Error']};
+            cqrsEventMock.expects('CommandVerificationFailed').withArgs(command).returns(event);
+            eventMock.expects('dispatch').withArgs(event);
+
+            // act
+            CommandMediator.dispatch(command);
+
+            //tidy
+            verifyStub.restore();
+        });
+
+        it('should execute, save and propagate if no problems found', function () {
+            var verifyStub = sinon.stub(mockHandler, 'verify').returns(Rx.Observable.of([]));
+            var executeStub = sinon.stub(mockHandler, 'execute');
+            var saveStub = sinon.stub(CommandMediator, 'saveCommand');
+            var command = {commandName: 'mock-handler', correlationId: 3};
+            logMock.expects('info').withArgs('CommandMediator before running verify for mock-handler');
+
+            // act
+            CommandMediator.dispatch(command);
+
+            // check
+            assert(verifyStub.called);
+            assert(executeStub.called);
+            assert(saveStub.called);
+
+            //tidy
+            verifyStub.restore();
+        });
+    });
+
 });
 
 

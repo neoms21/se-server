@@ -1,3 +1,4 @@
+'use strict';
 var commandVerifier = require('./commandVerifier');
 
 var commandExecutedEvent = function (command) {

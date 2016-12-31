@@ -6,7 +6,6 @@ var Rx = require('rxjs');
 
 
 var verify = function () {
-
     var response = new Rx.Subject();
 
     setTimeout(function (command) { // use timeout as rx is async
@@ -56,7 +55,6 @@ var execute = function () {
 
 module.exports = {
     verify: verify,
-    execute: execute,
-   // verifyObserver: response
+    execute: execute
 };
 

@@ -1,3 +1,4 @@
+'use strict';
 var fs = require('fs');
 var path = require('path');
 var uuid = require('uuid');
@@ -10,9 +11,12 @@ var cqrsEventCreator = require('./cqrs-event-creator');
 var mappings = [];
 var logger;
 var propagator = new Rx.Subject();
+var exports;
 
 function init(log) {
     logger = log;
+
+    mappings = []; //
 
     // find all the handlers
     Filehound.create()
@@ -25,7 +29,7 @@ function init(log) {
             } else {
                 filenames.forEach(function (filename) {
                     var mapping = {
-                        code: path.basename(filename).slice(0, path.basename(filename).length - 17),
+                        code: path.basename(filename, '.js'),
                         path: filename
                     };
                     mappings.push(mapping);
@@ -66,7 +70,7 @@ function createCommand(request) {
     var instance;
 
     // needs command name
-    if(request.hasOwnProperty("commandName")) {
+    if (request.hasOwnProperty("commandName")) {
 
         // create it now
         instance = {commandName: request.commandName};
@@ -103,28 +107,29 @@ function dispatch(command) {
     handler.verify()//.toArray()
         .subscribe(function (messages) {
 
-                // verifier has run , so lets get its reults
-                if (messages.length === 0) {
-                    handler.execute(); // all ok, so run it
-                    saveCommand(command); // and save
-                    propagator.next('Command ' + command.commandName + ' executed successfully');
-                } else {
-                    var event = cqrsEventCreator.CommandVerificationFailed(command);
-                    event.messages = messages;
-                    eventMediator.dispatch(event);
-                }
-            }, function (err) {
-                logger.error(err.toString());
+            // verifier has run , so lets get its results
+            if (messages.length === 0) {
+                handler.execute(); // all ok, so run it
+                exports.saveCommand(command); // and save
+                propagator.next('Command ' + command.commandName + ' executed successfully');
+            } else {
                 var event = cqrsEventCreator.CommandVerificationFailed(command);
-                event.messages.push(err.toString());
+                event.messages = messages;
                 eventMediator.dispatch(event);
             }
-        );
+        }, function (err) {
+            logger.error(err.toString());
+            var event = cqrsEventCreator.CommandVerificationFailed(command);
+            event.messages.push(err.toString());
+            eventMediator.dispatch(event);
+        });
 }
 
-module.exports = {
+exports = {
     init: init,
     dispatch: dispatch,
     createCommand: createCommand,
     saveCommand: saveCommand
 };
+
+module.exports = exports;
