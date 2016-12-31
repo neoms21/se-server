@@ -20,4 +20,4 @@ var commandVerifier = function (command) {
     return errors;
 };
 
-module.exports = commandVerifier;
+module.exports.verify = commandVerifier;

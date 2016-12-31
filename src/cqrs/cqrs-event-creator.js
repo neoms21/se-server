@@ -2,58 +2,74 @@
 var commandVerifier = require('./commandVerifier');
 
 var commandExecutedEvent = function (command) {
-    var checks = commandVerifier(command);
+    var ret = {};
+    var checks = commandVerifier.verify(command);
 
     if (checks.length > 0) {
-        throw new Error("Command has undefined properties " + checks.join(','));
+        ret.wasSuccessful = false;
+        ret.message = "Command has undefined properties " + checks.join(',');
     } else {
-        var event = {correlationId: command.correlationId};
-        event.eventName = 'CommandExecutedEvent';
-        return event;
+        ret.wasSuccessful = true;
+        ret.event = {correlationId: command.correlationId};
+        ret.event.eventName = 'CommandExecutedEvent';
     }
+
+    return ret;
 };
 
 var commandVerificationFailedEvent = function (command) {
-    var checks = commandVerifier(command);
+    var ret = {};
+    var checks = commandVerifier.verify(command);
 
     if (checks.length > 0) {
-        throw new Error("Command has undefined properties " + checks.join(','));
+        ret.wasSuccessful = false;
+        ret.message = "Command has undefined properties " + checks.join(',');
     } else {
-        var event = {correlationId: command.correlationId};
-        event.eventName = 'CommandVerificationFailedEvent';
-        event.messages = [];
-        return event;
+        ret.wasSuccessful = true;
+        ret.event = {correlationId: command.correlationId};
+        ret.event.eventName = 'CommandVerificationFailedEvent';
+        ret.event.messages = [];
     }
+
+    return ret;
 };
 
-var commandSaveCommandErrorEvent = function (command) {
-    var checks = commandVerifier(command);
+var saveCommandErrorEvent = function (command) {
+    var ret = {};
+    var checks = commandVerifier.verify(command);
 
     if (checks.length > 0) {
-        throw new Error("Command has undefined properties " + checks.join(','));
+        ret.wasSuccessful = false;
+        ret.message = "Command has undefined properties " + checks.join(',');
     } else {
-        var event = {correlationId: command.correlationId};
-        event.eventName = 'SaveCommandErrorEvent';
-        event.error = '';
-        return event;
+        ret.wasSuccessful = true;
+        ret.event = {correlationId: command.correlationId};
+        ret.event.eventName = 'SaveCommandErrorEvent';
+        ret.event.error = '';
     }
+
+    return ret;
 };
 
 var commandSavedEvent = function (command) {
-    var checks = commandVerifier(command);
+    var ret = {};
+    var checks = commandVerifier.verify(command);
 
     if (checks.length > 0) {
-        throw new Error("Command has undefined properties " + checks.join(','));
+        ret.wasSuccessful = false;
+        ret.message = "Command has undefined properties " + checks.join(',');
     } else {
-        var event = {correlationId: command.correlationId};
-        event.eventName = 'CommandSavedEvent';
-        return event;
+        ret.wasSuccessful = true;
+        ret.event = {correlationId: command.correlationId};
+        ret.event.eventName = 'CommandSavedEvent';
     }
+
+    return ret;
 };
 
 module.exports = {
     CommandExecuted: commandExecutedEvent,
     CommandVerificationFailed: commandVerificationFailedEvent,
-    SaveCommandError: commandSaveCommandErrorEvent,
+    SaveCommandError: saveCommandErrorEvent,
     CommandSaved: commandSavedEvent
 };

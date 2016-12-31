@@ -1,3 +1,7 @@
+/* this is used by tests
+
+ */
+
 var verify = function () {
 };
 
