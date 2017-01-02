@@ -1,7 +1,7 @@
 'use strict';
 var config = require('config');
 var mongoClient = require('mongodb');
-var Rx = require('rxjs');
+var Rx = require('rxjs/Rx');
 var util = require('util');
 
 var logger;
@@ -18,7 +18,7 @@ function connectToDb() {
 
         // create uri no user
         var uri = 'mongodb://' + configDB.host + ':' + configDB.port + '/' + configDB.name;
-        logger.info('trying to connect to ' + uri + ' for db');
+        logger.info('Trying to connect to ' + uri + ' for db');
 
         // Connect to the db
         connection = mongoClient.connect(uri);
@@ -30,12 +30,15 @@ function connectToDb() {
 function getCount(collectionName, param) {
     var response = new Rx.Subject();
 
-    connectToDb()
+    this.connectToDb()
         .then(function (db) {
             db.collection(collectionName).count(param)
                 .then(function (count) {
                     response.next(count);
                     response.complete();
+                })
+                .catch(function (err) {
+                    response.error(err);
                 });
         });
 
@@ -45,7 +48,7 @@ function getCount(collectionName, param) {
 function insert(collectionName, insertion) {
     var response = new Rx.Subject();
 
-    this.connectToDb()
+    connectToDb()
         .then(function (db) {
                 db.collection(collectionName).insertOne(insertion)
                     .then(function (succ) {
@@ -78,7 +81,7 @@ var createCollection = function (db, name) {
 function createOrOpenDb() {
     var response = new Rx.Subject();
 
-    this.connectToDb()
+    connectToDb()
         .then(function (db) {
             createCollection(db, 'commands');
             createCollection(db, 'events');

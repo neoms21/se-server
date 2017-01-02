@@ -18,5 +18,4 @@ cache:
 test_server:
   script:
    - npm install
-   - npm lint
    - npm test
