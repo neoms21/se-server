@@ -3,7 +3,7 @@ var cqrsEventCreator = require('./cqrs-event-creator');
 var commandVerifier = require('./commandVerifier');
 var sinon = require('sinon');
 
-describe('CQRS Event creator', function () {
+describe('CQRS Event eventFactory', function () {
     var verifierStub;
     var command = {correlationId: 1, commandName: 'AddUser'};
 
@@ -14,7 +14,7 @@ describe('CQRS Event creator', function () {
         verifierStub.restore();
     });
 
-    describe('commandExecutedEvent', function () {
+    describe('commandExecuted', function () {
         it('should give error if command verifier gives error', function () {
             verifierStub.returns(['correlationId']);
             var results = cqrsEventCreator.CommandExecuted(command);
@@ -36,7 +36,7 @@ describe('CQRS Event creator', function () {
         });
     });
 
-    describe('commandVerificationFailedEvent', function () {
+    describe('commandVerificationFailed', function () {
         it('should give error if command verifier gives error', function () {
             verifierStub.returns(['correlationId']);
             var results = cqrsEventCreator.CommandVerificationFailed(command);
@@ -82,7 +82,7 @@ describe('CQRS Event creator', function () {
         });
     });
 
-    describe('commandSavedEvent', function () {
+    describe('commandSaved', function () {
         it('should give error if command verifier gives error', function () {
             verifierStub.returns(['className']);
             var results = cqrsEventCreator.CommandSaved(command);

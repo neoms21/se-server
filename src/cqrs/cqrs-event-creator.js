@@ -1,76 +1,43 @@
 'use strict';
-var commandVerifier = require('./commandVerifier');
+var eventFactory = require('./event-factory');
 
-var commandExecutedEvent = function (command) {
-    var ret = {};
-    var checks = commandVerifier.verify(command);
+var commandExecuted = function (command) {
+    var ret;
 
-    if (checks.length > 0) {
-        ret.wasSuccessful = false;
-        ret.message = "Command has undefined properties " + checks.join(',');
-    } else {
-        ret.wasSuccessful = true;
-        ret.event = {correlationId: command.correlationId};
-        ret.event.eventName = 'CommandExecutedEvent';
-    }
+    ret = eventFactory.create(command, 'CommandExecutedEvent', false);
 
     return ret;
 };
 
-var commandVerificationFailedEvent = function (command) {
-    var ret = {};
-    var checks = commandVerifier.verify(command);
+var commandVerificationFailed = function (command) {
+    var ret;
 
-    if (checks.length > 0) {
-        ret.wasSuccessful = false;
-        ret.message = "Command has undefined properties " + checks.join(',');
-        console.log("Command has undefined properties " + checks.join(','));
-    } else {
-        ret.wasSuccessful = true;
-        ret.event = {correlationId: command.correlationId};
-        ret.event.eventName = 'CommandVerificationFailedEvent';
-        ret.event.messages = [];
-    }
+    ret = eventFactory.create(command, 'CommandVerificationFailedEvent', true);
+    ret.messages = [];
 
     return ret;
 };
 
-var saveCommandErrorEvent = function (command) {
-    var ret = {};
-    var checks = commandVerifier.verify(command);
+var saveCommandError = function (command) {
+    var ret;
 
-    if (checks.length > 0) {
-        ret.wasSuccessful = false;
-        ret.message = "Command has undefined properties " + checks.join(',');
-    } else {
-        ret.wasSuccessful = true;
-        ret.event = {correlationId: command.correlationId};
-        ret.event.eventName = 'SaveCommandErrorEvent';
-        ret.event.error = '';
-    }
+    ret = eventFactory.create(command, 'SaveCommandErrorEvent', true);
+    ret.error = '';
 
     return ret;
 };
 
-var commandSavedEvent = function (command) {
-    var ret = {};
-    var checks = commandVerifier.verify(command);
+var commandSaved = function (command) {
+    var ret;
 
-    if (checks.length > 0) {
-        ret.wasSuccessful = false;
-        ret.message = "Command has undefined properties " + checks.join(',');
-    } else {
-        ret.wasSuccessful = true;
-        ret.event = {correlationId: command.correlationId};
-        ret.event.eventName = 'CommandSavedEvent';
-    }
+    ret = eventFactory.create(command, 'CommandSavedEvent', true);
 
     return ret;
 };
 
 module.exports = {
-    CommandExecuted: commandExecutedEvent,
-    CommandVerificationFailed: commandVerificationFailedEvent,
-    SaveCommandError: saveCommandErrorEvent,
-    CommandSaved: commandSavedEvent
+    CommandExecuted: commandExecuted,
+    CommandVerificationFailed: commandVerificationFailed,
+    SaveCommandError: saveCommandError,
+    CommandSaved: commandSaved
 };
