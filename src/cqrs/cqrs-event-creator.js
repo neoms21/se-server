@@ -24,6 +24,7 @@ var commandVerificationFailedEvent = function (command) {
     if (checks.length > 0) {
         ret.wasSuccessful = false;
         ret.message = "Command has undefined properties " + checks.join(',');
+        console.log("Command has undefined properties " + checks.join(','));
     } else {
         ret.wasSuccessful = true;
         ret.event = {correlationId: command.correlationId};

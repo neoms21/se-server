@@ -44,7 +44,7 @@ io.on('connection', function (socket) {
 
 eventMediator.propagator.subscribe(function(ev) {
     console.log('@@@ ' + ev.eventName);
-    io.emit(ev.eventName, ev);
+    io.emit('event', ev);
 });
 
 http.listen(8180, function () {

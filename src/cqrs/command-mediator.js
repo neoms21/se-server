@@ -1,7 +1,6 @@
 'use strict';
 var fs = require('fs');
 var path = require('path');
-var uuid = require('uuid');
 var Rx = require('rxjs');
 var Filehound = require('filehound');
 var mongoRepository = require('../db/mongo-repository');
@@ -28,11 +27,13 @@ function init(log) {
                 logger.error("error finding handlers ", err);
             } else {
                 filenames.forEach(function (filename) {
+                    log.info(filename)
                     var mapping = {
-                        code: path.basename(filename, '.js'),
+                        code: path.basename(filename, '.js').slice(0,  path.basename(filename, '.js').length - 14),
                         path: filename
                     };
                     mappings.push(mapping);
+                    log.info('Added command ' + mapping.code);
                 });
             }
         });
@@ -77,9 +78,6 @@ function createCommand(request) {
 
         // add extra props
         Object.assign(instance, request.payload);
-
-        // add the correlation
-        instance.correlationId = uuid.v4();
     }
 
     return instance;
@@ -104,7 +102,7 @@ function dispatch(command) {
 
     logger.info('CommandMediator before running verify for ' + command.commandName);
 
-    handler.verify()//.toArray()
+    handler.verify() //.toArray()
         .subscribe(function (messages) {
 
             // verifier has run , so lets get its results
@@ -112,16 +110,17 @@ function dispatch(command) {
                 handler.execute(); // all ok, so run it
                 exports.saveCommand(command); // and save
                 propagator.next('Command ' + command.commandName + ' executed successfully');
+                logger.info('Command ' + command.commandName + ' executed successfully');
             } else {
-                var event = cqrsEventCreator.CommandVerificationFailed(command);
-                event.messages = messages;
-                eventMediator.dispatch(event);
+                var resp = cqrsEventCreator.CommandVerificationFailed(command);
+                resp.event.messages = messages;
+                eventMediator.dispatch(resp.event);
             }
         }, function (err) {
             logger.error(err.toString());
-            var event = cqrsEventCreator.CommandVerificationFailed(command);
-            event.messages.push(err.toString());
-            eventMediator.dispatch(event);
+            var resp = cqrsEventCreator.CommandVerificationFailed(command);
+            resp.event.messages.push(err.toString());
+            eventMediator.dispatch(resp.event);
         });
 }
 
