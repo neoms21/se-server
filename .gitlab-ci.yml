@@ -18,4 +18,4 @@ cache:
 test_server:
   script:
    - npm install
-   - npm test
+   - npm run ci

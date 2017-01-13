@@ -1,5 +1,5 @@
 'use strict';
-var fs = require('fs');
+
 var path = require('path');
 var Rx = require('rxjs');
 var Filehound = require('filehound');
@@ -37,16 +37,6 @@ function init(log) {
                 });
             }
         });
-
-
-    // fs.readdir(__dirname + '/../commands/*CommandHandler.js', function (err, filenames) {
-    //     if (err) {
-    //         propagator.error(err);
-    //     } else {
-    //
-    //         console.info('CommandMediator has been initiated');
-    //     }
-    // });
 }
 
 function saveCommand(command) {

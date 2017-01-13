@@ -27,12 +27,12 @@ eventMediator.init(log);
 log.info("DB being checked for collections");
 mongoRepository.createOrOpenDb();
 
-app.get('/', function (req, res) {
-    res.sendfile('index.html');
-});
+// app.get('/', function (req, res) {
+//     res.sendfile('index.html');
+// });
 
 io.on('connection', function (socket) {
-    console.log('a user connected');
+    log.info('a user connected');
 
     socket.on('command', function(cmdReq) {
         log.info('command received: ' + JSON.stringify(cmdReq));
@@ -42,10 +42,13 @@ io.on('connection', function (socket) {
 
 });
 
+// send out events
 eventMediator.propagator.subscribe(function(ev) {
-    console.log('@@@ ' + ev.eventName);
     io.emit('event', ev);
 });
+
+// load any denormalizers
+
 
 http.listen(8180, function () {
     console.log('listening on *:8180');
