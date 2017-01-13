@@ -29,7 +29,7 @@ function init(log) {
             } else {
                 filenames.forEach(function (filename) {
                     var mapping = {
-                        code: path.basename(filename, '.js').slice(0,  path.basename(filename, '.js').length - 14),
+                        code: path.basename(filename, '.js').slice(0, path.basename(filename, '.js').length - 14),
                         path: filename
                     };
                     mappings.push(mapping);
@@ -83,6 +83,13 @@ function createCommand(request) {
     return instance;
 }
 
+var createError = function (command, messages) {
+    var event = cqrsEventCreator.CommandVerificationFailed(command);
+    event.messages = messages;
+    logger.error(messages[0]);
+    eventMediator.dispatch(event);
+};
+
 function dispatch(command) {
 
     var mapping = mappings.find(function (mapping) {
@@ -91,21 +98,17 @@ function dispatch(command) {
 
     if (mapping === undefined) {
         // oops
-        logger.error('Unable to create handler for command ' + command.commandName);
+        createError(command, ['Unable to create handler for command ' + command.commandName]);
         return;
     }
 
     // now verify and execute mapping
-    logger.debug('CommandMediator before running verify for ' + command.commandName);
 
     // check generic command settings
     var checks = commandVerifier.verify(command);
-    if(checks.length > 0) {
+    if (checks.length > 0) {
         // there were errors
-        var event = cqrsEventCreator.CommandVerificationFailed(command);
-        event.messages = checks;
-        console.log('failed msg ' + JSON.stringify(command));
-        eventMediator.dispatch(event);
+        createError(command, checks);
         return;
     }
 
@@ -129,10 +132,7 @@ function dispatch(command) {
                 eventMediator.dispatch(event);
             }
         }, function (err) {
-            logger.error(err.toString());
-            var event = cqrsEventCreator.CommandVerificationFailed(command);
-            event.messages = [err.toString()];
-            eventMediator.dispatch(event);
+            createError(command, [err.toString()]);
         });
 }
 

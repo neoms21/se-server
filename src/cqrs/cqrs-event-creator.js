@@ -12,6 +12,7 @@ var commandExecuted = function (command) {
 var commandVerificationFailed = function (command) {
     var ret;
 
+    console.log('in commandVerificationFailed')
     ret = eventFactory.create(command, 'CommandVerificationFailedEvent', true);
     ret.messages = [];
 

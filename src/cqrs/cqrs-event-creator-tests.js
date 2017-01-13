@@ -4,103 +4,67 @@ var commandVerifier = require('./commandVerifier');
 var sinon = require('sinon');
 
 describe('CQRS Event eventFactory', function () {
-    var verifierStub;
-    var command = {correlationId: 1, commandName: 'AddUser'};
+    //var verifierStub;
+    var command = {correlationId: 1, commandName: 'AddUser', userId: 222};
 
     before(function () {
-        verifierStub = sinon.stub(commandVerifier, 'verify');
+        //verifierStub = sinon.stub(commandVerifier, 'verify');
     });
     after(function () {
-        verifierStub.restore();
+        //verifierStub.restore();
     });
 
     describe('commandExecuted', function () {
-        it('should give error if command verifier gives error', function () {
-            verifierStub.returns(['correlationId']);
+        it('should return event', function () {
+            //verifierStub.returns(['correlationId']);
             var results = cqrsEventCreator.CommandExecuted(command);
 
-            assert(verifierStub.called);
-            assert.equal(results.wasSuccessful, false);
-            assert.equal(results.message, 'Command has undefined properties correlationId');
-        });
-        it('should create event if command verifier gives no error', function () {
-            verifierStub.returns([]);
-            var results = cqrsEventCreator.CommandExecuted(command);
-
-            assert(verifierStub.called);
-            assert.equal(results.wasSuccessful, true);
-            assert.ok(results.event.eventName !== undefined);
-            assert.ok(results.event.correlationId !== undefined);
-            assert.equal(results.event.eventName, 'CommandExecutedEvent');
-            assert.equal(results.event.correlationId, 1);
+            //assert(verifierStub.called);
+            assert.equal(results.correlationId, 1);
+            assert.equal(results.eventName, 'CommandExecutedEvent');
+            assert.equal(results.isFailure, false);
+            assert.equal(results.createdBy, 222);
+            assert.notEqual(results.created, null);
         });
     });
 
     describe('commandVerificationFailed', function () {
-        it('should give error if command verifier gives error', function () {
-            verifierStub.returns(['correlationId']);
+        it('should return event', function () {
+            //verifierStub.returns(['correlationId']);
             var results = cqrsEventCreator.CommandVerificationFailed(command);
 
-            assert(verifierStub.called);
-            assert.equal(results.wasSuccessful, false);
-            assert.equal(results.message, 'Command has undefined properties correlationId');
-        });
-        it('should create event if command verifier gives no error', function () {
-            verifierStub.returns([]);
-            var results = cqrsEventCreator.CommandVerificationFailed(command);
-
-            assert(verifierStub.called);
-            assert.equal(results.wasSuccessful, true);
-            assert.ok(results.event.eventName !== undefined);
-            assert.ok(results.event.correlationId !== undefined);
-            assert.ok(results.event.messages !== undefined);
-            assert.equal(results.event.eventName, 'CommandVerificationFailedEvent');
-            assert.equal(results.event.correlationId, 1);
+            assert.equal(results.correlationId, 1);
+            assert.equal(results.eventName, 'CommandVerificationFailedEvent');
+            assert.equal(results.isFailure, true);
+            assert.equal(results.createdBy, 222);
+            assert.ok(results.messages);
+            assert.notEqual(results.created, null);
         });
     });
 
     describe('commandSaveCommandErrorEvent', function () {
         it('should give error if command verifier gives error', function () {
-            verifierStub.returns(['className']);
             var results = cqrsEventCreator.SaveCommandError(command);
 
-            assert(verifierStub.called);
-            assert.equal(results.wasSuccessful, false);
-            assert.equal(results.message, 'Command has undefined properties className');
+            assert.equal(results.correlationId, 1);
+            assert.equal(results.eventName, 'SaveCommandErrorEvent');
+            assert.equal(results.isFailure, true);
+            assert.equal(results.createdBy, 222);
+            assert.notEqual(results.created, null);
         });
-        it('should create event if command verifier gives no error', function () {
-            verifierStub.returns([]);
-            var results = cqrsEventCreator.SaveCommandError(command);
 
-            assert(verifierStub.called);
-            assert.equal(results.wasSuccessful, true);
-            assert.ok(results.event.eventName !== undefined);
-            assert.ok(results.event.correlationId !== undefined);
-            assert.ok(results.event.error !== undefined);
-            assert.equal(results.event.eventName, 'SaveCommandErrorEvent');
-            assert.equal(results.event.correlationId, 1);
-        });
     });
 
     describe('commandSaved', function () {
         it('should give error if command verifier gives error', function () {
-            verifierStub.returns(['className']);
+            //verifierStub.returns(['className']);
             var results = cqrsEventCreator.CommandSaved(command);
 
-            assert(verifierStub.called);
-            assert.equal(results.wasSuccessful, false);
-            assert.equal(results.message, 'Command has undefined properties className');
-        });
-        it('should create event if command verifier gives no error', function () {
-            verifierStub.returns([]);
-            var results = cqrsEventCreator.CommandSaved(command);
-
-            assert(verifierStub.called);
-            assert.equal(results.wasSuccessful, true);
-            assert.ok(results.event.eventName !== undefined);
-            assert.ok(results.event.correlationId !== undefined);
-            assert.equal(results.event.eventName, 'CommandSavedEvent');
-            assert.equal(results.event.correlationId, 1);
+            assert.equal(results.correlationId, 1);
+            assert.equal(results.eventName, 'CommandSavedEvent');
+            assert.equal(results.isFailure, true);
+            assert.equal(results.createdBy, 222);
+            assert.notEqual(results.created, null);
         });
     });
 });

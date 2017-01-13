@@ -25,6 +25,7 @@ describe('Mongo repository', function () {
     });
     after(function () {
         mongoStub.restore();
+        configStub.restore();
         loggerInfoStub.restore();
     });
 
@@ -42,7 +43,7 @@ describe('Mongo repository', function () {
         var connectionPromise;
         var insertPromise;
 
-        beforeEach(function() {
+        beforeEach(function () {
             connectionPromise = q.defer();
             mongoStub.returns(connectionPromise.promise);
 
@@ -61,7 +62,7 @@ describe('Mongo repository', function () {
         });
 
         it('should insert our data', function (done) {
-            var ourData = { name: 'John', id: 100 };
+            var ourData = {name: 'John', id: 100};
             mongoRepository.insert('commands', ourData)
                 .subscribe(function (success) {
                     assert.deepEqual(success, ourData);
@@ -74,7 +75,7 @@ describe('Mongo repository', function () {
         it('should get error back when mongo error', function (done) {
             mongoRepository.insert('commands')
                 .subscribe(function () {
-                }, function(err) {
+                }, function (err) {
                     assert.equal(err, 'error');
                     done();
                 });
@@ -87,10 +88,9 @@ describe('Mongo repository', function () {
     describe('getCount', function () {
         var connectionPromise;
         var countPromise;
-        var connectStub;
         var connectMock;
 
-        beforeEach(function() {
+        beforeEach(function () {
             countPromise = q.defer();
             connectionPromise = q.defer();
             connectMock = sinon.stub(mongoRepository, 'connectToDb').returns(connectionPromise.promise);
@@ -105,8 +105,8 @@ describe('Mongo repository', function () {
                 }
             });
         });
-        afterEach(function() {
-           connectMock.restore();
+        afterEach(function () {
+            connectMock.restore();
         });
 
         it('should get count back', function (done) {
@@ -125,7 +125,7 @@ describe('Mongo repository', function () {
                 .subscribe(function (cnt) {
                     assert(cnt, 1);
                     done();
-                }, function(err) {
+                }, function (err) {
                     assert.equal(err, 'error');
                     done();
                 });
