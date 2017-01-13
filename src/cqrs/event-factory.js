@@ -10,6 +10,9 @@ var create = function (command, name, isFailure) {
     event.isFailure = isFailure || false;
     event.created = new Date();
     event.createdBy = command.userId;
+    // defaults
+    event.messageNumber = 1;
+    event.messageCount = 1;
 
     return event;
 };

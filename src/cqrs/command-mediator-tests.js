@@ -35,28 +35,6 @@ describe('Command mediator', function () {
     var cqrsEventMock;
     var eventMock;
 
-    before(function () {
-        // fsStub = sinon.stub(fs, 'readdir', function (path, callback) {
-        //     // supply dummy filenames
-        //     callback(null, ['registerUserCommand.js', 'loginUserCommand.js']);
-        // });
-
-//        actionMock = sinon.mock(RegisterUserCommand);
-        // cmdMock = sinon.stub(CommandFactory, 'start', function() {
-        //     return Rx.Observable.from(['sample']);
-        // });
-
-
-    });
-
-    after(function () {
-        //fs.readdir.r();
-        //actionMock.verify();
-        //actionMock.restore();
-        //cmdMock.restore();
-
-    });
-
     beforeEach(function () {
         logMock = sinon.mock(logStub);
         createStub = sinon.stub(Filehound, 'create').returns(fhStub);

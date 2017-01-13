@@ -39,9 +39,9 @@ describe('Register user command', function () {
                 .subscribe(function (resp) {
                     console.log('resp' + resp.length);
                     assert.equal(resp.length, 3);
-                    assert.equal(resp[0], 'RegisterUser command name property was not defined');
-                    assert.equal(resp[1], 'RegisterUser command email property was not defined');
-                    assert.equal(resp[2], 'RegisterUser command password property was not defined');
+                    assert.equal(resp[0].message, 'Name property was not defined');
+                    assert.equal(resp[1].message, 'Email property was not defined');
+                    assert.equal(resp[2].message, 'Password property was not defined');
                 }, function (err) {
                     assert(err, null);
                 }, function () {
@@ -55,8 +55,8 @@ describe('Register user command', function () {
             handler.verify().toArray()
                 .subscribe(function (resp) {
                     assert.equal(resp.length, 2);
-                    assert.equal(resp[0], 'RegisterUser command name property was not defined');
-                    assert.equal(resp[1], 'RegisterUser command email property was not defined');
+                    assert.equal(resp[0].message, 'Name property was not defined');
+                    assert.equal(resp[1].message, 'Email property was not defined');
                 }, function (err) {
                     assert(err, null);
                 }, function () {
@@ -69,8 +69,8 @@ describe('Register user command', function () {
             handler.verify().toArray()
                 .subscribe(function (resp) {
                     assert.equal(resp.length, 2);
-                    assert.equal(resp[0], 'RegisterUser command email property was not defined');
-                    assert.equal(resp[1], 'RegisterUser command password property was not defined');
+                    assert.equal(resp[0].message, 'Email property was not defined');
+                    assert.equal(resp[1].message, 'Password property was not defined');
                 }, function (err) {
                     assert(err, null);
                 }, function () {
@@ -83,8 +83,8 @@ describe('Register user command', function () {
             handler.verify().toArray()
                 .subscribe(function (resp) {
                     assert.equal(resp.length, 2);
-                    assert.equal(resp[0], 'RegisterUser command name property was not defined');
-                    assert.equal(resp[1], 'RegisterUser command password property was not defined');
+                    assert.equal(resp[0].message, 'Name property was not defined');
+                    assert.equal(resp[1].message, 'Password property was not defined');
                 }, function (err) {
                     assert(err, null);
                 }, function () {
