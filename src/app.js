@@ -7,8 +7,7 @@ var io = require('socket.io')(http);
 var mongoRepository = require('./db/mongo-repository');
 var commandMediator = require('./cqrs/command-mediator');
 var eventMediator = require('./cqrs/event-mediator');
-
-//const commandRoutes = require('./routes/commandRoutes');
+var deNormalizerManager = require('./cqrs/denormalizer-mediator');
 
 // create our logger
 var log = logger.createLogger({
@@ -48,7 +47,7 @@ eventMediator.propagator.subscribe(function(ev) {
 });
 
 // load any denormalizers
-
+deNormalizerManager.init(log);
 
 http.listen(8180, function () {
     console.log('listening on *:8180');

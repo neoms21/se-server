@@ -18,6 +18,13 @@ function handleRegisterUser(event) {
         });
 }
 
+function getMessageMap() {
+    return [
+        {message: 'UserRegisteredEvent', method: handleRegisterUser}
+    ];
+}
+
 module.exports = {
-    handleRegisterUser: handleRegisterUser
+    handleRegisterUser: handleRegisterUser,
+    getMessageMap: getMessageMap
 };
