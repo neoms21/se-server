@@ -1,12 +1,11 @@
 'use strict';
-var path = require('path');
-var Rx = require('rxjs');
-var Filehound = require('filehound');
+//var path = require('path');
+//var Rx = require('rxjs');
+const Filehound = require('filehound');
+const EventMediator = require('./event-mediator');
 
-var mappings;
-var logger;
-var propagator = new Rx.Subject();
-var exports;
+let mappings;
+let logger;
 
 function init(log) {
     logger = log;
@@ -14,12 +13,12 @@ function init(log) {
     // set up which messages go to which components
     mappings = []; // make sure it's clear
 
-    log.info('denormalizer ' + process.cwd() + '/src/denormalizers');
+    log.info('Denormalizer loading from ' + process.cwd() + '/src/denormalizers');
     // find all the handlers
     Filehound.create()
         .ext('js')
         .paths(process.cwd() + '/src/denormalizers')
-        //.match('!(*-test*)*')
+        .match('!(*-test*)*')
         .find(function (err, filenames) {
             if (err) {
                 logger.error("error finding denormalizers ", err);
@@ -27,10 +26,11 @@ function init(log) {
                 filenames.forEach(function (filename) {
 
                     // instantiate so we can get messages
-                    var instance = require(filename);
-                    console.log('****' + JSON.stringify(instance))
-                    if (instance !== undefined && instance.hasOwnProperty('getMessageMap')) {
-                        mappings.concat(instance.getMessageMap());
+                    let instance = require(filename);
+
+                    if (instance !== undefined) {
+                        let mapping = { messages: instance.getMessages(), handler: instance };
+                        mappings.push(mapping);
                     }
                 });
 
@@ -39,10 +39,20 @@ function init(log) {
                 });
             }
         });
+
+    EventMediator.propagator.subscribe((evnt) => {
+
+        logger.info('Denormalizer running for event ' + JSON.stringify(evnt));
+        // find the event in our map, or not
+        let found = mappings.find(mp => mp.messages.find(m => m === evnt.eventName) !== undefined);
+        console.log(' found ' + JSON.stringify(found));
+        if (found !== undefined) {
+            found.handler(evnt); // execute it & pass event
+        }
+    });
 }
 
-exports = {
+
+exports = module.exports = {
     init: init
 };
-
-module.exports = exports;

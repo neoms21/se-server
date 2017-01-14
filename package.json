@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "lint": "node_modules/.bin/jslint src/**/*.js",
-    "start": "NODE_ENV=dev nodemon src/app.js | ./node_modules/.bin/bunyan",
+    "start": "NODE_ENV=dev nodemon -- src/app.js | ./node_modules/.bin/bunyan",
     "ci": "node_modules/.bin/istanbul cover node_modules/.bin/_mocha src/**/*-tests.js",
     "test": "mocha --watch src/**/*-tests.js ",
     "cover": "node_modules/.bin/istanbul cover node_modules/.bin/mocha src/**/*-tests.js "

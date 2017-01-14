@@ -7,7 +7,7 @@ var mongoRepository = require('../db/mongo-repository');
 var Rx = require('rxjs/Rx');
 var cqrsEventCreator = require('./cqrs-event-creator');
 var eventMediator = require('./event-mediator');
-var mockHandler = require('./mock-handlerCommandHandler');
+var mockHandler = require('./mocks/mock-handlerCommandHandler');
 
 var logStub = {
     info: function () {
@@ -175,7 +175,7 @@ describe('Command mediator', function () {
     describe('dispatch', function () {
         beforeEach(function () {
             // set up our mocks
-            fhMock.expects('find').yields(null, [process.cwd() + '/src/cqrs/mock-handlerCommandHandler.js', 'second.js', 'third.js']);
+            fhMock.expects('find').yields(null, [process.cwd() + '/src/cqrs/mocks/mock-handlerCommandHandler.js', 'second.js', 'third.js']);
             CommandMediator.init(logStub);
         });
 

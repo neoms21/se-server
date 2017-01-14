@@ -1,10 +1,11 @@
 'use strict';
-var mongoRepository = require('../../db/mongo-repository');
-var eventMediator = require('../../cqrs/event-mediator');
-var util = require('util');
-var Rx = require('rxjs');
+const MongoRepository = require('../../db/mongo-repository');
+const EventMediator = require('../../cqrs/event-mediator');
+const util = require('util');
+const Rx = require('rxjs');
+const EventFactory = require('../../cqrs/event-factory');
 
-var verify = function () {
+function verify() {
     var response = new Rx.Subject();
 
     setTimeout(function (command) { // use timeout as rx is async
@@ -24,10 +25,10 @@ var verify = function () {
             }
         }
 
-        var userNameToSearchFor = command.email || '';
+        const userNameToSearchFor = command.email || '';
 
         // check that the user is not sending a duplicate
-        mongoRepository.getCount('logins', {email: userNameToSearchFor})
+        MongoRepository.getCount('logins', {email: userNameToSearchFor})
             .subscribe(function (count) {
 
                 if (count > 0) {
@@ -43,14 +44,14 @@ var verify = function () {
     }, 100, this.command);
 
     return response;
-};
+}
 
-var execute = function () {
+function execute() {
     // has been verified , so just need to create event
-    var event = {eventName: 'UserRegisteredEvent'};
+    let event = EventFactory.create(this.command, 'UserRegisteredEvent', false);
     Object.assign(event, this.command);
-    eventMediator.dispatch(event);
-};
+    EventMediator.dispatch(event);
+}
 
 module.exports = {
     verify: verify,

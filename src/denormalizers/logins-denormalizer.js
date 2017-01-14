@@ -6,25 +6,22 @@ function handleRegisterUser(event) {
         .subscribe(function (count) {
             if (count > 0) {
                 // oops duplicate
-                response.onError(['The username @ ' + event.userName + ' is a duplicate']);
+                //response.onError(['The username @ ' + event.userName + ' is a duplicate']);
             } else {
-                var login = new Login(event.name, event.userName, event.password);
+                var login = {name: event.name, userName: event.userName, password: event.password};
                 MongoRepository.insert('logins', login);
-                response.onNext('Registered user ' + login.name);
-                response.onCompleted();
             }
-        }, function (err) {
-            response.onError(err); // pass it on
+        }, function () {
+
+            //response.onError(err); // pass it on
         });
 }
 
-function getMessageMap() {
-    return [
-        {message: 'UserRegisteredEvent', method: handleRegisterUser}
-    ];
-}
+var getMessages = function () {
+    return ['UserRegisteredEvent'];
+};
 
-module.exports = {
-    handleRegisterUser: handleRegisterUser,
-    getMessageMap: getMessageMap
+module.exports = exports = {
+    handleMessage: handleRegisterUser,
+    getMessages: getMessages
 };

@@ -96,8 +96,8 @@ describe('Register user command', function () {
     });
 
     describe('Execute', function () {
-        var loggerStub;
-        var dispatchStub;
+        let loggerStub;
+        let dispatchStub;
 
         beforeEach(function () {
             loggerStub = {
@@ -107,7 +107,7 @@ describe('Register user command', function () {
             eventMediator.init(loggerStub);
         });
 
-        afterEach(function() {
+        afterEach(function () {
             dispatchStub.restore();
         });
 
@@ -115,11 +115,21 @@ describe('Register user command', function () {
             dispatchStub = sinon.stub(eventMediator, 'dispatch', function () {
             });
 
-            handler.command = {email: 'mark', name: 'mark s'};
+            handler.command = {email: 'mark', name: 'mark s', correlationId: 1};
             handler.execute();
 
             assert(dispatchStub.called);
-            assert(dispatchStub.calledWith({eventName: 'UserRegisteredEvent', email: 'mark', name: 'mark s'}));
+            assert(dispatchStub.calledWith({
+                eventName: 'UserRegisteredEvent',
+                email: 'mark',
+                name: 'mark s',
+                correlationId: 1,
+                messageNumber: 1,
+                messageCount: 1,
+                isFailure: false,
+                createdBy: undefined,
+                created: new Date()
+            }));
         });
 
     });
