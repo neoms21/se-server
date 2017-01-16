@@ -1,4 +1,5 @@
-var MongoRepository = require('../db/mongo-repository');
+'use strict';
+const MongoRepository = require('../db/mongo-repository');
 
 function handleRegisterUser(event) {
     // check whether user has a login
@@ -8,7 +9,7 @@ function handleRegisterUser(event) {
                 // oops duplicate
                 //response.onError(['The username @ ' + event.userName + ' is a duplicate']);
             } else {
-                var login = {name: event.name, userName: event.userName, password: event.password};
+                const login = {name: event.name, userName: event.userName, password: event.password};
                 MongoRepository.insert('logins', login);
             }
         }, function () {
@@ -17,11 +18,12 @@ function handleRegisterUser(event) {
         });
 }
 
-var getMessages = function () {
+function getMessages() {
     return ['UserRegisteredEvent'];
-};
+}
 
-module.exports = exports = {
+//noinspection JSUnresolvedVariable
+module.exports = {
     handleMessage: handleRegisterUser,
     getMessages: getMessages
 };
