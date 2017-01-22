@@ -1,14 +1,15 @@
 'use strict';
+const generalServices = require('./general-services');
 
-var create = function (command, name, isFailure) {
-    var event = {};
+const create = function (command, name, isFailure) {
+    let event = {};
 
     if (command.hasOwnProperty('correlationId')) {
         event.correlationId = command.correlationId;
     }
     event.eventName = name || 'event name not specified';
     event.isFailure = isFailure || false;
-    event.created = new Date();
+    event.created = generalServices.getTime();
     event.createdBy = command.userId;
     // defaults
     event.messageNumber = 1;

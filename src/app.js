@@ -8,11 +8,11 @@ const mongoRepository = require('./db/mongo-repository');
 const commandMediator = require('./cqrs/command-mediator');
 const eventMediator = require('./cqrs/event-mediator');
 const deNormalizerManager = require('./cqrs/denormalizer-mediator');
-const signingRoutes = require('./routes/signing-routes');
+//const signingRoutes = require('./routes/signing-routes');
 const socketHandler = require('./socket-handler');
 
 // create our logger
-var log = logger.createLogger({
+const log = logger.createLogger({
     name: 'Sports Editor',
     serializers: {
         req: logger.stdSerializers.req
@@ -43,9 +43,8 @@ eventMediator.propagator.subscribe(function(ev) {
 // load any denormalizers
 deNormalizerManager.init(log);
 
-
 // any express routes
-signingRoutes(app, log);
+//signingRoutes(app, log);
 
 http.listen(8180, function () {
     console.log('listening on *:8180');
