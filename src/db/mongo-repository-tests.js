@@ -198,5 +198,28 @@ describe('Mongo repository', function () {
                     done();
                 });
         });
+
+        it('should deal with error', function (done) {
+            connectionPromise.resolve({
+                collection: function () {
+                    return {
+                        find: function () {
+                            return {
+                                forEach: function (callback, finisher) {
+                                    finisher('error');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            mongoRepository.query('commands', {name: 'John'})
+                .subscribe((res) => {
+                }, (err) => {
+                    assert.equal(err, 'error');
+                    done();
+                });
+        });
     });
 });
