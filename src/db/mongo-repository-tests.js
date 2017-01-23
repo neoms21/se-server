@@ -1,3 +1,4 @@
+'use strict';
 const assert = require('assert');
 const mongoRepository = require('../db/mongo-repository');
 const sinon = require('sinon');
@@ -138,56 +139,64 @@ describe('Mongo repository', function () {
 
     describe('query', function () {
         let connectionPromise;
-        let queryPromise;
-        let connectMock;
 
         beforeEach(function () {
-            queryPromise = q.defer();
             connectionPromise = q.defer();
             mongoStub.returns(connectionPromise.promise);
-            //connectMock = sinon.stub(mongoRepository, 'connectToDb').returns(connectionPromise.promise);
+        });
+        afterEach(function () {
 
-            // mock the find method inside mongo
+        });
+
+        it('should get empty array back', function (done) {
+
             connectionPromise.resolve({
                 collection: function () {
                     return {
                         find: function () {
-                            return queryPromise.promise;
+                            return {
+                                forEach: function (callback, finisher) {
+                                    callback({});
+                                    finisher(null);
+                                }
+                            }
                         }
-                    };
+                    }
                 }
             });
-        });
-        afterEach(function () {
-            //connectMock.restore();
-        });
 
-        it('should get empty array back', function (done) {
-            mongoRepository.query('commands')
+            mongoRepository.query('commands', {})
                 .subscribe((res) => {
                 }, (err) => {
                 }, () => {
                     done();
                 });
-
-            // invoke the function
-
-            queryPromise.resolve([]);
         });
 
-        it('should get error back when mongo error', function (done) {
-            mongoRepository.query('commands')
-                .subscribe(function (cnt) {
-                    assert(cnt, 1);
-                    done();
-                }, function (err) {
-                    assert.equal(err, 'error');
+        it('should get one result back', function (done) {
+            connectionPromise.resolve({
+                collection: function () {
+                    return {
+                        find: function () {
+                            return {
+                                forEach: function (callback, finisher) {
+                                    callback({name: 'John'});
+                                    finisher(null);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            mongoRepository.query('commands', {name: 'John'})
+                .subscribe((res) => {
+                    assert.notEqual(res, null);
+                    assert.equal(res.name, 'John');
+                }, (err) => {
+                }, () => {
                     done();
                 });
-
-            // invoke the count function
-            queryPromise.reject('error');
         });
     });
-
 });
