@@ -8,8 +8,8 @@ const mongoRepository = require('./db/mongo-repository');
 const commandMediator = require('./cqrs/command-mediator');
 const eventMediator = require('./cqrs/event-mediator');
 const deNormalizerManager = require('./cqrs/denormalizer-mediator');
-//const signingRoutes = require('./routes/signing-routes');
-const socketHandler = require('./socket-handler');
+const openRoutes = require('./comms/open-routes');
+const socketHandler = require('./comms/socket-handler');
 
 // create our logger
 const log = logger.createLogger({
@@ -35,16 +35,11 @@ mongoRepository.createOrOpenDb();
 // sockets related
 socketHandler(io, log);
 
-// send out events
-eventMediator.propagator.subscribe(function(ev) {
-    io.emit('event', ev);
-});
-
 // load any denormalizers
 deNormalizerManager.init(log);
 
 // any express routes
-//signingRoutes(app, log);
+openRoutes(app, log);
 
 http.listen(8180, function () {
     console.log('listening on *:8180');
