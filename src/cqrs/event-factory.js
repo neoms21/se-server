@@ -9,8 +9,9 @@ const create = function (command, name, isFailure) {
     }
     event.eventName = name || 'event name not specified';
     event.isFailure = isFailure || false;
-    event.created = generalServices.getTime();
-    event.createdBy = command.userId;
+
+    // apply common
+    generalServices.applyCommonFields(event, command);
     // defaults
     event.messageNumber = 1;
     event.messageCount = 1;

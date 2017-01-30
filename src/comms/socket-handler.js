@@ -1,9 +1,10 @@
 'use strict';
 const commandMediator = require('./../cqrs/command-mediator');
 const mongoRepository = require('./../db/mongo-repository');
-const eventMediator = require('./../cqrs/event-mediator');
-const eventFactory = require('./../cqrs/event-factory');
+const EventMediator = require('./../cqrs/event-mediator');
+const EventFactory = require('./../cqrs/event-factory');
 const jwtSecret = require('../cqrs/jwtSecret');
+const socketioJwt = require('socketio-jwt');
 
 let logger;
 let clients = [];
@@ -14,7 +15,7 @@ const processSockets = (io, log) => {
     // add authentication middleware
     io.use(function(socket, next) {
         var handshakeData = socket.request;
-        console.log(handshakeData)
+        //console.log(handshakeData)
         // make sure the handshake data looks good
 
         let handshake = socketioJwt.authorize({
@@ -45,9 +46,9 @@ const postAuthenticate = (socket, data) => {
             socket.client.user = user;
             logger.info(`User ${data.email} has successfully logged in on socket ${socket.id}`);
             // send event to client with user details
-            let event = eventFactory.create({}, 'LoginSuccessful', false);
+            let event = EventFactory.create({}, 'LoginSuccessful', false);
             event.user = { userName: user.email, name: user.name};
-            eventMediator.dispatch(event);
+            EventMediator.dispatch(event);
         });
 };
 
@@ -61,8 +62,8 @@ const disconnect = (socket) => {
 
 const init = () => {
     // listen for events and send them out
-    eventMediator.propagator.subscribe(function(ev) {
-        io.emit('event', ev);
+    EventMediator.propagator.subscribe(function(ev) {
+        //io.emit('event', ev);
     });
 };
 

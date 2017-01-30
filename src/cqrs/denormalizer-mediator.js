@@ -1,6 +1,4 @@
 'use strict';
-//var path = require('path');
-//var Rx = require('rxjs');
 const Filehound = require('filehound');
 const EventMediator = require('./event-mediator');
 
@@ -29,13 +27,16 @@ function init(log) {
                     let instance = require(filename);
 
                     if (instance !== undefined) {
-                        let mapping = { messages: instance.getMessages(), handler: instance };
+                        let mapping = {messages: instance.getMessages(), handler: instance};
+                        // make sure it's initialised
+                        instance.init(logger);
+                        // add to our list
                         mappings.push(mapping);
                     }
                 });
 
                 mappings.forEach(function (mp) {
-                    log.info('Added denormalizer for message ' + mp.message);
+                    log.info('Added denormalizer for message ' + mp.messages);
                 });
             }
         });
@@ -45,14 +46,14 @@ function init(log) {
         logger.info('Denormalizer running for event ' + JSON.stringify(evnt));
         // find the event in our map, or not
         let found = mappings.find(mp => mp.messages.find(m => m === evnt.eventName) !== undefined);
-        console.log(' found ' + JSON.stringify(found));
+        //console.log(' found ' + JSON.stringify(found));
         if (found !== undefined) {
-            found.handler(evnt); // execute it & pass event
+            found.handler.handleMessage(evnt); // execute it & pass event
         }
     });
 }
 
 
-exports = module.exports = {
+module.exports = {
     init: init
 };

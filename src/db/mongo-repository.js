@@ -36,6 +36,7 @@ const getCount = (collectionName, param) => {
                 })
                 .catch(function (err) {
                     response.error(err);
+                    logger.error(err);
                     db.close();
                 });
         });
@@ -57,6 +58,7 @@ const insert = (collectionName, insertion) => {
                     )
                     .catch(function (errInsert) {
                             response.error(errInsert);
+                            logger.error(errInsert);
                             db.close();
                         }
                     );

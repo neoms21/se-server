@@ -1,11 +1,12 @@
 'use strict';
-let path = require('path');
-let Rx = require('rxjs');
-let Filehound = require('filehound');
-let mongoRepository = require('../db/mongo-repository');
-let eventMediator = require('./event-mediator');
-let cqrsEventCreator = require('./cqrs-event-creator');
-let commandVerifier = require('./commandVerifier');
+const path = require('path');
+const Rx = require('rxjs');
+const Filehound = require('filehound');
+const mongoRepository = require('../db/mongo-repository');
+const eventMediator = require('./event-mediator');
+const cqrsEventCreator = require('./cqrs-event-creator');
+const commandVerifier = require('./commandVerifier');
+const generalServices = require('./general-services');
 
 let mappings = [];
 let logger;
@@ -38,6 +39,8 @@ function init(log) {
 }
 
 function saveCommand(command) {
+
+    generalServices.applyCommonFields(command, command);
 
     // save to db
     mongoRepository.insert('commands', command)
@@ -106,7 +109,7 @@ function dispatch(command) {
 
     handler.verify().toArray()
         .subscribe(function (messages) {
-
+            console.log('messages - ' + messages.length)
             // verifier has run , so lets get its results
             if (messages.length === 0) {
                 handler.execute(); // all ok, so run it

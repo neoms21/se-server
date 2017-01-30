@@ -9,6 +9,7 @@ function verify() {
     var response = new Rx.Subject();
 
     setTimeout(function (command) { // use timeout as rx is async
+
         if (util.isNullOrUndefined(command.name)) {
             response.next({field: 'name', message: 'Name property was not defined'});
         }
@@ -47,9 +48,11 @@ function verify() {
 }
 
 function execute() {
+
     // has been verified , so just need to create event
     let event = EventFactory.create(this.command, 'UserRegisteredEvent', false);
-    Object.assign(event, this.command);
+    Object.assign(event, { command: this.command });
+
     // now send it
     EventMediator.dispatch(event);
 }

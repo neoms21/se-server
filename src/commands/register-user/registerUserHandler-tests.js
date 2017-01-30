@@ -16,7 +16,7 @@ describe('Register user command', function () {
             // supply dummy observable
             return Rx.Observable.from([count]);
         });
-        timeStub = sinon.stub(generalServices, 'getTime', () => Date.parse('01 Sep 2016 08:00'));
+        timeStub = sinon.stub(generalServices, 'getTime', () => new Date('01 Sep 2016 08:00'));
     });
 
     afterEach(function () {
@@ -121,15 +121,22 @@ describe('Register user command', function () {
             handler.execute();
 
             assert(dispatchStub.called);
-            assert(dispatchStub.calledWith({ correlationId: 1,
-                eventName: 'UserRegisteredEvent',
-                isFailure: false,
-                created: Date.parse('01 Sep 2016 08:00'),
-                createdBy: undefined,
-                messageNumber: 1,
-                messageCount: 1,
-                email: 'mark',
-                name: 'mark s' }
+            assert(dispatchStub.calledWith({
+                    correlationId: 1,
+                    eventName: 'UserRegisteredEvent',
+                    isFailure: false,
+                    created: new Date('01 Sep 2016 08:00'),
+                    createdBy: undefined,
+                    validFrom: new Date('01 Sep 2016 08:00'),
+                    validTo: new Date('31 Dec 9999'),
+                    messageNumber: 1,
+                    messageCount: 1,
+                    command: {
+                        email: 'mark',
+                        name: 'mark s',
+                        correlationId: 1
+                    }
+                }
             ));
         });
 

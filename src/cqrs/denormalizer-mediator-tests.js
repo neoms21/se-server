@@ -99,45 +99,6 @@ describe('Denormalizer mediator', function () {
         });
     });
 
-    // describe('createCommand', function () {
-    //
-    //     beforeEach(function () {
-    //         // set up our mocks
-    //         fhMock.expects('find').yields(null, ['file.js', 'second.js', 'third.js']);
-    //
-    //         DenormalizerMediator.init(logStub);
-    //     });
-    //
-    //     it('should create the command with supplied info', function () {
-    //         var request = {commandName: 'SaveUser', payload: {id: 1, name: 'john'}};
-    //         var command = CommandMediator.createCommand(request);
-    //
-    //         assert.notEqual(command, null);
-    //         assert.notEqual(command, undefined);
-    //         assert.equal(command.commandName, 'SaveUser');
-    //         assert.equal(command.id, 1);
-    //         assert.equal(command.name, 'john');
-    //     });
-    //
-    //     it('should create the command with supplied info, but no payload', function () {
-    //         var request = {commandName: 'SaveUser'};
-    //         var command = CommandMediator.createCommand(request);
-    //
-    //         assert.notEqual(command, null);
-    //         assert.notEqual(command, undefined);
-    //         assert.equal(command.commandName, 'SaveUser');
-    //         assert.equal(command.id, undefined);
-    //         assert.equal(command.name, undefined);
-    //     });
-    //
-    //     it('shouldnt create the command without supplied command name', function () {
-    //         var request = {commandNameXXX: 'SaveUser'};
-    //         var command = CommandMediator.createCommand(request);
-    //
-    //         assert.equal(command, undefined);
-    //     });
-    // });
-
 });
 
 
