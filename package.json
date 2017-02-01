@@ -10,8 +10,10 @@
     "cover": "istanbul cover _mocha src/**/*-tests.js "
   },
   "dependencies": {
+    "body-parser": "^1.16.0",
     "bunyan": "^1.8.1",
     "config": "^1.21.0",
+    "cors": "^2.8.1",
     "cross-env": "^3.1.4",
     "express": "^4.14.0",
     "filehound": "^1.12.4",

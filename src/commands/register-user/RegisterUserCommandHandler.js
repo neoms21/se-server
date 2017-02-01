@@ -29,7 +29,7 @@ function verify() {
         const userNameToSearchFor = command.email || '';
 
         // check that the user is not sending a duplicate
-        MongoRepository.getCount('logins', {email: userNameToSearchFor})
+        MongoRepository.getCount('logins', {userName: userNameToSearchFor})
             .subscribe(function (count) {
 
                 if (count > 0) {

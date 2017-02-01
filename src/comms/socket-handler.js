@@ -8,9 +8,11 @@ const socketioJwt = require('socketio-jwt');
 
 let logger;
 let clients = [];
+let sio;
 
 const processSockets = (io, log) => {
     logger = log;
+    sio = io;
 
     // add authentication middleware
     io.use(function(socket, next) {
@@ -20,7 +22,7 @@ const processSockets = (io, log) => {
 
         let handshake = socketioJwt.authorize({
             secret: jwtSecret,
-            handshake: true
+            handshake: false
         });
         // if error do this:
         // next(new Error('not authorized');
@@ -34,7 +36,7 @@ const processSockets = (io, log) => {
 
         socket.on('command', function (cmdReq) {
             log.info('command received: ' + JSON.stringify(cmdReq));
-            const cmd = commandMediator.createCommand(cmdReq, socket.id);
+            const cmd = commandMediator.createCommand(cmdReq, socket.handle);
             commandMediator.dispatch(cmd);
         });
     });
@@ -44,7 +46,7 @@ const postAuthenticate = (socket, data) => {
     mongoRepository.query('logins', {email: data.username})
         .subscribe((user) => {
             socket.client.user = user;
-            logger.info(`User ${data.email} has successfully logged in on socket ${socket.id}`);
+            logger.info(`User ${data.email} has successfully logged in on socket ${socket.handle}`);
             // send event to client with user details
             let event = EventFactory.create({}, 'LoginSuccessful', false);
             event.user = { userName: user.email, name: user.name};
@@ -63,7 +65,7 @@ const disconnect = (socket) => {
 const init = () => {
     // listen for events and send them out
     EventMediator.propagator.subscribe(function(ev) {
-        //io.emit('event', ev);
+        sio.emit('event', ev);
     });
 };
 
