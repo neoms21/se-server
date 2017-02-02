@@ -12,7 +12,7 @@ let validateUser = (user) => {
     const deferred = q.defer();
 
     // attempt to match by email and password
-    mongoRepository.getCount('logins', {userName: user.email, password: user.password})
+    mongoRepository.getCount('logins', {userName: user.userName, password: user.password})
         .subscribe((cnt) => {
             if (cnt === 0) {
                 // no matching user & password
@@ -34,6 +34,7 @@ let openRoutes = (server, logger) => {
 
         // get param
         const user = req.body;
+        console.log(' user being checked ' + JSON.stringify(user))
 
         if (!Object.keys(user).length) {
             res.status(203).send('User details not defined');
@@ -45,12 +46,12 @@ let openRoutes = (server, logger) => {
                     // we are sending the user in the token
                     const token = jwt.sign(user, jwtSecret, {expiresIn: 360 * 5});
                     res.json({token: token});
-                    logger.info('Authenticated ' + user);
+                    logger.info('Authenticated via login' + user.userName);
                 })
                 .catch((err) => {
                     // error from validate
                     logger.info(err);
-                    res.status(203).send('' || err);
+                    res.status(500).send('' || err);
                 });
         }
 
