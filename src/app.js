@@ -23,6 +23,7 @@ let server = restify.createServer({
 // add socket.io
 const io = socketio.listen(server);
 
+io.set('transports', [ 'websocket' ]);
 // add middleware
 //server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());
@@ -30,19 +31,28 @@ server.use(restify.bodyParser());
 
 // log requests
 server.pre(function (request, response, next) {
-    log.info({req: JSON.stringify(request.body)}, 'REQUEST' + JSON.stringify(request.body));
+    // response.header("Access-Control-Allow-Origin", "*");
+    // response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    log.info({req: JSON.stringify(request.body)}, 'REQUEST' + JSON.stringify(request));
     // add correlation id
     response.header('correlation', uuid.v4());
     next();
 });
 
 // socket io
-io.sockets.on('connection', function (socket) {
+io.on('connection', function (socket) {
+    console.log('client connected '+ new Date())
     socket.emit('news', {hello: 'world'});
     socket.on('my other event', function (data) {
         console.log(data);
     });
+
+    socket.on('command', function (req) {
+        console.log(req);
+
+    });
 });
+
 
 // actions need init
 commandMediator.init(log);
