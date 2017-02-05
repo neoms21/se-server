@@ -4,7 +4,6 @@ const mongoRepository = require('./../db/mongo-repository');
 const EventMediator = require('./../cqrs/event-mediator');
 const EventFactory = require('./../cqrs/event-factory');
 const jwtSecret = require('../cqrs/jwtSecret');
-const socketioJwt = require('socketio-jwt');
 
 let logger;
 let clients = [];
@@ -14,31 +13,17 @@ const processSockets = (io, log) => {
     logger = log;
     sio = io;
 
-    // add authentication middleware
-    // io.use(function(socket, next) {
-    //     var handshakeData = socket.request;
-    //     //console.log(handshakeData)
-    //     // make sure the handshake data looks good
-    //
-    //     console.log(socket.headers)
-    //
-    //     // let handshake = socketioJwt.authorize({
-    //     //     secret: jwtSecret,
-    //     //     handshake: false
-    //     // });
-    //     // if error do this:
-    //     // next(new Error('not authorized');
-    //     // else just call next
-    //     next();
-    // });
-
     io.on('connection', function (socket) {
         log.info('a user connected on socket ' + socket.id);
         clients.push(socket);
 
         socket.on('authentication', (auth) => {
-            console.log('auth ' + JSON.stringify(auth))
-            const client = clients.find(client => client.id === socket.id);
+
+            // check the token
+
+
+
+                       const client = clients.find(client => client.id === socket.id);
             if (client !== undefined) {
                 client.token = auth.token;
                 log.info('Authenticated socket ' + socket.id);
@@ -79,18 +64,6 @@ const isCommandAllowed = (socketId, cmdReq) => {
 
     return true;
 };
-
-// const postAuthenticate = (socket, data) => {
-//     mongoRepository.query('logins', {email: data.username})
-//         .subscribe((user) => {
-//             socket.client.user = user;
-//             logger.info(`User ${data.email} has successfully logged in on socket ${socket.handle}`);
-//             // send event to client with user details
-//             let event = EventFactory.create({}, 'LoginSuccessful', false);
-//             event.user = { userName: user.email, name: user.name};
-//             EventMediator.dispatch(event);
-//         });
-// };
 
 const disconnect = (socket) => {
     logger.info(socket.id + ' disconnected');
