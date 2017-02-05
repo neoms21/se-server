@@ -22,6 +22,7 @@ mongoRepository.init(log);
 commandMediator.init(log);
 eventMediator.init(log);
 
+io.set('transports', [ 'websocket' ]);
 //check db
 log.info("DB being checked for collections");
 mongoRepository.createOrOpenDb();
