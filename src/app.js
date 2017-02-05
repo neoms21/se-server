@@ -1,73 +1,84 @@
-const restify = require('restify');
-const logger = require('bunyan');
-const uuid = require('uuid');
-const socketio = require('socket.io');
-const commandRoutes = require('./routes/commandRoutes');
-const dbUtil = require('./db/dbUtil');
-const commandMediator = require('./commands/commandMediator');
+'use strict';
+var logger = require('bunyan');
+var app = require('express')();
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
+
+var mongoRepository = require('./db/mongo-repository');
+var commandMediator = require('./cqrs/command-mediator');
+var eventMediator = require('./cqrs/event-mediator');
+var deNormalizerManager = require('./cqrs/denormalizer-mediator');
 
 // create our logger
-var log = new logger.createLogger({
+var log = logger.createLogger({
     name: 'Sports Editor',
     serializers: {
         req: logger.stdSerializers.req
     }
 });
 
-let server = restify.createServer({
-    name: 'Sports Editor',
-    version: '0.0.1',
-    log: log
-});
-
-// add socket.io
-const io = socketio.listen(server);
+// our psuedo singletons need init
+mongoRepository.init(log);
+commandMediator.init(log);
+eventMediator.init(log);
 
 io.set('transports', [ 'websocket' ]);
-// add middleware
-//server.use(restify.acceptParser(server.acceptable));
-server.use(restify.queryParser());
-server.use(restify.bodyParser());
+//check db
+log.info("DB being checked for collections");
+mongoRepository.createOrOpenDb();
+
+// app.get('/', function (req, res) {
+//     res.sendfile('index.html');
+// });
+
+io.on('connection', function (socket) {
+    log.info('a user connected');
+
+    socket.on('command', function(cmdReq) {
+        log.info('command received: ' + JSON.stringify(cmdReq));
+        var cmd = commandMediator.createCommand(cmdReq);
+        commandMediator.dispatch(cmd);
+    });
+
+});
+
+// send out events
+eventMediator.propagator.subscribe(function(ev) {
+    io.emit('event', ev);
+});
+
+// load any denormalizers
+deNormalizerManager.init(log);
+
+http.listen(8180, function () {
+    console.log('listening on *:8180');
+});
+
 
 // log requests
-server.pre(function (request, response, next) {
-    // response.header("Access-Control-Allow-Origin", "*");
-    // response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    log.info({req: JSON.stringify(request.body)}, 'REQUEST' + JSON.stringify(request));
-    // add correlation id
-    response.header('correlation', uuid.v4());
-    next();
-});
+// server.pre(function (request, response, next) {
+//     log.info({req: JSON.stringify(request.body)}, 'REQUEST ' + JSON.stringify(request.body));
+//     // add correlation id
+//     response.header('correlation', uuid.v4());
+//     next();
+// });
+//
+// // socket io
+// io.sockets.on('connection', function (socket) {
+//     log.info('connected socket');
+//
+//     socket.emit('news', {hello: 'world'});
+//     socket.on('command', function (command:any) {
+//         console.log(command);
+//     });
+// });
 
-// socket io
-io.on('connection', function (socket) {
-    console.log('client connected '+ new Date())
-    socket.emit('news', {hello: 'world'});
-    socket.on('my other event', function (data) {
-        console.log(data);
-    });
-
-    socket.on('command', function (req) {
-        console.log(req);
-
-    });
-});
-
-
-// actions need init
-commandMediator.init(log);
-
-//check db
-dbUtil.createOrOpenDb();
-log.info("Collections checked (and maybe created)");
-
-//server.bodyParser();
 
 // add routes
-commandRoutes(server);
+// commandRoutes(server);
 
-server.listen(8180, function () {
-    console.log('%s listening at %s', server.name, server.url);
-});
+// server.listen(8180, function () {
+//     console.log('%s listening at %s', server.name, server.url);
+// });
 
 
