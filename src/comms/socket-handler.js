@@ -14,23 +14,13 @@ const processSockets = (io, log) => {
     sio = io;
 
     io.on('connection', function (socket) {
+        console.log(socket)
         log.info('a user connected on socket ' + socket.id);
         clients.push(socket);
 
-        socket.on('authentication', (auth) => {
+        socket.on('authentication', authenticate);
 
-            // check the token
-
-
-
-                       const client = clients.find(client => client.id === socket.id);
-            if (client !== undefined) {
-                client.token = auth.token;
-                log.info('Authenticated socket ' + socket.id);
-            }
-        });
-
-        socket.on('disconnect', () => disconnect(socket));
+        socket.on('disconnect', disconnected(socket));
 
         socket.on('command', (cmdReq) => {
             log.info('command received: ' + JSON.stringify(cmdReq));
@@ -65,11 +55,23 @@ const isCommandAllowed = (socketId, cmdReq) => {
     return true;
 };
 
-const disconnect = (socket) => {
+const disconnected = (socket) => {
     logger.info(socket.id + ' disconnected');
     const clientIndex = clients.findIndex(client => client.id === socket.id);
     if (clientIndex > -1) {
         clients.splice(clientIndex, 1);
+    }
+};
+
+const authenticate = (auth) => {
+
+    // check the token
+
+
+    const client = clients.find(client => client.id === socket.id);
+    if (client !== undefined) {
+        client.token = auth.token;
+        log.info('Authenticated socket ' + socket.id);
     }
 };
 
@@ -81,6 +83,5 @@ const init = () => {
 };
 
 init();
-
 
 module.exports = processSockets;

@@ -3,19 +3,12 @@ const login = require('./login');
 const assert = require('assert');
 const sinon = require('sinon');
 const Rx = require('rxjs/Rx');
+const jwt = require('jsonwebtoken');
+const jwtSecret = require('../cqrs/jwtSecret');
 const mongoRepository = require('./../db/mongo-repository');
 
 
 describe('Login routes ', () => {
-
-    beforeEach(() => {
-
-    });
-
-    afterEach(() => {
-        //loggerErrorSpy.restore();
-        //loggerInfoSpy.restore();
-    });
 
     describe('setup', () => {
         it('should have been created correctly', () => {
@@ -33,6 +26,7 @@ describe('Login routes ', () => {
         let mongoRepoStub;
         let loggerErrorSpy;
         let loggerInfoSpy;
+        let jwtStub;
 
         beforeEach(() => {
             request = {body: {}};
@@ -51,11 +45,15 @@ describe('Login routes ', () => {
             sendSpy = sinon.spy(response, 'send');
             loggerErrorSpy = sinon.spy(logger, 'error');
             loggerInfoSpy = sinon.spy(logger, 'info');
+
         });
 
         afterEach(() => {
             statusSpy.restore();
             sendSpy.restore();
+            loggerErrorSpy.restore();
+            loggerInfoSpy.restore();
+
         });
 
         it('should error if no user set in body', () => {
@@ -99,11 +97,23 @@ describe('Login routes ', () => {
         });
 
         it('should use post to set up login', () => {
+            mongoRepoStub = sinon.stub(mongoRepository, 'getCount')
+                .returns(Rx.Observable.of(1));
+            jwtStub = sinon.stub(jwt, 'sign');
 
             request.body = {userName: 'kkkkk', password: '@@@'};
-            login.postLogin(request, response);
+            login.postLogin(request, response, logger);
 
-
+            setTimeout(() => {
+                assert(loggerInfoSpy.called);
+                assert(loggerInfoSpy.calledWith('Authenticated via login kkkkk'));
+                assert(statusSpy.called);
+                assert(statusSpy.calledWith(200));
+                assert(jwtStub.called);
+                assert(jwtStub.calledWith(request.body, jwtSecret, {expiresIn: 360 * 5}));
+                mongoRepoStub.restore();
+                jwtStub.restore();
+            }, 300);
         });
     });
 

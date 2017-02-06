@@ -50,14 +50,13 @@ let postLogin = (req, res, logger) => {
             // we are sending the user in the token
             const token = jwt.sign(user, jwtSecret, {expiresIn: 360 * 5});
             res.json({token: token});
-            logger.info('Authenticated via login' + user.userName);
+            logger.info('Authenticated via login ' + user.userName);
         })
         .catch((err) => {
             // error from validate
             logger.error(err);
             res.status(500).send('' || err);
         });
-
 };
 
 module.exports = {
