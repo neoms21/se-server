@@ -4,7 +4,7 @@ const generalServices = require('./general-services');
 const create = function (command, name, isFailure) {
     let event = {};
 
-    if (command.hasOwnProperty('correlationId')) {
+    if (command !== undefined && command.hasOwnProperty('correlationId')) {
         event.correlationId = command.correlationId;
     }
     event.eventName = name || 'event name not specified';

@@ -1,21 +1,21 @@
 'use strict';
-var DenormalizerMediator = require('./denormalizer-mediator');
-var assert = require('assert');
-var sinon = require('sinon');
-var Filehound = require('filehound');
-var mongoRepository = require('../db/mongo-repository');
-var Rx = require('rxjs/Rx');
-var cqrsEventCreator = require('./cqrs-event-creator');
-var eventMediator = require('./event-mediator');
-var mockHandler = require('./mocks/mock-handlerCommandHandler');
+const DenormalizerMediator = require('./denormalizer-mediator');
+const assert = require('assert');
+const sinon = require('sinon');
+const Filehound = require('filehound');
+const mongoRepository = require('../db/mongo-repository');
+const Rx = require('rxjs/Rx');
+const cqrsEventCreator = require('./cqrs-event-creator');
+const eventMediator = require('./event-mediator');
+const mockHandler = require('./mocks/mock-handlerCommandHandler');
 
-var logStub = {
+let logStub = {
     info: function () {
     },
     error: function () {
     }
 };
-var fhStub = {
+let fhStub = {
     ext: function () {
     },
     paths: function () {
@@ -26,7 +26,7 @@ var fhStub = {
     }
 };
 
-var createErrorEvent = function (command, message) {
+let createErrorEvent = function (command, message) {
     return {
         eventName: 'CommandVerificationFailedEvent',
         correlationId: command.correlationId,
@@ -40,12 +40,12 @@ var createErrorEvent = function (command, message) {
 };
 
 describe('Denormalizer mediator', function () {
-    var logMock;
-    var fhMock;
-    var createStub;
-    var mongoMock;
-    var cqrsEventMock;
-    var eventMock;
+    let logMock;
+    let fhMock;
+    let createStub;
+    let mongoMock;
+    let cqrsEventMock;
+    let eventMock;
 
     beforeEach(function () {
         logMock = sinon.mock(logStub);
@@ -60,14 +60,6 @@ describe('Denormalizer mediator', function () {
     });
 
     afterEach(function () {
-        fhMock.restore();
-        createStub.restore();
-        logMock.restore();
-        mongoMock.restore();
-        cqrsEventMock.restore();
-        fhMock.restore();
-        eventMock.restore();
-
         fhMock.verify();
         logMock.verify();
         mongoMock.verify();
@@ -75,6 +67,13 @@ describe('Denormalizer mediator', function () {
         fhMock.verify();
         eventMock.verify();
 
+        fhMock.restore();
+        createStub.restore();
+        logMock.restore();
+        mongoMock.restore();
+        cqrsEventMock.restore();
+        fhMock.restore();
+        eventMock.restore();
     });
 
     describe('init', function () {
@@ -93,7 +92,7 @@ describe('Denormalizer mediator', function () {
         });
 
         it('should call find on filehound with successful 3 files', function () {
-            var filename = process.cwd() + '/src/cqrs/mocks/mock-denormalizer.js';
+            let filename = process.cwd() + '/src/cqrs/mocks/mock-denormalizer.js';
             fhMock.expects('find').yields(null, [filename, filename, filename]);
             DenormalizerMediator.init(logStub);
         });

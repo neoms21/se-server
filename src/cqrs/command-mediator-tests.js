@@ -60,14 +60,6 @@ describe('Command mediator', function () {
     });
 
     afterEach(function () {
-        fhMock.restore();
-        createStub.restore();
-        logMock.restore();
-        mongoMock.restore();
-        cqrsEventMock.restore();
-        fhMock.restore();
-        eventMock.restore();
-
         fhMock.verify();
         logMock.verify();
         mongoMock.verify();
@@ -75,6 +67,13 @@ describe('Command mediator', function () {
         fhMock.verify();
         eventMock.verify();
 
+        fhMock.restore();
+        createStub.restore();
+        logMock.restore();
+        mongoMock.restore();
+        cqrsEventMock.restore();
+        fhMock.restore();
+        eventMock.restore();
     });
 
     describe('init', function () {
@@ -139,7 +138,7 @@ describe('Command mediator', function () {
         });
 
         afterEach(function () {
-            //fhMock.verify();
+            fhMock.verify();
         });
 
         it('should create the command with supplied info', function () {

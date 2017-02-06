@@ -53,7 +53,6 @@ function init(log) {
     });
 }
 
-
 module.exports = {
     init: init
 };

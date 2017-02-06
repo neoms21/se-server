@@ -3,6 +3,7 @@ const commandMediator = require('./../cqrs/command-mediator');
 const mongoRepository = require('./../db/mongo-repository');
 const EventMediator = require('./../cqrs/event-mediator');
 const EventFactory = require('./../cqrs/event-factory');
+const jwt = require('jsonwebtoken');
 const jwtSecret = require('../cqrs/jwtSecret');
 
 let logger;
@@ -14,13 +15,13 @@ const processSockets = (io, log) => {
     sio = io;
 
     io.on('connection', function (socket) {
-        console.log(socket)
+
         log.info('a user connected on socket ' + socket.id);
         clients.push(socket);
 
-        socket.on('authentication', authenticate);
+        socket.on('authentication', (auth) => authenticate(auth, socket.id));
 
-        socket.on('disconnect', disconnected(socket));
+        socket.on('disconnect', () => disconnected(socket));
 
         socket.on('command', (cmdReq) => {
             log.info('command received: ' + JSON.stringify(cmdReq));
@@ -63,16 +64,33 @@ const disconnected = (socket) => {
     }
 };
 
-const authenticate = (auth) => {
+const authenticate = (auth, socketId) => {
 
     // check the token
+    jwt.verify(auth.token, jwtSecret, (err) => {
 
-
-    const client = clients.find(client => client.id === socket.id);
-    if (client !== undefined) {
-        client.token = auth.token;
-        log.info('Authenticated socket ' + socket.id);
-    }
+        if (err !== undefined) {
+            logger.error('Authentication token didnt match for socket ' + socketId);
+            let event = EventFactory.create('', 'AuthenticationFailed', true);
+            event.error = 'Authentication token didnt match for socket ' + socketId;
+            EventMediator.dispatch(event);
+        } else {
+            // was ok, get the socket
+            const client = clients.find(client => client.id === socketId);
+            if (client !== undefined) {
+                client.token = auth.token;
+                logger.info('Authenticated socket ' + socketId);
+                let event = EventFactory.create(undefined, 'AuthenticationSucceeded', false);
+                EventMediator.dispatch(event);
+            } else {
+                // failed to find client
+                logger.error('Failed to find matching socket ' + socketId);
+                let event = EventFactory.create(undefined, 'AuthenticationFailed', true);
+                event.error = 'Failed to find matching socket ' + socketId;
+                EventMediator.dispatch(event);
+            }
+        }
+    });
 };
 
 const init = () => {

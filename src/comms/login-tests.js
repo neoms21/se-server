@@ -91,7 +91,7 @@ describe('Login routes ', () => {
                 assert(loggerErrorSpy.calledWith('Database Error: DB Fault'));
                 assert(statusSpy.called);
                 assert(statusSpy.calledWith(500));
-            }, 100);
+            }, 300);
 
             mongoRepoStub.restore();
         });

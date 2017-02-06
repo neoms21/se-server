@@ -6,7 +6,7 @@ const getTime = () => {
 
 const applyCommonFields = (decoratee, source) => {
     decoratee.created = exports.getTime();
-    decoratee.createdBy = source.userId;
+    decoratee.createdBy = source !== undefined ? source.userId : undefined;
     decoratee.validFrom = decoratee.created;
     decoratee.validTo = new Date('31 dec 9999');
 };
