@@ -113,7 +113,6 @@ describe('Socket handler', () => {
                 messageCount: 1,
                 error: 'Failed to find matching socket 123@'
             }));
-
         });
 
         it('should give success if authentication match', () => {
