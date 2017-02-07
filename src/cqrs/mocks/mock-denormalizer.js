@@ -3,6 +3,9 @@
 
  */
 
+function init() {
+}
+
 function handleMessage() {
 }
 
@@ -11,6 +14,7 @@ function getMessages() {
 }
 
 module.exports = exports = {
+    init: init,
     handleMessage: handleMessage,
     getMessages: getMessages
 };

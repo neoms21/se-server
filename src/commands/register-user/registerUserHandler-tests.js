@@ -1,23 +1,27 @@
-var sinon = require('sinon');
-var assert = require('assert');
-var mongoRepository = require('../../db/mongo-repository');
-var handler = require('./RegisterUserCommandHandler');
-var Rx = require('rxjs/Rx');
-var eventMediator = require('../../cqrs/event-mediator');
+const sinon = require('sinon');
+const assert = require('assert');
+const mongoRepository = require('../../db/mongo-repository');
+const handler = require('./RegisterUserCommandHandler');
+const Rx = require('rxjs/Rx');
+const eventMediator = require('../../cqrs/event-mediator');
+const generalServices = require('../../cqrs/general-services');
 
 describe('Register user command', function () {
-    var countStub;
-    var count = 0;
+    let countStub;
+    let count = 0;
+    let timeStub;
 
     beforeEach(function () {
         countStub = sinon.stub(mongoRepository, 'getCount', function () {
             // supply dummy observable
             return Rx.Observable.from([count]);
         });
+        timeStub = sinon.stub(generalServices, 'getTime', () => new Date('01 Sep 2016 08:00'));
     });
 
     afterEach(function () {
         countStub.restore();
+        timeStub.restore();
     });
 
     describe('Verify', function () {
@@ -37,7 +41,6 @@ describe('Register user command', function () {
             handler.command = {};
             handler.verify().toArray()
                 .subscribe(function (resp) {
-                    console.log('resp' + resp.length);
                     assert.equal(resp.length, 3);
                     assert.equal(resp[0].message, 'Name property was not defined');
                     assert.equal(resp[1].message, 'Email property was not defined');
@@ -92,7 +95,6 @@ describe('Register user command', function () {
                 });
         });
 
-
     });
 
     describe('Execute', function () {
@@ -120,16 +122,22 @@ describe('Register user command', function () {
 
             assert(dispatchStub.called);
             assert(dispatchStub.calledWith({
-                eventName: 'UserRegisteredEvent',
-                email: 'mark',
-                name: 'mark s',
-                correlationId: 1,
-                messageNumber: 1,
-                messageCount: 1,
-                isFailure: false,
-                createdBy: undefined,
-                created: new Date()
-            }));
+                    correlationId: 1,
+                    eventName: 'UserRegisteredEvent',
+                    isFailure: false,
+                    created: new Date('01 Sep 2016 08:00'),
+                    createdBy: undefined,
+                    validFrom: new Date('01 Sep 2016 08:00'),
+                    validTo: new Date('31 Dec 9999'),
+                    messageNumber: 1,
+                    messageCount: 1,
+                    command: {
+                        email: 'mark',
+                        name: 'mark s',
+                        correlationId: 1
+                    }
+                }
+            ));
         });
 
     });

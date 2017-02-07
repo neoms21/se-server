@@ -1,52 +1,51 @@
 'use strict';
-var config = require('config');
-var mongoClient = require('mongodb');
-var Rx = require('rxjs/Rx');
-var util = require('util');
+const config = require('config');
+const mongoClient = require('mongodb');
+const Rx = require('rxjs/Rx');
+const util = require('util');
 
-var logger;
-var connection;
+let logger;
 
-function init(log) {
+const init = (log) => {
     logger = log;
-}
+};
 
-function connectToDb() {
+const connectToDb = () => {
 
-    if (connection === undefined) {
-        var configDB = config.get("dbConfig");
+    const configDB = config.get("dbConfig");
 
-        // create uri no user
-        var uri = 'mongodb://' + configDB.host + ':' + configDB.port + '/' + configDB.name;
-        logger.info('Trying to connect to ' + uri + ' for db');
+    // create uri no user
+    const uri = 'mongodb://' + configDB.host + ':' + configDB.port + '/' + configDB.name;
+    logger.info('Trying to connect to ' + uri + ' for db');
 
-        // Connect to the db
-        connection = mongoClient.connect(uri);
-    }
+    // Connect to the db
+    return mongoClient.connect(uri);
 
-    return connection;
-}
+};
 
-function getCount(collectionName, param) {
-    var response = new Rx.Subject();
+const getCount = (collectionName, param) => {
+    let response = new Rx.Subject();
 
-    this.connectToDb()
+    connectToDb()
         .then(function (db) {
             db.collection(collectionName).count(param)
                 .then(function (count) {
                     response.next(count);
                     response.complete();
+                    db.close();
                 })
                 .catch(function (err) {
                     response.error(err);
+                    logger.error(err);
+                    db.close();
                 });
         });
 
     return response;
-}
+};
 
-function insert(collectionName, insertion) {
-    var response = new Rx.Subject();
+const insert = (collectionName, insertion) => {
+    let response = new Rx.Subject();
 
     connectToDb()
         .then(function (db) {
@@ -54,10 +53,13 @@ function insert(collectionName, insertion) {
                     .then(function (succ) {
                             response.next(succ);
                             response.complete();
+                            db.close();
                         }
                     )
                     .catch(function (errInsert) {
                             response.error(errInsert);
+                            logger.error(errInsert);
+                            db.close();
                         }
                     );
             }, function (err) {
@@ -66,9 +68,9 @@ function insert(collectionName, insertion) {
         );
 
     return response;
-}
+};
 
-var createCollection = function (db, name) {
+const createCollection = (db, name) => {
     db.createCollection(name, function (err, collection) {
         if (util.isNullOrUndefined(err)) {
             logger.info('[Db] - created ' + name + ' collection');
@@ -78,8 +80,8 @@ var createCollection = function (db, name) {
     });
 };
 
-function createOrOpenDb() {
-    var response = new Rx.Subject();
+const createOrOpenDb = () => {
+    let response = new Rx.Subject();
 
     connectToDb()
         .then(function (db) {
@@ -88,19 +90,53 @@ function createOrOpenDb() {
             createCollection(db, 'clubs');
             createCollection(db, 'teams');
             createCollection(db, 'logins');
+            db.close();
         })
         .catch(function (err) {
                 response.error(err.toString());
+                db.close();
             }
         );
 
     return response;
-}
+};
+
+const query = (collectionName, filters) => {
+    let response = new Rx.Subject();
+
+    connectToDb()
+        .then(function (db) {
+            const cursor = db.collection(collectionName).find(filters); // use internal mongo function
+
+            // cursor.count(function(err, count) {
+            //     log.info('query count ' + count)
+            // });
+
+            cursor.forEach((item) => {
+                response.next(item);
+            }, (err) => { // error or complete!
+                if (err === null) {
+                    //cursor done
+                    response.complete();
+                } else {
+                    response.error(err);
+                }
+                db.close();
+            });
+        })
+        .catch(function (err) {
+            response.error(err);
+            db.close();
+        });
+
+    return response;
+};
 
 module.exports = {
     createOrOpenDb: createOrOpenDb,
     insert: insert,
     getCount: getCount,
     connectToDb: connectToDb,
+    query: query,
     init: init
 };

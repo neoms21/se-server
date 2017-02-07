@@ -4,17 +4,22 @@
   "private": true,
   "scripts": {
     "lint": "node_modules/.bin/jslint src/**/*.js",
-    "start": "NODE_ENV=dev nodemon -- src/app.js | ./node_modules/.bin/bunyan",
-    "ci": "node_modules/.bin/istanbul cover node_modules/.bin/_mocha src/**/*-tests.js",
+    "start": "cross-env NODE_ENV=dev nodemon -- src/app.js | bunyan",
+    "ci": "istanbul cover _mocha src/**/*-tests.js",
     "test": "mocha --watch src/**/*-tests.js ",
-    "cover": "node_modules/.bin/istanbul cover node_modules/.bin/mocha src/**/*-tests.js "
+    "cover": "istanbul cover _mocha src/**/*-tests.js "
   },
   "dependencies": {
+    "body-parser": "^1.16.0",
     "bunyan": "^1.8.1",
     "config": "^1.21.0",
+    "cors": "^2.8.1",
+    "cross-env": "^3.1.4",
     "express": "^4.14.0",
     "filehound": "^1.12.4",
+    "jsonwebtoken": "^7.2.1",
     "mongodb": "^2.2.10",
+    "q": "^1.4.1",
     "rxjs": "^5.0.1",
     "socket.io": "^1.6.0",
     "uuid": "^2.0.3"
@@ -23,7 +28,6 @@
     "istanbul": "^0.4.5",
     "jslint": "^0.10.3",
     "mocha": "^3.1.0",
-    "q": "^1.4.1",
     "sinon": "^1.17.6"
   }
 }

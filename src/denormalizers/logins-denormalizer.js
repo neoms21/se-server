@@ -1,20 +1,33 @@
 'use strict';
 const MongoRepository = require('../db/mongo-repository');
+const GeneralServices = require('../cqrs/general-services');
+
+let logger;
+
+function init(log) {
+    logger = log;
+}
 
 function handleRegisterUser(event) {
     // check whether user has a login
-    MongoRepository.getCount('logins', {userName: event.userName})
+    //console.log('in handle register')
+
+    MongoRepository.getCount('logins', {userName: event.command.email})
         .subscribe(function (count) {
             if (count > 0) {
                 // oops duplicate
-                //response.onError(['The username @ ' + event.userName + ' is a duplicate']);
+                logger.error(`The user name ${event.command.email} is a duplicate`);
             } else {
-                const login = {name: event.name, userName: event.userName, password: event.password};
+                let login = {
+                    name: event.command.name,
+                    userName: event.command.email,
+                    password: event.command.password
+                };
+                GeneralServices.applyCommonFields(login, event);
                 MongoRepository.insert('logins', login);
             }
-        }, function () {
-
-            //response.onError(err); // pass it on
+        }, function (err) {
+            logger.error(err)
         });
 }
 
@@ -24,6 +37,7 @@ function getMessages() {
 
 //noinspection JSUnresolvedVariable
 module.exports = {
+    init: init,
     handleMessage: handleRegisterUser,
     getMessages: getMessages
 };

@@ -1,17 +1,16 @@
 'use strict';
+const path = require('path');
+const Rx = require('rxjs');
+const Filehound = require('filehound');
+const mongoRepository = require('../db/mongo-repository');
+const eventMediator = require('./event-mediator');
+const cqrsEventCreator = require('./cqrs-event-creator');
+const commandVerifier = require('./commandVerifier');
+const generalServices = require('./general-services');
 
-var path = require('path');
-var Rx = require('rxjs');
-var Filehound = require('filehound');
-var mongoRepository = require('../db/mongo-repository');
-var eventMediator = require('./event-mediator');
-var cqrsEventCreator = require('./cqrs-event-creator');
-var commandVerifier = require('./commandVerifier');
-
-var mappings = [];
-var logger;
-var propagator = new Rx.Subject();
-var exports;
+let mappings = [];
+let logger;
+let propagator = new Rx.Subject();
 
 function init(log) {
     logger = log;
@@ -28,7 +27,7 @@ function init(log) {
                 logger.error("error finding handlers ", err);
             } else {
                 filenames.forEach(function (filename) {
-                    var mapping = {
+                    let mapping = {
                         code: path.basename(filename, '.js').slice(0, path.basename(filename, '.js').length - 14),
                         path: filename
                     };
@@ -41,13 +40,15 @@ function init(log) {
 
 function saveCommand(command) {
 
+    generalServices.applyCommonFields(command, command);
+
     // save to db
     mongoRepository.insert('commands', command)
         .subscribe(function () {
-                var event = cqrsEventCreator.CommandSaved(command);
+                let event = cqrsEventCreator.CommandSaved(command);
                 eventMediator.dispatch(event);
             }, function (err) {
-                var event = cqrsEventCreator.SaveCommandError(command);
+                let event = cqrsEventCreator.SaveCommandError(command);
                 event.error = err.toString();
                 eventMediator.dispatch(event);
             }
@@ -57,14 +58,14 @@ function saveCommand(command) {
     logger.info('Saving command ' + command.commandName);
 }
 
-function createCommand(request) {
-    var instance;
+function createCommand(request, clientId) {
+    let instance;
 
     // needs command name
     if (request.hasOwnProperty("commandName")) {
 
         // create it now
-        instance = {commandName: request.commandName, correlationId: request.correlationId};
+        instance = {commandName: request.commandName, correlationId: request.correlationId, clientId: clientId};
 
         // add extra props
         Object.assign(instance, request.payload);
@@ -73,8 +74,8 @@ function createCommand(request) {
     return instance;
 }
 
-var createError = function (command, messages) {
-    var event = cqrsEventCreator.CommandVerificationFailed(command);
+let createError = function (command, messages) {
+    let event = cqrsEventCreator.CommandVerificationFailed(command);
     event.messages = messages;
     logger.error(messages[0]);
     eventMediator.dispatch(event);
@@ -82,7 +83,7 @@ var createError = function (command, messages) {
 
 function dispatch(command) {
 
-    var mapping = mappings.find(function (mapping) {
+    let mapping = mappings.find(function (mapping) {
         return mapping.code === command.commandName;
     });
 
@@ -95,7 +96,7 @@ function dispatch(command) {
     // now verify and execute mapping
 
     // check generic command settings
-    var checks = commandVerifier.verify(command);
+    let checks = commandVerifier.verify(command);
     if (checks.length > 0) {
         // there were errors
         createError(command, checks);
@@ -103,12 +104,12 @@ function dispatch(command) {
     }
 
     // get handler
-    var handler = require(mapping.path);
+    let handler = require(mapping.path);
     handler.command = command;
 
     handler.verify().toArray()
         .subscribe(function (messages) {
-
+            console.log('messages - ' + messages.length)
             // verifier has run , so lets get its results
             if (messages.length === 0) {
                 handler.execute(); // all ok, so run it
@@ -117,7 +118,7 @@ function dispatch(command) {
                 logger.info('Command ' + command.commandName + ' executed successfully');
             } else {
                 // verification errors found
-                var event = cqrsEventCreator.CommandVerificationFailed(command);
+                let event = cqrsEventCreator.CommandVerificationFailed(command);
                 event.messages = messages;
                 eventMediator.dispatch(event);
             }
@@ -126,11 +127,9 @@ function dispatch(command) {
         });
 }
 
-exports = {
+module.exports = exports = {
     init: init,
     dispatch: dispatch,
     createCommand: createCommand,
     saveCommand: saveCommand
 };
-
-module.exports = exports;
