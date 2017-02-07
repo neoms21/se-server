@@ -30,17 +30,20 @@ let validateUser = (user) => {
     return deferred.promise;
 };
 
-let postLogin = (req, res, logger) => {
+let postLogin = (req, res) => {
     // get param
     const user = req.body;
 
     if (!Object.keys(user).length) {
         res.status(203).send('User details not defined');
+        console.log(logger)
+        logger.error('Login with no details');
         return;
     }
 
     if (user.userName === undefined || user.password === undefined) {
         res.status(203).send('User details not defined correctly');
+        logger.error('Login with details incorrect ' + JSON.stringify(user));
         return;
     }
 

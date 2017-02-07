@@ -16,7 +16,16 @@ const log = logger.createLogger({
     name: 'Sports Editor',
     serializers: {
         req: logger.stdSerializers.req
-    }
+    },
+    streams: [
+        {
+            level: 'info',
+            stream: process.stdout            // log INFO and above to stdout
+        },
+        {
+            level: 'error',
+            path: './sports-editor-error.log'  // log ERROR and above to a file
+        }]
 });
 
 // our psuedo singletons need init

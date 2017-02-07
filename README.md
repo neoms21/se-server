@@ -19,15 +19,7 @@ The server side follows an architecture of CQRS (using event sourcing),
 ## Running
  Run `npm start`
 
-## Development
 
-### Adding a command
-
-### Adding an event
-
-### Adding a de-normalizer
-
-### Adding a query
 
 
 
