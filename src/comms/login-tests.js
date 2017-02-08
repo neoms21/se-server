@@ -46,6 +46,7 @@ describe('Login routes ', () => {
             loggerErrorSpy = sinon.spy(logger, 'error');
             loggerInfoSpy = sinon.spy(logger, 'info');
 
+            login.init(logger);
         });
 
         afterEach(() => {

@@ -68,9 +68,8 @@ const authenticate = (auth, socketId) => {
 
     // check the token
     jwt.verify(auth.token, jwtSecret, (err) => {
-
-        if (err !== undefined) {
-            logger.error('Authentication token didnt match for socket ' + socketId);
+        if (err !== null) {
+            logger.error(`'Authentication token didnt match for socket ${socketId} error ${err}`);
             let event = EventFactory.create('', 'AuthenticationFailed', true);
             event.error = 'Authentication token didnt match for socket ' + socketId;
             EventMediator.dispatch(event);

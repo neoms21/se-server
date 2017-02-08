@@ -36,7 +36,6 @@ let postLogin = (req, res) => {
 
     if (!Object.keys(user).length) {
         res.status(203).send('User details not defined');
-        console.log(logger)
         logger.error('Login with no details');
         return;
     }
