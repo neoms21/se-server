@@ -95,7 +95,7 @@ describe('Socket handler', () => {
         });
 
         it('should give error if socket wrong', () => {
-            let jwtStub = sinon.stub(jwt, 'verify').yields(undefined); // verifies ok
+            let jwtStub = sinon.stub(jwt, 'verify').yields(null); // verifies ok
             io.emit('connection', socket);
             socket.emit('disconnect'); // deletes the client
             socket.emit('authentication', {token: '@@@@@'});
@@ -116,7 +116,7 @@ describe('Socket handler', () => {
         });
 
         it('should give success if authentication match', () => {
-            let jwtStub = sinon.stub(jwt, 'verify').yields(undefined); // verifies ok
+            let jwtStub = sinon.stub(jwt, 'verify').yields(null); // verifies ok
             io.emit('connection', socket);
             socket.emit('authentication', {token: '@@@@@'});
             socket.emit('disconnect'); // deletes the client

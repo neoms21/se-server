@@ -86,15 +86,15 @@ describe('Login routes ', () => {
 
             request.body = {userName: 'kkkkk', password: '@@@'};
             login.postLogin(request, response, logger);
+            mongoRepoStub.restore();
 
             setTimeout(() => {
                 assert(loggerErrorSpy.called);
                 assert(loggerErrorSpy.calledWith('Database Error: DB Fault'));
                 assert(statusSpy.called);
                 assert(statusSpy.calledWith(500));
-            }, 300);
+            }, 400);
 
-            mongoRepoStub.restore();
         });
 
         it('should use post to set up login', () => {
