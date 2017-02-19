@@ -18,7 +18,7 @@ let validateUser = (user) => {
         .subscribe((cnt) => {
             if (cnt === 0) {
                 // no matching user & password
-                deferred.reject("Email not found or password doesn't match");
+                deferred.resolve("Email not found or password doesn't match");
             } else {
                 // matched!
                 deferred.resolve();
@@ -48,11 +48,17 @@ let postLogin = (req, res) => {
 
     // validate the user
     validateUser(user)
-        .then(() => {
-            // we are sending the user in the token
-            const token = jwt.sign(user, jwtSecret, {expiresIn: 360 * 5});
-            res.json({token: token});
-            logger.info('Authenticated via login ' + user.userName);
+        .then((feedback) => {
+            if(feedback === undefined) {
+                // success, so send back token
+                const token = jwt.sign(user, jwtSecret, {expiresIn: 360 * 5});
+                res.json({token: token});
+                logger.info('Authenticated via login ' + user.userName);
+            } else {
+                // was a non fatal error
+                logger.error({err:feedback});
+                res.status(202).send(feedback);
+            }
         })
         .catch((err) => {
             // error from validate
