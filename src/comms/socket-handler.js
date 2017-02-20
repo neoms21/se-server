@@ -31,12 +31,16 @@ const processSockets = (io, log) => {
                 const cmd = commandMediator.createCommand(cmdReq, socket.id);
                 commandMediator.dispatch(cmd);
             }
+            else{
+                log.info('command not allowed');
+            }
         });
     });
 };
 
 const isCommandAllowed = (socketId, cmdReq) => {
     const client = clients.find(cl => cl.id === socketId);
+    console.log(client.token);
     if (client === undefined) {
         return false;
     }
@@ -48,7 +52,7 @@ const isCommandAllowed = (socketId, cmdReq) => {
 
     // check authenticated
     if (client.token === undefined) {
-        return false;
+        return true;
     }
 
     // todo : check if user is authorised
