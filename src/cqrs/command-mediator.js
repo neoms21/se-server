@@ -74,10 +74,10 @@ function createCommand(request, clientId) {
     return instance;
 }
 
-let createError = function (command, messages) {
+let createError = function (command, responses) {
     let event = cqrsEventCreator.CommandVerificationFailed(command);
-    event.messages = messages;
-    logger.error(messages[0]);
+    event.errors = responses;
+    logger.error(responses);
     eventMediator.dispatch(event);
 };
 
@@ -89,7 +89,7 @@ function dispatch(command) {
 
     if (mapping === undefined) {
         // oops
-        createError(command, ['Unable to create handler for command ' + command.commandName]);
+        createError(command, {'@#@': 'Unable to create handler for command ' + command.commandName});
         return;
     }
 
@@ -107,23 +107,27 @@ function dispatch(command) {
     let handler = require(mapping.path);
     handler.command = command;
 
-    handler.verify().toArray()
-        .subscribe(function (messages) {
-            console.log('messages - ' + messages.length)
+    handler.verify()
+        .reduce((oldVal, newVal) => {
+            oldVal[Object.keys(newVal)[0]] = newVal;
+            return oldVal;
+        })// get keys for the results from verify
+        .subscribe(function (responses) { // we get object with keys set as response names
+            const messageLength = Object.keys(responses).length;
+            console.log('@@@@@@ ' , responses)
+
             // verifier has run , so lets get its results
-            if (messages.length === 0) {
+            if (messageLength === 0) {
                 handler.execute(); // all ok, so run it
                 exports.saveCommand(command); // and save
                 propagator.next('Command ' + command.commandName + ' executed successfully');
                 logger.info('Command ' + command.commandName + ' executed successfully');
             } else {
                 // verification errors found
-                let event = cqrsEventCreator.CommandVerificationFailed(command);
-                event.messages = messages;
-                eventMediator.dispatch(event);
+                createError(command, responses);
             }
         }, function (err) {
-            createError(command, [err.toString()]);
+            createError(command, {'@#@': err.toString()});
         });
 }
 

@@ -42,7 +42,7 @@ function verify() {
 function execute() {
 
     // has been verified , so just need to create event
-    let event = EventFactory.create(this.command, 'UserRegisteredEvent', false);
+    let event = EventFactory.create(this.command, 'SigninUserEvent', false);
     Object.assign(event, { command: this.command });
 
     // now send it

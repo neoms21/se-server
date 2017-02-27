@@ -34,6 +34,7 @@ describe('Login routes ', () => {
                 status: () => {
                     return response;
                 }, send: () => {
+                }, json: () => {
                 }
             };
             logger = {
@@ -80,7 +81,7 @@ describe('Login routes ', () => {
             assert(sendSpy.calledWith('User details not defined correctly'));
         });
 
-        it('should error if repo throws error', () => {
+        it('should error if repo throws error', (done) => {
             mongoRepoStub = sinon.stub(mongoRepository, 'getCount')
                 .returns(Rx.Observable.throw(new Error('DB Fault')));
 
@@ -93,14 +94,16 @@ describe('Login routes ', () => {
                 assert(loggerErrorSpy.calledWith('Database Error: DB Fault'));
                 assert(statusSpy.called);
                 assert(statusSpy.calledWith(500));
+                done();
             }, 400);
 
         });
 
-        it('should use post to set up login', () => {
+        it('should use post to set up login', (done) => {
             mongoRepoStub = sinon.stub(mongoRepository, 'getCount')
                 .returns(Rx.Observable.of(1));
-            jwtStub = sinon.stub(jwt, 'sign');
+            jwtStub = sinon.stub(jwt, 'sign').returns('#token');
+            let jsonStub = sinon.stub(response, 'json');
 
             request.body = {userName: 'kkkkk', password: '@@@'};
             login.postLogin(request, response, logger);
@@ -112,9 +115,12 @@ describe('Login routes ', () => {
                 assert(statusSpy.calledWith(200));
                 assert(jwtStub.called);
                 assert(jwtStub.calledWith(request.body, jwtSecret, {expiresIn: 360 * 5}));
+                assert(jsonStub.calledWith({token: '#token'}));
                 mongoRepoStub.restore();
                 jwtStub.restore();
-            }, 300);
+                jsonStub.restore();
+                done();
+            }, 100);
         });
     });
 

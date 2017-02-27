@@ -11,18 +11,18 @@ function verify() {
     setTimeout(function (command) { // use timeout as rx is async
 
         if (util.isNullOrUndefined(command.name)) {
-            response.next({field: 'name', message: 'Name property was not defined'});
+            response.next({name: 'Name property was not defined'});
         }
 
         if (util.isNullOrUndefined(command.email)) {
-            response.next({field: 'email', message: 'Email property was not defined'});
+            response.next({email: 'Email property was not defined'});
         }
 
         if (util.isNullOrUndefined(command.password)) {
-            response.next({field: 'password', message: 'Password property was not defined'});
+            response.next({password: 'Password property was not defined'});
         } else {
             if (command.password.length < 8) {
-                response.next({field: 'password', message: 'Password must be at least 8 characters long'});
+                response.next({password: 'Password must be at least 8 characters long'});
             }
         }
 
@@ -34,7 +34,7 @@ function verify() {
 
                 if (count > 0) {
                     // oops duplicate
-                    response.next('The email ' + userNameToSearchFor + ' is a duplicate');
+                    response.next({'@#@': 'The email ' + userNameToSearchFor + ' is a duplicate'});
                 }
 
                 // we are done

@@ -18,7 +18,7 @@ let validateUser = (user) => {
         .subscribe((cnt) => {
             if (cnt === 0) {
                 // no matching user & password
-                deferred.resolve("Email not found or password doesn't match");
+                deferred.resolve(`Email ${user.userName} not found or password ${user.password} doesn't match `);
             } else {
                 // matched!
                 deferred.resolve();
@@ -52,7 +52,7 @@ let postLogin = (req, res) => {
             if(feedback === undefined) {
                 // success, so send back token
                 const token = jwt.sign(user, jwtSecret, {expiresIn: 360 * 5});
-                res.json({token: token});
+                res.status(200).json({token: token});
                 logger.info('Authenticated via login ' + user.userName);
             } else {
                 // was a non fatal error
