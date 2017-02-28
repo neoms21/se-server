@@ -21,7 +21,8 @@ function init(log) {
     Filehound.create()
         .ext('js')
         .paths(process.cwd() + '/src/commands')
-        .match('!(*-tests*)*')
+        .not()
+        .match('*-tests*')
         .find(function (err, filenames) {
             if (err) {
                 logger.error("error finding handlers ", err);
@@ -32,7 +33,7 @@ function init(log) {
                         path: filename
                     };
                     mappings.push(mapping);
-                    log.info('Added command ' + mapping.code);
+                    log.info('Added command ' + mapping.code + ' for ' + filename);
                 });
             }
         });
