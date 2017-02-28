@@ -21,7 +21,7 @@ function init(log) {
     Filehound.create()
         .ext('js')
         .paths(process.cwd() + '/src/commands')
-        .match('*CommandHandler*')
+        .match('!(*-tests*)*')
         .find(function (err, filenames) {
             if (err) {
                 logger.error("error finding handlers ", err);

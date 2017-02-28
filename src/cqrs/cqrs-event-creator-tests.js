@@ -12,11 +12,11 @@ describe('CQRS Event eventFactory', function () {
             var results = cqrsEventCreator.CommandExecuted(command);
 
             //assert(verifierStub.called);
-            assert.equal(results.correlationId, 1);
-            assert.equal(results.eventName, 'CommandExecutedEvent');
-            assert.equal(results.isFailure, false);
-            assert.equal(results.createdBy, 222);
-            assert.notEqual(results.created, null);
+            assert.equal(results.command.correlationId, 1);
+            assert.equal(results.properties.eventName, 'CommandExecutedEvent');
+            assert.equal(results.properties.isFailure, false);
+            assert.equal(results.properties.createdBy, 222);
+            assert.notEqual(results.properties.created, null);
         });
     });
 
@@ -24,12 +24,12 @@ describe('CQRS Event eventFactory', function () {
         it('should return event', function () {
             var results = cqrsEventCreator.CommandVerificationFailed(command);
 
-            assert.equal(results.correlationId, 1);
-            assert.equal(results.eventName, 'CommandVerificationFailedEvent');
-            assert.equal(results.isFailure, true);
-            assert.equal(results.createdBy, 222);
+            assert.equal(results.command.correlationId, 1);
+            assert.equal(results.properties.eventName, 'CommandVerificationFailedEvent');
+            assert.equal(results.properties.isFailure, true);
+            assert.equal(results.properties.createdBy, 222);
             assert.ok(results.messages);
-            assert.notEqual(results.created, null);
+            assert.notEqual(results.properties.created, null);
         });
     });
 
@@ -37,11 +37,11 @@ describe('CQRS Event eventFactory', function () {
         it('should give error if command verifier gives error', function () {
             var results = cqrsEventCreator.SaveCommandError(command);
 
-            assert.equal(results.correlationId, 1);
-            assert.equal(results.eventName, 'SaveCommandErrorEvent');
-            assert.equal(results.isFailure, true);
-            assert.equal(results.createdBy, 222);
-            assert.notEqual(results.created, null);
+            assert.equal(results.command.correlationId, 1);
+            assert.equal(results.properties.eventName, 'SaveCommandErrorEvent');
+            assert.equal(results.properties.isFailure, true);
+            assert.equal(results.properties.createdBy, 222);
+            assert.notEqual(results.properties.created, null);
         });
 
     });
@@ -50,11 +50,11 @@ describe('CQRS Event eventFactory', function () {
         it('should give error if command verifier gives error', function () {
             var results = cqrsEventCreator.CommandSaved(command);
 
-            assert.equal(results.correlationId, 1);
-            assert.equal(results.eventName, 'CommandSavedEvent');
-            assert.equal(results.isFailure, true);
-            assert.equal(results.createdBy, 222);
-            assert.notEqual(results.created, null);
+            assert.equal(results.command.correlationId, 1);
+            assert.equal(results.properties.eventName, 'CommandSavedEvent');
+            assert.equal(results.properties.isFailure, true);
+            assert.equal(results.properties.createdBy, 222);
+            assert.notEqual(results.properties.created, null);
         });
     });
 });

@@ -11,6 +11,7 @@ function init(log) {
 }
 
 function dispatch(event) {
+    console.log(event);
     if(util.isNullOrUndefined(event.eventName)) {
         throw new Error('Event dispatched without name - ' + JSON.stringify(event));
     }
