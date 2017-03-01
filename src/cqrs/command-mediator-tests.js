@@ -24,7 +24,7 @@ let fhStub = {
     },
     find: function () {
     },
-    not: function() {
+    not: function () {
     }
 };
 
@@ -55,7 +55,8 @@ describe('Command mediator', function () {
         fhMock = sinon.mock(fhStub);
         fhMock.expects('ext').withArgs('js').returns(fhStub);
         fhMock.expects('paths').withArgs(process.cwd() + '/src/commands').returns(fhStub);
-
+        fhMock.expects('match').withArgs('*-tests*').returns(fhStub);
+        fhMock.expects('not').returns(fhStub);
 
         mongoMock = sinon.mock(mongoRepository);
         cqrsEventMock = sinon.mock(cqrsEventCreator);
@@ -86,12 +87,13 @@ describe('Command mediator', function () {
         });
 
         it('should call find on filehound with successful 1 file ', function () {
-            fhMock.expects('find').yields(null, ['file.js']);
+            fhMock.expects('find').yields(null, ['./mocks/mock-handlerCommandHandler.js']);
             CommandMediator.init(logStub);
         });
 
         it('should call find on filehound with successful 3 files', function () {
-            fhMock.expects('find').yields(null, ['file.js', 'second.js', 'third.js']);
+            fhMock.expects('find').yields(null, ['./mocks/mock-handlerCommandHandler.js',
+                './mocks/mock-handlerCommandHandler.js', './mocks/mock-handlerCommandHandler.js']);
             CommandMediator.init(logStub);
         });
     });
@@ -101,7 +103,8 @@ describe('Command mediator', function () {
 
         beforeEach(function () {
             // set up our mocks
-            fhMock.expects('find').yields(null, ['file.js', 'second.js', 'third.js']);
+            fhMock.expects('find').yields(null, ['./mocks/mock-handlerCommandHandler.js',
+                './mocks/mock-handlerCommandHandler.js', './mocks/mock-handlerCommandHandler.js']);
 
             CommandMediator.init(logStub);
         });
@@ -134,7 +137,8 @@ describe('Command mediator', function () {
 
         beforeEach(function () {
             // set up our mocks
-            fhMock.expects('find').yields(null, ['file.js', 'second.js', 'third.js']);
+            fhMock.expects('find').yields(null, ['./mocks/mock-handlerCommandHandler.js',
+                './mocks/mock-handlerCommandHandler.js', './mocks/mock-handlerCommandHandler.js']);
 
             CommandMediator.init(logStub);
         });
@@ -176,7 +180,8 @@ describe('Command mediator', function () {
     describe('dispatch', function () {
         beforeEach(function () {
             // set up our mocks
-            fhMock.expects('find').yields(null, [process.cwd() + '/src/cqrs/mocks/mock-handlerCommandHandler.js', 'second.js', 'third.js']);
+            fhMock.expects('find').yields(null, ['./mocks/mock-handlerCommandHandler.js',
+                './mocks/mock-handlerCommandHandler.js', './mocks/mock-handlerCommandHandler.js']);
             CommandMediator.init(logStub);
         });
 
@@ -230,7 +235,7 @@ describe('Command mediator', function () {
             let verifyStub = sinon.stub(mockHandler, 'verify').returns(Rx.Observable.of({}));
             let executeStub = sinon.stub(mockHandler, 'execute');
             let saveStub = sinon.stub(CommandMediator, 'saveCommand');
-            let command = {commandName: 'mock-handler', correlationId: 3};
+            let command = {commandName: 'DummyCommand', correlationId: 3};
             //let event = createErrorEvent(command, 'Error');
             //cqrsEventMock.expects('CommandVerificationFailed').withArgs(command).returns(event);
             //eventMock.expects('dispatch').once(); //.withArgs(event);

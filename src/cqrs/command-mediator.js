@@ -14,7 +14,6 @@ let propagator = new Rx.Subject();
 
 function init(log) {
     logger = log;
-
     mappings = []; //
 
     // find all the handlers
@@ -34,13 +33,10 @@ function init(log) {
 
                     if (instance !== undefined) {
                         let mapping = {command: instance.getCommand(), handler: instance};
-                        // make sure it's initialised
-                        instance.init(logger);
                         // add to our list
                         mappings.push(mapping);
+                        log.info('Added command ' + mapping.command);
                     }
-
-                    log.info('Added command ' + mapping.command);
                 });
             }
         });
@@ -112,7 +108,7 @@ function dispatch(command) {
     }
 
     // get handler
-    let handler = require(mapping.path);
+    let handler = mapping.handler;
     handler.command = command;
 
     handler.verify()
@@ -122,7 +118,6 @@ function dispatch(command) {
         })// get keys for the results from verify
         .subscribe(function (responses) { // we get object with keys set as response names
             const messageLength = Object.keys(responses).length;
-            console.log('@@@@@@ ', responses)
 
             // verifier has run , so lets get its results
             if (messageLength === 0) {
@@ -139,7 +134,7 @@ function dispatch(command) {
         });
 }
 
-module.exports = {
+module.exports = exports = {
     init: init,
     dispatch: dispatch,
     createCommand: createCommand,
