@@ -23,6 +23,8 @@ let fhStub = {
     match: function () {
     },
     find: function () {
+    },
+    not: function() {
     }
 };
 
@@ -53,7 +55,8 @@ describe('Command mediator', function () {
         fhMock = sinon.mock(fhStub);
         fhMock.expects('ext').withArgs('js').returns(fhStub);
         fhMock.expects('paths').withArgs(process.cwd() + '/src/commands').returns(fhStub);
-        fhMock.expects('match').withArgs('*CommandHandler*').returns(fhStub);
+
+
         mongoMock = sinon.mock(mongoRepository);
         cqrsEventMock = sinon.mock(cqrsEventCreator);
         eventMock = sinon.mock(eventMediator);

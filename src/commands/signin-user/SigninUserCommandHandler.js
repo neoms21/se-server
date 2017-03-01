@@ -51,7 +51,8 @@ function execute() {
 
 module.exports = {
     verify: verify,
-    execute: execute
+    execute: execute,
+    getCommand: () => "SigninUser"
 };
 
 

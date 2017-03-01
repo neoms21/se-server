@@ -21,19 +21,26 @@ function init(log) {
     Filehound.create()
         .ext('js')
         .paths(process.cwd() + '/src/commands')
+        .match('*-tests*') // ignore tests with the not()
         .not()
-        .match('*-tests*')
-        .find(function (err, filenames) {
+        .find((err, filenames) => {
             if (err) {
                 logger.error("error finding handlers ", err);
             } else {
                 filenames.forEach(function (filename) {
-                    let mapping = {
-                        code: path.basename(filename, '.js').slice(0, path.basename(filename, '.js').length - 14),
-                        path: filename
-                    };
-                    mappings.push(mapping);
-                    log.info('Added command ' + mapping.code + ' for ' + filename);
+
+                    // instantiate so we can get command
+                    let instance = require(filename);
+
+                    if (instance !== undefined) {
+                        let mapping = {command: instance.getCommand(), handler: instance};
+                        // make sure it's initialised
+                        instance.init(logger);
+                        // add to our list
+                        mappings.push(mapping);
+                    }
+
+                    log.info('Added command ' + mapping.command);
                 });
             }
         });
@@ -85,7 +92,7 @@ let createError = function (command, responses) {
 function dispatch(command) {
 
     let mapping = mappings.find(function (mapping) {
-        return mapping.code === command.commandName;
+        return mapping.command === command.commandName;
     });
 
     if (mapping === undefined) {
@@ -115,7 +122,7 @@ function dispatch(command) {
         })// get keys for the results from verify
         .subscribe(function (responses) { // we get object with keys set as response names
             const messageLength = Object.keys(responses).length;
-            console.log('@@@@@@ ' , responses)
+            console.log('@@@@@@ ', responses)
 
             // verifier has run , so lets get its results
             if (messageLength === 0) {
@@ -132,7 +139,7 @@ function dispatch(command) {
         });
 }
 
-module.exports = exports = {
+module.exports = {
     init: init,
     dispatch: dispatch,
     createCommand: createCommand,
