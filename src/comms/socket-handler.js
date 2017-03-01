@@ -52,7 +52,7 @@ const isCommandAllowed = (socketId, cmdReq) => {
 
     // check authenticated
     if (client.token === undefined) {
-        return true;
+        return false;
     }
 
     // todo : check if user is authorised
@@ -73,7 +73,7 @@ const authenticate = (auth, socketId) => {
     // check the token
     jwt.verify(auth.token, jwtSecret, (err) => {
 
-        if (err !== undefined) {
+        if (err !== null) {
             logger.error('Authentication token didnt match for socket ' + socketId);
             let event = EventFactory.create('', 'AuthenticationFailed', true);
             event.error = 'Authentication token didnt match for socket ' + socketId;
