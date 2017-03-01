@@ -107,15 +107,17 @@ const query = (collectionName, filters) => {
     connectToDb()
         .then(function (db) {
             const cursor = db.collection(collectionName).find(filters); // use internal mongo function
-
+let items = []
             // cursor.count(function(err, count) {
             //     log.info('query count ' + count)
             // });
 
             cursor.forEach((item) => {
                 response.next(item);
-            }, (err) => { // error or complete!
+            }, (err) => {
+                console.log(err);// error or complete!
                 if (err === null) {
+                    // console.log(items);
                     //cursor done
                     response.complete();
                 } else {

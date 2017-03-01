@@ -10,14 +10,20 @@ function init(log) {
 
 function fetchSquads(event) {
 
-    console.log(event);
+    let items = [];
+    // GeneralServices.applyCommonFields(squad, event);
+    MongoRepository.query('squads', {})
+        .subscribe(function (x) {
+            items.push(x);
+        }, function (err) {
 
+        }, function () {
 
-    MongoRepository.query('squads', {});
+        });
 }
 
 function getMessages() {
-    return ['CreateSquadEvent'];
+    return ['FetchSquadsEvent'];
 }
 
 //noinspection JSUnresolvedVariable

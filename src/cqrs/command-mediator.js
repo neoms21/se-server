@@ -82,7 +82,7 @@ let createError = function (command, messages) {
 };
 
 function dispatch(command) {
-
+    console.log(mappings);
     let mapping = mappings.find(function (mapping) {
         return mapping.code === command.commandName;
     });
