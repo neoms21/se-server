@@ -4,5 +4,6 @@
       "port": 27017,
       "user": "spedit",
       "password": "spedit01"
-    }
+    },
+  "pageSize": 50
 }

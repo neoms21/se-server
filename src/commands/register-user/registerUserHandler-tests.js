@@ -42,9 +42,9 @@ describe('Register user command', function () {
             handler.verify().toArray()
                 .subscribe(function (resp) {
                     assert.equal(resp.length, 3);
-                    assert.equal(resp[0].message, 'Name property was not defined');
-                    assert.equal(resp[1].message, 'Email property was not defined');
-                    assert.equal(resp[2].message, 'Password property was not defined');
+                    assert.deepEqual(resp[0], {name: 'Name property was not defined'});
+                    assert.deepEqual(resp[1], {email: 'Email property was not defined'});
+                    assert.deepEqual(resp[2], {password: 'Password property was not defined'});
                 }, function (err) {
                     assert(err, null);
                 }, function () {
@@ -58,8 +58,8 @@ describe('Register user command', function () {
             handler.verify().toArray()
                 .subscribe(function (resp) {
                     assert.equal(resp.length, 2);
-                    assert.equal(resp[0].message, 'Name property was not defined');
-                    assert.equal(resp[1].message, 'Email property was not defined');
+                    assert.deepEqual(resp[0], {name: 'Name property was not defined'});
+                    assert.deepEqual(resp[1], {email: 'Email property was not defined'});
                 }, function (err) {
                     assert(err, null);
                 }, function () {
@@ -72,8 +72,8 @@ describe('Register user command', function () {
             handler.verify().toArray()
                 .subscribe(function (resp) {
                     assert.equal(resp.length, 2);
-                    assert.equal(resp[0].message, 'Email property was not defined');
-                    assert.equal(resp[1].message, 'Password property was not defined');
+                    assert.deepEqual(resp[0], {email: 'Email property was not defined'});
+                    assert.deepEqual(resp[1], {password: 'Password property was not defined'});
                 }, function (err) {
                     assert(err, null);
                 }, function () {
@@ -86,8 +86,8 @@ describe('Register user command', function () {
             handler.verify().toArray()
                 .subscribe(function (resp) {
                     assert.equal(resp.length, 2);
-                    assert.equal(resp[0].message, 'Name property was not defined');
-                    assert.equal(resp[1].message, 'Password property was not defined');
+                    assert.deepEqual(resp[0], {name: 'Name property was not defined'});
+                    assert.deepEqual(resp[1], {password: 'Password property was not defined'});
                 }, function (err) {
                     assert(err, null);
                 }, function () {
@@ -117,24 +117,33 @@ describe('Register user command', function () {
             dispatchStub = sinon.stub(eventMediator, 'dispatch', function () {
             });
 
-            handler.command = {email: 'mark', name: 'mark s', correlationId: 1};
+            handler.command = {
+                email: 'mark', name: 'mark s',
+                properties: {
+                    correlationId: 1
+                }
+            };
             handler.execute();
 
             assert(dispatchStub.called);
+            console.log(dispatchStub.getCall(0).args)
             assert(dispatchStub.calledWith({
-                    correlationId: 1,
-                    eventName: 'UserRegisteredEvent',
-                    isFailure: false,
-                    created: new Date('01 Sep 2016 08:00'),
-                    createdBy: undefined,
-                    validFrom: new Date('01 Sep 2016 08:00'),
-                    validTo: new Date('31 Dec 9999'),
-                    messageNumber: 1,
-                    messageCount: 1,
+                    properties: {
+                        eventName: 'UserRegisteredEvent',
+                        isFailure: false,
+                        created: new Date('01 Sep 2016 08:00'),
+                        createdBy: undefined,
+                        validFrom: new Date('01 Sep 2016 08:00'),
+                        validTo: new Date('31 Dec 9999'),
+                        messageNumber: 1,
+                        messageCount: 1,
+                    },
                     command: {
                         email: 'mark',
                         name: 'mark s',
-                        correlationId: 1
+                        properties: {
+                            correlationId: 1
+                        }
                     }
                 }
             ));

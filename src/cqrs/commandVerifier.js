@@ -7,11 +7,11 @@ var commandVerifier = function (command) {
         errors.push('command was not defined');
     } else {
 
-        if (util.isNullOrUndefined(command.commandName)) {
+        if (util.isNullOrUndefined(command.properties.commandName)) {
             errors.push('command needs its commandName');
         }
 
-        if (util.isNullOrUndefined(command.correlationId) || command.correlationId === '') {
+        if (util.isNullOrUndefined(command.properties.correlationId) || command.properties.correlationId === '') {
             errors.push('command needs its correlationId');
         }
 

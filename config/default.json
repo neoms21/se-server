@@ -3,5 +3,6 @@
     "name": "SportsEditor",
     "host": "",
     "port": 0
-  }
+  },
+  "pageSize": 50
 }

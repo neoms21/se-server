@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const Filehound = require('filehound');
 const mongoRepository = require('../db/mongo-repository');
 const Rx = require('rxjs/Rx');
-const cqrsEventCreator = require('./cqrs-event-creator');
+const eventFactory = require('./event-factory');
 const eventMediator = require('./event-mediator');
 const mockHandler = require('./mocks/mock-handlerCommandHandler');
 
@@ -55,7 +55,7 @@ describe('Denormalizer mediator', function () {
         fhMock.expects('paths').withArgs(process.cwd() + '/src/denormalizers').returns(fhStub);
         fhMock.expects('match').withArgs('!(*-test*)*').returns(fhStub);
         mongoMock = sinon.mock(mongoRepository);
-        cqrsEventMock = sinon.mock(cqrsEventCreator);
+        cqrsEventMock = sinon.mock(eventFactory);
         eventMock = sinon.mock(eventMediator);
     });
 

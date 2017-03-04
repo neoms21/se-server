@@ -6,25 +6,16 @@ const Rx = require('rxjs');
 const EventFactory = require('../../cqrs/event-factory');
 
 function verify() {
-    var response = new Rx.Subject();
+    const response = new Rx.Subject();
 
     setTimeout(function (command) { // use timeout as rx is async
 
-
-        if (util.isNullOrUndefined(command.name)) {
-            response.next({name: 'Name property was not defined'});
-        }
-
-        if (util.isNullOrUndefined(command.email)) {
-            response.next({email: 'Email property was not defined'});
+        if (util.isNullOrUndefined(command.userName)) {
+            response.next({field: 'name', message: 'Name property was not defined'});
         }
 
         if (util.isNullOrUndefined(command.password)) {
-            response.next({password: 'Password property was not defined'});
-        } else {
-            if (command.password.length < 8) {
-                response.next({password: 'Password must be at least 8 characters long'});
-            }
+            response.next({field: 'password', message: 'Password property was not defined'});
         }
 
         const userNameToSearchFor = command.email || '';
@@ -35,7 +26,7 @@ function verify() {
 
                 if (count > 0) {
                     // oops duplicate
-                    response.next({'email': 'The email ' + userNameToSearchFor + ' is a duplicate'});
+                    response.next('The email ' + userNameToSearchFor + ' is a duplicate');
                 }
 
                 // we are done
@@ -49,8 +40,10 @@ function verify() {
 }
 
 function execute() {
+
     // has been verified , so just need to create event
-    let event = EventFactory.createFromCommand(this.command, 'UserRegisteredEvent', false);
+    let event = EventFactory.createFromCommand(this.command, 'SigninUserEvent', false);
+    Object.assign(event, { command: this.command });
 
     // now send it
     EventMediator.dispatch(event);
@@ -59,6 +52,7 @@ function execute() {
 module.exports = {
     verify: verify,
     execute: execute,
-    getCommand: () => "RegisterUser"
+    getCommand: () => "SigninUser"
 };
+
 

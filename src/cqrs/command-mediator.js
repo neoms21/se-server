@@ -4,35 +4,39 @@ const Rx = require('rxjs');
 const Filehound = require('filehound');
 const mongoRepository = require('../db/mongo-repository');
 const eventMediator = require('./event-mediator');
-const cqrsEventCreator = require('./cqrs-event-creator');
+const eventFactory = require('./event-factory');
 const commandVerifier = require('./commandVerifier');
 const generalServices = require('./general-services');
+const Util = require('util');
 
 let mappings = [];
 let logger;
-let propagator = new Rx.Subject();
 
 function init(log) {
     logger = log;
-
     mappings = []; //
 
     // find all the handlers
     Filehound.create()
         .ext('js')
         .paths(process.cwd() + '/src/commands')
-        .match('*CommandHandler*')
-        .find(function (err, filenames) {
+        .match('*-tests*') // ignore tests with the not()
+        .not()
+        .find((err, filenames) => {
             if (err) {
                 logger.error("error finding handlers ", err);
             } else {
                 filenames.forEach(function (filename) {
-                    let mapping = {
-                        code: path.basename(filename, '.js').slice(0, path.basename(filename, '.js').length - 14),
-                        path: filename
-                    };
-                    mappings.push(mapping);
-                    log.info('Added command ' + mapping.code);
+
+                    // instantiate so we can get command
+                    let instance = require(filename);
+
+                    if (instance !== undefined) {
+                        let mapping = {command: instance.getCommand(), handler: instance};
+                        // add to our list
+                        mappings.push(mapping);
+                        log.info('Added command ' + mapping.command);
+                    }
                 });
             }
         });
@@ -45,10 +49,10 @@ function saveCommand(command) {
     // save to db
     mongoRepository.insert('commands', command)
         .subscribe(function () {
-                let event = cqrsEventCreator.CommandSaved(command);
+                let event = eventFactory.CommandSaved(command);
                 eventMediator.dispatch(event);
             }, function (err) {
-                let event = cqrsEventCreator.SaveCommandError(command);
+                let event = eventFactory.SaveCommandError(command);
                 event.error = err.toString();
                 eventMediator.dispatch(event);
             }
@@ -62,10 +66,14 @@ function createCommand(request, clientId) {
     let instance;
 
     // needs command name
-    if (request.hasOwnProperty("commandName")) {
+    if (!Util.isNullOrUndefined(request.properties)) {
 
         // create it now
-        instance = {commandName: request.commandName, correlationId: request.correlationId, clientId: clientId};
+        instance = { properties: {
+            commandName: request.properties.commandName,
+            correlationId: request.properties.correlationId,
+            clientId: clientId}
+        };
 
         // add extra props
         Object.assign(instance, request.payload);
@@ -74,22 +82,23 @@ function createCommand(request, clientId) {
     return instance;
 }
 
-let createError = function (command, messages) {
-    let event = cqrsEventCreator.CommandVerificationFailed(command);
-    event.messages = messages;
-    logger.error(messages[0]);
+let createError = function (command, responses) {
+    let event = eventFactory.CommandVerificationFailed(command);
+    event.errors = responses;
+    logger.error(responses);
     eventMediator.dispatch(event);
 };
 
 function dispatch(command) {
+    logger.debug('Dispatching command ' + command.properties.commandName);
 
     let mapping = mappings.find(function (mapping) {
-        return mapping.code === command.commandName;
+        return mapping.command === command.properties.commandName;
     });
 
     if (mapping === undefined) {
         // oops
-        createError(command, ['Unable to create handler for command ' + command.commandName]);
+        createError(command, 'Unable to create handler for command ' + command.properties.commandName);
         return;
     }
 
@@ -102,28 +111,29 @@ function dispatch(command) {
         createError(command, checks);
         return;
     }
+    logger.debug('Verified basic info for command ' + command.properties.commandName);
 
     // get handler
-    let handler = require(mapping.path);
+    let handler = mapping.handler;
     handler.command = command;
 
-    handler.verify().toArray()
-        .subscribe(function (messages) {
-            console.log('messages - ' + messages.length)
+    handler.verify()
+        .toArray()
+        .subscribe(function (responses) { // we get object with keys set as response names
+            const messageLength = responses.length;
+            logger.info(`Verified command ${command.properties.commandName} and had ${messageLength} errors`);
+
             // verifier has run , so lets get its results
-            if (messages.length === 0) {
+            if (messageLength === 0) {
                 handler.execute(); // all ok, so run it
                 exports.saveCommand(command); // and save
-                propagator.next('Command ' + command.commandName + ' executed successfully');
                 logger.info('Command ' + command.commandName + ' executed successfully');
             } else {
                 // verification errors found
-                let event = cqrsEventCreator.CommandVerificationFailed(command);
-                event.messages = messages;
-                eventMediator.dispatch(event);
+                createError(command, responses);
             }
         }, function (err) {
-            createError(command, [err.toString()]);
+            createError(command, err.toString());
         });
 }
 

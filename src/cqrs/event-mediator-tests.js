@@ -23,23 +23,36 @@ describe('Event mediator', function () {
     });
 
     describe('dispatch', function () {
-        it('should give error if event name not set', function () {
+        it('should give error if event properties not set', function () {
             assert.throws(function () {
                     eventMediator.dispatch({});
                 },
                 function (err) {
-                    if ((err instanceof Error) && err.message === 'Event dispatched without name - {}') {
+                    if ((err instanceof Error) && err.message === 'Event dispatched without properties - {}') {
                         return true;
                     }
                 });
         });
+
+        it('should give error if event name not set', function () {
+            assert.throws(function () {
+                    eventMediator.dispatch({properties: {}});
+                },
+                function (err) {
+                    if ((err instanceof Error) && err.message === 'Event dispatched without name - {"properties":{}}') {
+                        return true;
+                    }
+                });
+        });
+
         it('should save to repository', function () {
-            var event = {eventName: 'BongoEvent'};
+            const event = {properties: { eventName: 'BongoEvent'}};
             eventMediator.dispatch(event);
 
             assert(loggerInfoStub.calledWith('Dispatching event BongoEvent'));
             assert(mongoStub.calledWith('events', event));
         });
+
         it('should publish & log', function (done) {
 
             eventMediator.propagator.subscribe(function (success) {
@@ -51,7 +64,7 @@ describe('Event mediator', function () {
                 done();
             });
 
-            var event = {eventName: 'Bongo2Event'};
+            const event = {properties: { eventName: 'Bongo2Event'}};
             eventMediator.dispatch(event);
 
             assert(loggerInfoStub.calledWith('Event Bongo2Event dispatched'));

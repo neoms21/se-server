@@ -3,4 +3,5 @@
     "host": "aws-prod",
     "port": 27017,
   },
+  "pageSize": 50
 }

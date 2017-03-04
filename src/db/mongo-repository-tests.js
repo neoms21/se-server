@@ -95,7 +95,7 @@ describe('Mongo repository', function () {
             countPromise = q.defer();
             connectionPromise = q.defer();
             mongoStub.returns(connectionPromise.promise);
-            //connectMock = sinon.stub(mongoRepository, 'connectToDb').returns(connectionPromise.promise);
+            //connectMock = sinon.stub(MongoRepository, 'connectToDb').returns(connectionPromise.promise);
 
             connectionPromise.resolve({
                 collection: function () {
