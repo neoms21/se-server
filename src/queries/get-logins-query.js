@@ -1,5 +1,5 @@
 'use strict';
-const MongoRepository = require('../../db/mongo-repository');
+const MongoRepository = require('../db/mongo-repository');
 const Rx = require('rxjs');
 const config = require('config');
 

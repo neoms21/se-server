@@ -90,6 +90,7 @@ let createError = function (command, responses) {
 };
 
 function dispatch(command) {
+    logger.debug('Dispatching command ' + command.properties.commandName);
 
     let mapping = mappings.find(function (mapping) {
         return mapping.command === command.properties.commandName;
@@ -97,7 +98,7 @@ function dispatch(command) {
 
     if (mapping === undefined) {
         // oops
-        createError(command, {'@#@': 'Unable to create handler for command ' + command.properties.commandName});
+        createError(command, 'Unable to create handler for command ' + command.properties.commandName);
         return;
     }
 
@@ -110,18 +111,17 @@ function dispatch(command) {
         createError(command, checks);
         return;
     }
+    logger.debug('Verified basic info for command ' + command.properties.commandName);
 
     // get handler
     let handler = mapping.handler;
     handler.command = command;
 
     handler.verify()
-        .reduce((oldVal, newVal) => { // turn responses into object
-            oldVal[Object.keys(newVal)[0]] = newVal;
-            return oldVal;
-        })// get keys for the results from verify
+        .toArray()
         .subscribe(function (responses) { // we get object with keys set as response names
-            const messageLength = Object.keys(responses).length;
+            const messageLength = responses.length;
+            logger.info(`Verified command ${command.properties.commandName} and had ${messageLength} errors`);
 
             // verifier has run , so lets get its results
             if (messageLength === 0) {
@@ -133,7 +133,7 @@ function dispatch(command) {
                 createError(command, responses);
             }
         }, function (err) {
-            createError(command, {'@#@': err.toString()});
+            createError(command, err.toString());
         });
 }
 

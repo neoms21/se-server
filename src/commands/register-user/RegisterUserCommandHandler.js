@@ -10,6 +10,7 @@ function verify() {
 
     setTimeout(function (command) { // use timeout as rx is async
 
+
         if (util.isNullOrUndefined(command.name)) {
             response.next({name: 'Name property was not defined'});
         }
@@ -34,7 +35,7 @@ function verify() {
 
                 if (count > 0) {
                     // oops duplicate
-                    response.next({'@#@': 'The email ' + userNameToSearchFor + ' is a duplicate'});
+                    response.next({'email': 'The email ' + userNameToSearchFor + ' is a duplicate'});
                 }
 
                 // we are done
@@ -48,10 +49,8 @@ function verify() {
 }
 
 function execute() {
-
     // has been verified , so just need to create event
     let event = EventFactory.createFromCommand(this.command, 'UserRegisteredEvent', false);
-    Object.assign(event, { command: this.command });
 
     // now send it
     EventMediator.dispatch(event);

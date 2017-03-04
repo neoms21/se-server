@@ -25,13 +25,15 @@ const processSockets = (io, log) => {
         socket.on('authentication', (auth) => authenticate(auth, socket.id));
         socket.on('disconnect', () => disconnected(socket));
         socket.on('command', (cmdReq) => processCommand(cmdReq, socket));
-        socket.on('command', (queryReq) => processQuery(queryReq, socket));
+        socket.on('query', (queryReq) => processQuery(queryReq, socket));
     });
 };
 
 const isCommandAllowed = (socketId, cmdReq) => {
+    logger.debug('Checking socket ' + socketId);
     const client = clients.find(cl => cl.id === socketId);
     if (client === undefined) {
+        logger.error('Command received by socket, but unable to find client ' + socketId);
         return false;
     }
 
@@ -42,6 +44,7 @@ const isCommandAllowed = (socketId, cmdReq) => {
 
     // check authenticated
     if (client.token === undefined) {
+        logger.error(`Command received by socket, but socket ${socketId} not authenticated`);
         return false;
     }
 
@@ -107,25 +110,23 @@ const authenticate = (auth, socketId) => {
     });
 };
 
-const processCommand = (cmdReq, socket) => {
-    logger.info('command received: ' + JSON.stringify(cmdReq));
+const processCommand = (cmd, socket) => {
+    logger.info('Command received by socket: ' + JSON.stringify(cmd));
 
     // check to see if the command can be run
-    if (isCommandAllowed(socket.id, cmdReq)) {
-        const cmd = Object.assign({}, cmdReq);
+    if (isCommandAllowed(socket.id, cmd)) {
         cmd.properties.clientId = socket.id;
         commandMediator.dispatch(cmd);
     }
 };
 
-const processQuery = (queryReq, socket) => {
-    logger.info('command received: ' + JSON.stringify((queryReq)));
+const processQuery = (query, socket) => {
+    logger.info('command received: ' + JSON.stringify((query)));
 
     // check to see if the command can be run
-    if (isQueryAllowed(socket.id, queryReq)) {
-        const qry = Object.assign({}, queryReq);
-        qry.properties.clientId = socket.id;
-        QueryMediator.dispatch(qry);
+    if (isQueryAllowed(socket.id, query)) {
+        query.properties.clientId = socket.id;
+        QueryMediator.dispatch(query);
     }
 };
 
@@ -147,8 +148,9 @@ const init = () => {
         }
 
         // now send it
+        logger.debug(`Sending event ${ev.properties.eventName} to client ${clientId}`);
         if (clientId !== undefined) {
-            sio.send(topic, ev, clientId);
+            sio.emit(topic, ev);
         } else {
             sio.emit(topic, ev);
         }

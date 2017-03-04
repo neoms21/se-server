@@ -12,21 +12,24 @@ const DeNormalizerManager = require('./cqrs/denormalizer-mediator');
 const openRoutes = require('./comms/open-routes');
 const socketHandler = require('./comms/socket-handler');
 
+let logStreams = [];
+if (process.env.NODE_ENV === 'dev') {
+    logStreams.push({
+        level: 'debug',
+        stream: process.stdout            // log debug and above to stdout for dev
+    });
+}
+
 // create our logger
 const log = logger.createLogger({
     name: 'Sports Editor',
     serializers: {
         req: logger.stdSerializers.req
     },
-    streams: [
-        {
-            level: 'info',
-            stream: process.stdout            // log INFO and above to stdout
-        },
-        {
-            level: 'error',
-            path: './sports-editor-error.log'  // log ERROR and above to a file
-        }]
+    streams: logStreams.concat({
+        level: 'info',
+        path: './sports-editor.log'  // log INFO and above to an file
+    })
 });
 
 // our psuedo singletons need init

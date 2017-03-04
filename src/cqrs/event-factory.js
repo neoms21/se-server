@@ -11,10 +11,7 @@ const create = (name, isFailure) => {
 
     event.properties = {
         eventName: name || 'event name not specified',
-        isFailure: isFailure || false,
-        // defaults
-        messageNumber: 1,
-        messageCount: 1
+        isFailure: isFailure || false
     };
 
     return event;
@@ -43,7 +40,6 @@ const createFromCommand = function (command, name, isFailure) {
         clientId: command.properties.clientId
     };
 
-
     // apply common
     generalServices.applyCommonFields(event, command);
 
@@ -67,11 +63,7 @@ const createFromQuery = function (query, name, isFailure) {
 };
 
 let commandExecuted = function (command) {
-    let ret;
-
-    ret = exports.createFromCommand(command, 'CommandExecutedEvent', false);
-
-    return ret;
+   return exports.createFromCommand(command, 'CommandExecutedEvent', false);
 };
 
 let commandVerificationFailed = function (command) {

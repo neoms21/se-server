@@ -72,12 +72,9 @@ function dispatch(query) {
     handler.query = query;
 
     handler.verify()
-        .reduce((oldVal, newVal) => {
-            oldVal[Object.keys(newVal)[0]] = newVal; // get responses as object
-            return oldVal;
-        })// get keys for the results from verify
+        .toArray()
         .subscribe((responses) => { // we get object with keys set as response names
-            const messageLength = Object.keys(responses).length;
+            const messageLength = responses.length;
 
             // verifier has run , so lets get its results
             if (messageLength === 0) {
