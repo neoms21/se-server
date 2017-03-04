@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const Filehound = require('filehound');
 const mongoRepository = require('../db/mongo-repository');
 const Rx = require('rxjs/Rx');
-const cqrsEventCreator = require('./cqrs-event-creator');
+const eventFactory = require('./event-factory');
 const eventMediator = require('./event-mediator');
 const mockHandler = require('./mocks/mock-handlerCommandHandler');
 
@@ -59,7 +59,7 @@ describe('Command mediator', function () {
         fhMock.expects('not').returns(fhStub);
 
         mongoMock = sinon.mock(mongoRepository);
-        cqrsEventMock = sinon.mock(cqrsEventCreator);
+        cqrsEventMock = sinon.mock(eventFactory);
         eventMock = sinon.mock(eventMediator);
     });
 
@@ -148,23 +148,23 @@ describe('Command mediator', function () {
         });
 
         it('should create the command with supplied info', function () {
-            let request = {commandName: 'SaveUser', payload: {id: 1, name: 'john'}};
+            let request = {properties: {commandName: 'SaveUser'}, payload: {id: 1, name: 'john'}};
             let command = CommandMediator.createCommand(request);
 
             assert.notEqual(command, null);
             assert.notEqual(command, undefined);
-            assert.equal(command.commandName, 'SaveUser');
+            assert.equal(command.properties.commandName, 'SaveUser');
             assert.equal(command.id, 1);
             assert.equal(command.name, 'john');
         });
 
         it('should create the command with supplied info, but no payload', function () {
-            let request = {commandName: 'SaveUser'};
+            let request = {properties: {commandName: 'SaveUser'}};
             let command = CommandMediator.createCommand(request);
 
             assert.notEqual(command, null);
             assert.notEqual(command, undefined);
-            assert.equal(command.commandName, 'SaveUser');
+            assert.equal(command.properties.commandName, 'SaveUser');
             assert.equal(command.id, undefined);
             assert.equal(command.name, undefined);
         });
@@ -190,7 +190,7 @@ describe('Command mediator', function () {
         });
 
         it('should give error when command doesnt match', function () {
-            let command = {commandName: 'hhhh', correlationId: 2};
+            let command = {properties: {commandName: 'hhhh', correlationId: 2}};
             //let event = createErrorEvent(command, 'Unable to create handler for command hhhh');
 
             eventMock.expects('dispatch').once(); //.withArgs(event);
@@ -202,7 +202,7 @@ describe('Command mediator', function () {
         it('should produce error event if verify fails', function () {
             let verifyStub = sinon.stub(mockHandler, 'verify').returns(Rx.Observable.throw('Error'));
 
-            let command = {commandName: 'mock-handler', correlationId: 2};
+            let command = {properties: {commandName: 'mock-handler', correlationId: 2}};
             //logMock.expects('debug').withArgs('CommandMediator before running verify for mock-handler');
             let event = createErrorEvent(command, 'Error');
             cqrsEventMock.expects('CommandVerificationFailed').withArgs(command).returns(event);
@@ -218,7 +218,7 @@ describe('Command mediator', function () {
         it('should produce error event if verify has error messages', function () {
             let verifyStub = sinon.stub(mockHandler, 'verify').returns(Rx.Observable.of('#Error'));
 
-            let command = {commandName: 'mock-handler', correlationId: 3};
+            let command = {properties: {commandName: 'mock-handler', correlationId: 3}};
             //logMock.expects('debug').withArgs('CommandMediator before running verify for mock-handler');
             let event = createErrorEvent(command, 'Error');
             cqrsEventMock.expects('CommandVerificationFailed').withArgs(command).returns(event);
@@ -235,7 +235,7 @@ describe('Command mediator', function () {
             let verifyStub = sinon.stub(mockHandler, 'verify').returns(Rx.Observable.of({}));
             let executeStub = sinon.stub(mockHandler, 'execute');
             let saveStub = sinon.stub(CommandMediator, 'saveCommand');
-            let command = {commandName: 'DummyCommand', correlationId: 3};
+            let command = {properties: {commandName: 'DummyCommand', correlationId: 3}};
             //let event = createErrorEvent(command, 'Error');
             //cqrsEventMock.expects('CommandVerificationFailed').withArgs(command).returns(event);
             //eventMock.expects('dispatch').once(); //.withArgs(event);

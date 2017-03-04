@@ -117,7 +117,12 @@ describe('Register user command', function () {
             dispatchStub = sinon.stub(eventMediator, 'dispatch', function () {
             });
 
-            handler.command = {email: 'mark', name: 'mark s', correlationId: 1};
+            handler.command = {
+                email: 'mark', name: 'mark s',
+                properties: {
+                    correlationId: 1
+                }
+            };
             handler.execute();
 
             assert(dispatchStub.called);
@@ -136,7 +141,9 @@ describe('Register user command', function () {
                     command: {
                         email: 'mark',
                         name: 'mark s',
-                        correlationId: 1
+                        properties: {
+                            correlationId: 1
+                        }
                     }
                 }
             ));

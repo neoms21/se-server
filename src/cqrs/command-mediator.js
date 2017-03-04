@@ -4,13 +4,13 @@ const Rx = require('rxjs');
 const Filehound = require('filehound');
 const mongoRepository = require('../db/mongo-repository');
 const eventMediator = require('./event-mediator');
-const cqrsEventCreator = require('./cqrs-event-creator');
+const eventFactory = require('./event-factory');
 const commandVerifier = require('./commandVerifier');
 const generalServices = require('./general-services');
+const Util = require('util');
 
 let mappings = [];
 let logger;
-let propagator = new Rx.Subject();
 
 function init(log) {
     logger = log;
@@ -49,10 +49,10 @@ function saveCommand(command) {
     // save to db
     mongoRepository.insert('commands', command)
         .subscribe(function () {
-                let event = cqrsEventCreator.CommandSaved(command);
+                let event = eventFactory.CommandSaved(command);
                 eventMediator.dispatch(event);
             }, function (err) {
-                let event = cqrsEventCreator.SaveCommandError(command);
+                let event = eventFactory.SaveCommandError(command);
                 event.error = err.toString();
                 eventMediator.dispatch(event);
             }
@@ -66,10 +66,14 @@ function createCommand(request, clientId) {
     let instance;
 
     // needs command name
-    if (request.hasOwnProperty("commandName")) {
+    if (!Util.isNullOrUndefined(request.properties)) {
 
         // create it now
-        instance = {commandName: request.commandName, correlationId: request.correlationId, clientId: clientId};
+        instance = { properties: {
+            commandName: request.properties.commandName,
+            correlationId: request.properties.correlationId,
+            clientId: clientId}
+        };
 
         // add extra props
         Object.assign(instance, request.payload);
@@ -79,7 +83,7 @@ function createCommand(request, clientId) {
 }
 
 let createError = function (command, responses) {
-    let event = cqrsEventCreator.CommandVerificationFailed(command);
+    let event = eventFactory.CommandVerificationFailed(command);
     event.errors = responses;
     logger.error(responses);
     eventMediator.dispatch(event);
@@ -88,12 +92,12 @@ let createError = function (command, responses) {
 function dispatch(command) {
 
     let mapping = mappings.find(function (mapping) {
-        return mapping.command === command.commandName;
+        return mapping.command === command.properties.commandName;
     });
 
     if (mapping === undefined) {
         // oops
-        createError(command, {'@#@': 'Unable to create handler for command ' + command.commandName});
+        createError(command, {'@#@': 'Unable to create handler for command ' + command.properties.commandName});
         return;
     }
 
@@ -112,7 +116,7 @@ function dispatch(command) {
     handler.command = command;
 
     handler.verify()
-        .reduce((oldVal, newVal) => {
+        .reduce((oldVal, newVal) => { // turn responses into object
             oldVal[Object.keys(newVal)[0]] = newVal;
             return oldVal;
         })// get keys for the results from verify
@@ -123,7 +127,6 @@ function dispatch(command) {
             if (messageLength === 0) {
                 handler.execute(); // all ok, so run it
                 exports.saveCommand(command); // and save
-                propagator.next('Command ' + command.commandName + ' executed successfully');
                 logger.info('Command ' + command.commandName + ' executed successfully');
             } else {
                 // verification errors found

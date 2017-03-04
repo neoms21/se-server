@@ -27,6 +27,7 @@ describe('Socket handler', () => {
         let loggerInfoSpy;
         let eventMediatorStub;
         let timeStub;
+        let setStub;
         const tod = new Date('01 Sep 2016 08:00');
 
         beforeEach(() => {
@@ -43,7 +44,10 @@ describe('Socket handler', () => {
 
             // set up common stuff
             io = new EventEmitter();
+            io.set = () => {};
             socket = new EventEmitter();
+            setStub = sinon.stub(io, 'set');
+
             socket.id = '123@';
             socketHandler(io, logger);
         });
@@ -53,6 +57,7 @@ describe('Socket handler', () => {
             loggerInfoSpy.restore();
             eventMediatorStub.restore();
             timeStub.restore();
+            setStub.restore();
         });
 
         it('should log when connected', () => {
@@ -80,14 +85,14 @@ describe('Socket handler', () => {
             socket.emit('disconnect'); // deletes the client
 
             assert(eventMediatorStub.called);
+            console.log(eventMediatorStub.getCall(0).args)
             assert(eventMediatorStub.calledWith(
                 {
-                    command: {correlationId: '', name: 'Unknown'},
                     properties: {
                         eventName: 'AuthenticationFailed',
                         isFailure: true,
                         created: tod,
-                        createdBy: undefined,
+                        createdBy: 'unknown',
                         validFrom: tod,
                         validTo: new Date('9999-12-31'),
                         messageNumber: 1,
@@ -107,6 +112,7 @@ describe('Socket handler', () => {
             jwtStub.restore();
 
             assert(eventMediatorStub.called);
+            console.log(eventMediatorStub.getCall(0).args)
             assert(eventMediatorStub.calledWith({
                 properties: {
                     eventName: 'AuthenticationFailed',

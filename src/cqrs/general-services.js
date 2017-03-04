@@ -10,7 +10,8 @@ const applyCommonFields = (decoratee, source) => {
     }
 
     decoratee.properties.created = exports.getTime();
-    decoratee.properties.createdBy = source !== undefined ? source.userId : 'unknown';
+    decoratee.properties.createdBy = source !== undefined && source.properties !== undefined
+        ? source.properties.createdBy : 'unknown';
     decoratee.properties.validFrom = decoratee.properties.created;
     decoratee.properties.validTo = new Date('31 dec 9999');
 };
