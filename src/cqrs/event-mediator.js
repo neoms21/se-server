@@ -1,21 +1,26 @@
 'use strict';
-var mongoRepository = require('../db/mongo-repository');
-var Rx = require('rxjs/Rx');
-var util = require('util');
+const mongoRepository = require('../db/mongo-repository');
+const Rx = require('rxjs/Rx');
+const util = require('util');
 
-var logger;
-var propagator = new Rx.Subject();
+let logger;
+let propagator = new Rx.Subject();
 
 function init(log) {
     logger = log;
 }
 
 function dispatch(event) {
-    if(util.isNullOrUndefined(event.eventName)) {
+
+    if(util.isNullOrUndefined(event.properties)) {
+        throw new Error('Event dispatched without properties - ' + JSON.stringify(event));
+    }
+
+    if(util.isNullOrUndefined(event.properties.eventName)) {
         throw new Error('Event dispatched without name - ' + JSON.stringify(event));
     }
 
-    logger.info('Dispatching event ' + event.eventName);
+    logger.info('Dispatching event ' + event.properties.eventName);
 
     // save the event
     mongoRepository.insert('events', event);
@@ -24,7 +29,7 @@ function dispatch(event) {
     propagator.next(event);
 
     // log it
-    logger.info('Event ' + event.eventName + ' dispatched');
+    logger.info('Event ' + event.properties.eventName + ' dispatched');
 }
 
 module.exports = {

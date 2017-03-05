@@ -4,30 +4,43 @@ const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
-const mongoRepository = require('./db/mongo-repository');
-const commandMediator = require('./cqrs/command-mediator');
-const eventMediator = require('./cqrs/event-mediator');
-const deNormalizerManager = require('./cqrs/denormalizer-mediator');
+const MongoRepository = require('./db/mongo-repository');
+const CommandMediator = require('./cqrs/command-mediator');
+const EventMediator = require('./cqrs/event-mediator');
+const QueryMediator = require('./cqrs/query-mediator');
+const DeNormalizerManager = require('./cqrs/denormalizer-mediator');
 const openRoutes = require('./comms/open-routes');
 const socketHandler = require('./comms/socket-handler');
+
+let logStreams = [];
+if (process.env.NODE_ENV === 'dev') {
+    logStreams.push({
+        level: 'debug',
+        stream: process.stdout            // log debug and above to stdout for dev
+    });
+}
 
 // create our logger
 const log = logger.createLogger({
     name: 'Sports Editor',
     serializers: {
         req: logger.stdSerializers.req
-    }
+    },
+    streams: logStreams.concat({
+        level: 'info',
+        path: './sports-editor.log'  // log INFO and above to an file
+    })
 });
 
 // our psuedo singletons need init
-mongoRepository.init(log);
-commandMediator.init(log);
-eventMediator.init(log);
+MongoRepository.init(log);
+CommandMediator.init(log);
+EventMediator.init(log);
+QueryMediator.init(log);
 
-io.set('transports', [ 'websocket' ]);
 //check db
 log.info("DB being checked for collections");
-mongoRepository.createOrOpenDb();
+MongoRepository.createOrOpenDb();
 
 // app.get('/', function (req, res) {
 //     res.sendfile('index.html');
@@ -37,7 +50,7 @@ mongoRepository.createOrOpenDb();
 socketHandler(io, log);
 
 // load any denormalizers
-deNormalizerManager.init(log);
+DeNormalizerManager.init(log);
 
 // any express routes
 openRoutes(app, log);

@@ -25,8 +25,9 @@ describe('Socket handler', () => {
         let logger;
         let loggerErrorSpy;
         let loggerInfoSpy;
-        let eventMediatorSpy;
+        let eventMediatorStub;
         let timeStub;
+        let setStub;
         const tod = new Date('01 Sep 2016 08:00');
 
         beforeEach(() => {
@@ -38,12 +39,15 @@ describe('Socket handler', () => {
 
             loggerErrorSpy = sinon.spy(logger, 'error');
             loggerInfoSpy = sinon.spy(logger, 'info');
-            eventMediatorSpy = sinon.stub(EventMediator, 'dispatch');
+            eventMediatorStub = sinon.stub(EventMediator, 'dispatch');
             timeStub = sinon.stub(GeneralServices, 'getTime', () => tod);
 
             // set up common stuff
             io = new EventEmitter();
+            io.set = () => {};
             socket = new EventEmitter();
+            setStub = sinon.stub(io, 'set');
+
             socket.id = '123@';
             socketHandler(io, logger);
         });
@@ -51,8 +55,9 @@ describe('Socket handler', () => {
         afterEach(() => {
             loggerErrorSpy.restore();
             loggerInfoSpy.restore();
-            eventMediatorSpy.restore();
+            eventMediatorStub.restore();
             timeStub.restore();
+            setStub.restore();
         });
 
         it('should log when connected', () => {
@@ -79,61 +84,72 @@ describe('Socket handler', () => {
             socket.emit('authentication', {token: '@@@@@'});
             socket.emit('disconnect'); // deletes the client
 
-            assert(eventMediatorSpy.called);
-            assert(eventMediatorSpy.calledWith({
-                eventName: 'AuthenticationFailed',
-                isFailure: true,
-                created: tod,
-                createdBy: undefined,
-                validFrom: tod,
-                validTo: new Date('9999-12-31'),
-                messageNumber: 1,
-                messageCount: 1,
-                error: 'Authentication token didnt match for socket 123@'
-            }));
+            assert(eventMediatorStub.called);
+            console.log(eventMediatorStub.getCall(0).args)
+            assert(eventMediatorStub.calledWith(
+                {
+                    properties: {
+                        eventName: 'AuthenticationFailed',
+                        isFailure: true,
+                        created: tod,
+                        createdBy: 'unknown',
+                        validFrom: tod,
+                        validTo: new Date('9999-12-31'),
+                        messageNumber: 1,
+                        messageCount: 1,
+                    },
+                    error: 'Authentication token didnt match for socket 123@'
+                }));
+
             jwtStub.restore();
         });
 
         it('should give error if socket wrong', () => {
-            let jwtStub = sinon.stub(jwt, 'verify').yields(undefined); // verifies ok
+            let jwtStub = sinon.stub(jwt, 'verify').yields(null); // verifies ok
             io.emit('connection', socket);
             socket.emit('disconnect'); // deletes the client
             socket.emit('authentication', {token: '@@@@@'});
             jwtStub.restore();
 
-            assert(eventMediatorSpy.called);
-            assert(eventMediatorSpy.calledWith({
-                eventName: 'AuthenticationFailed',
-                isFailure: true,
-                created: tod,
-                createdBy: undefined,
-                validFrom: tod,
-                validTo: new Date('9999-12-31'),
-                messageNumber: 1,
-                messageCount: 1,
+            assert(eventMediatorStub.called);
+            console.log(eventMediatorStub.getCall(0).args)
+            assert(eventMediatorStub.calledWith({
+                properties: {
+                    eventName: 'AuthenticationFailed',
+                    isFailure: true,
+                    created: tod,
+                    createdBy: 'unknown',
+                    validFrom: tod,
+                    validTo: new Date('9999-12-31'),
+                    messageNumber: 1,
+                    messageCount: 1,
+                },
                 error: 'Failed to find matching socket 123@'
             }));
-
         });
 
         it('should give success if authentication match', () => {
-            let jwtStub = sinon.stub(jwt, 'verify').yields(undefined); // verifies ok
+            let jwtStub = sinon.stub(jwt, 'verify').yields(null); // verifies ok
             io.emit('connection', socket);
             socket.emit('authentication', {token: '@@@@@'});
             socket.emit('disconnect'); // deletes the client
-
-            assert(eventMediatorSpy.called);
-            assert(eventMediatorSpy.calledWith({
-                eventName: 'AuthenticationSucceeded',
-                isFailure: false,
-                created: tod,
-                createdBy: undefined,
-                validFrom: tod,
-                validTo: new Date('9999-12-31'),
-                messageNumber: 1,
-                messageCount: 1
-            }));
             jwtStub.restore();
+
+            assert(eventMediatorStub.called);
+            console.log(eventMediatorStub.getCall(0).args)
+            assert(eventMediatorStub.calledWith({
+                properties: {
+                    eventName: 'AuthenticationSucceeded',
+                    isFailure: false,
+                    created: tod,
+                    createdBy: 'unknown',
+                    validFrom: tod,
+                    validTo: new Date('9999-12-31'),
+                    messageNumber: 1,
+                    messageCount: 1
+                }
+            }));
+
         });
     });
 
