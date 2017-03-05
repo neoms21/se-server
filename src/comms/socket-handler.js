@@ -131,8 +131,16 @@ const dealWithEvents = (ev) => {
     // now send it
     logger.debug(`Sending event ${ev.properties.eventName} to client ${clientId}`);
     if (clientId !== undefined) {
-        sio.emit(topic, ev);
+        // find the client connection
+        let clientSocket = clients.find((item) => item.id === clientId);
+        if(clientSocket !== undefined) {
+            // send event to that specfic client
+            clientSocket.emit(topic, ev);
+        } else {
+            logger.error(`Couldnt find client connection for id ${clientId} for event ${ev.properties.eventName}`);
+        }
     } else {
+        // send to all
         sio.emit(topic, ev);
     }
 };
@@ -147,7 +155,6 @@ const init = (io, log) => {
     io.set('transports', ['websocket']);
 
     io.on('connection', function (socket) {
-
         logger.info('a user connected on socket ' + socket.id);
         clients.push(socket);
 

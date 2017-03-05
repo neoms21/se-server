@@ -1,5 +1,4 @@
 'use strict';
-const path = require('path');
 const Rx = require('rxjs');
 const Filehound = require('filehound');
 const mongoRepository = require('../db/mongo-repository');
@@ -59,7 +58,7 @@ function saveCommand(command) {
         );
 
     // log it
-    logger.info('Saving command ' + command.commandName);
+    logger.info('Saving command ' + command.properties.commandName);
 }
 
 function createCommand(request, clientId) {
@@ -129,7 +128,7 @@ function dispatch(command) {
             if (messageLength === 0) {
                 handler.execute(); // all ok, so run it
                 exports.saveCommand(command); // and save
-                logger.info('Command ' + command.commandName + ' executed successfully');
+                logger.info('Command ' + command.properties.commandName + ' executed successfully');
             } else {
                 // verification errors found
                 createError(command, responses);

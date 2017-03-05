@@ -10,7 +10,7 @@ const EventMediator = require('./cqrs/event-mediator');
 const QueryMediator = require('./cqrs/query-mediator');
 const DeNormalizerManager = require('./cqrs/denormalizer-mediator');
 const openRoutes = require('./comms/open-routes');
-const socketHandler = require('./comms/socket-handler');
+const SocketHandler = require('./comms/socket-handler');
 
 let logStreams = [];
 if (process.env.NODE_ENV === 'dev') {
@@ -37,6 +37,7 @@ MongoRepository.init(log);
 CommandMediator.init(log);
 EventMediator.init(log);
 QueryMediator.init(log);
+SocketHandler.init(io, log);
 
 //check db
 log.info("DB being checked for collections");
@@ -46,8 +47,6 @@ MongoRepository.createOrOpenDb();
 //     res.sendfile('index.html');
 // });
 
-// sockets related
-socketHandler(io, log);
 
 // load any denormalizers
 DeNormalizerManager.init(log);

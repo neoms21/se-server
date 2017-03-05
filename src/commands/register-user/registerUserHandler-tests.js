@@ -139,9 +139,13 @@ describe('Register user command', function () {
                         validTo: new Date('31 Dec 9999')
                     },
                     command: {
-                        clientId: 200,
-                        name: 'BlastCommand',
-                        correlationId: 1
+                        email: 'mark',
+                        name: 'mark s',
+                        properties: {
+                            correlationId: 1,
+                            clientId: 200,
+                            commandName: 'BlastCommand'
+                        }
                     }
                 }
             ));

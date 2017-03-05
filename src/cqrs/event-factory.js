@@ -34,19 +34,22 @@ const createFromCommand = function (command, name, isFailure) {
 
     let event = create(name, isFailure);
 
-    if(command.properties !== undefined) {
-        event.command = {
-            correlationId: command.properties.correlationId || '',
-            name: command.properties.commandName || 'Unknown',
-            clientId: command.properties.clientId
-        };
-    } else {
-        event.command =  {
-            correlationId: 'unknown',
-            name: 'unknown',
-            clientId: 'unknown'
-        }
-    }
+    // if(command.properties !== undefined) {
+    //     event.command = {
+    //         correlationId: command.properties.correlationId || '',
+    //         name: command.properties.commandName || 'Unknown',
+    //         clientId: command.properties.clientId
+    //     };
+    // } else {
+    //     event.command =  {
+    //         correlationId: 'unknown',
+    //         name: 'unknown',
+    //         clientId: 'unknown'
+    //     }
+    // }
+
+    // copy the command as is
+    event.command = Object.assign({}, command);
 
     // apply common
     generalServices.applyCommonFields(event, command);
