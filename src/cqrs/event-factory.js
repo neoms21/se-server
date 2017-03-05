@@ -34,11 +34,19 @@ const createFromCommand = function (command, name, isFailure) {
 
     let event = create(name, isFailure);
 
-    event.command = {
-        correlationId: command.properties.correlationId || '',
-        name: command.properties.name || 'Unknown',
-        clientId: command.properties.clientId
-    };
+    if(command.properties !== undefined) {
+        event.command = {
+            correlationId: command.properties.correlationId || '',
+            name: command.properties.commandName || 'Unknown',
+            clientId: command.properties.clientId
+        };
+    } else {
+        event.command =  {
+            correlationId: 'unknown',
+            name: 'unknown',
+            clientId: 'unknown'
+        }
+    }
 
     // apply common
     generalServices.applyCommonFields(event, command);

@@ -12,9 +12,13 @@ const execute = (query) => {
             let msgNum = 0;
             // now get the data
             MongoRepository.query('logins', {})
-                .bufferWithCount(config.pageSize) // collect in pagesize chunks
+                .bufferWithCount(config.pageSize) // collect in pagesize chunks, todo: should this logic be in query meditor??
                 .subscribe(resp => {
-                    ret.next({name: 'LoginQueryEvent', msgNum: ++msgNum, maxMsgs: maxMsgs, data: resp});
+                    let event = EventFactory.createFromQuery(query, 'LoginQueryEvent', false);
+                    event.messageNumber = ++msgNum;
+                    event.maxMessages = maxMsgs;
+                    event.data = resp;
+                    ret.next(event);
                 }, err => {
                     ret.error(err);
                 }, () => {

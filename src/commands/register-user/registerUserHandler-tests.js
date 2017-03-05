@@ -120,7 +120,9 @@ describe('Register user command', function () {
             handler.command = {
                 email: 'mark', name: 'mark s',
                 properties: {
-                    correlationId: 1
+                    correlationId: 1,
+                    clientId: 200,
+                    commandName: 'BlastCommand'
                 }
             };
             handler.execute();
@@ -134,16 +136,12 @@ describe('Register user command', function () {
                         created: new Date('01 Sep 2016 08:00'),
                         createdBy: undefined,
                         validFrom: new Date('01 Sep 2016 08:00'),
-                        validTo: new Date('31 Dec 9999'),
-                        messageNumber: 1,
-                        messageCount: 1,
+                        validTo: new Date('31 Dec 9999')
                     },
                     command: {
-                        email: 'mark',
-                        name: 'mark s',
-                        properties: {
-                            correlationId: 1
-                        }
+                        clientId: 200,
+                        name: 'BlastCommand',
+                        correlationId: 1
                     }
                 }
             ));

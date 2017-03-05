@@ -1,5 +1,4 @@
 'use strict';
-
 const assert = require('assert');
 const sinon = require('sinon');
 const EventFactory = require('./event-factory');
@@ -14,8 +13,6 @@ describe('Event Factory', () => {
             assert.equal(result.properties.eventName, 'MyEvent');
             assert.ok(result.properties);
             assert.equal(result.properties.isFailure, false);
-            assert.equal(result.properties.messageNumber, 1);
-            assert.equal(result.properties.messageCount, 1);
         });
 
         it('should give error when no name', () => {
@@ -32,14 +29,14 @@ describe('Event Factory', () => {
         });
 
         it('should fill in command', () => {
-            const result = EventFactory.createFromCommand(
-                {properties: {name: 'cmd1', correlationId: 899}}, 'MyEvent', false);
+            const cmd = CommandFactory.create('cmd1', 20, 30, new Date('31-dec-2012'));
+            const result = EventFactory.createFromCommand(cmd, 'MyEvent', false);
 
             assert.equal(result.properties.eventName, 'MyEvent');
             assert.ok(result.properties);
             assert.ok(result.command);
             assert.equal(result.command.name, 'cmd1');
-            assert.equal(result.command.correlationId, 899);
+            assert.equal(result.command.correlationId, 20);
         });
 
     });

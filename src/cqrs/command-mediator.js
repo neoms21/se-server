@@ -69,10 +69,12 @@ function createCommand(request, clientId) {
     if (!Util.isNullOrUndefined(request.properties)) {
 
         // create it now
-        instance = { properties: {
-            commandName: request.properties.commandName,
-            correlationId: request.properties.correlationId,
-            clientId: clientId}
+        instance = {
+            properties: {
+                commandName: request.properties.commandName,
+                correlationId: request.properties.correlationId,
+                clientId: clientId
+            }
         };
 
         // add extra props

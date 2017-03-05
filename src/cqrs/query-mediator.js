@@ -79,12 +79,7 @@ function dispatch(query) {
             // verifier has run , so lets get its results
             if (messageLength === 0) {
                 handler.execute() // all ok, so run it
-                    .subscribe(resp => {
-                        let event = EventFactory.createFromQuery(query, resp.name, false);
-                        event.messageNumber = resp.msgNum;
-                        event.maxMessages = resp.maxMsgs;
-                        event.data = resp.data;
-
+                    .subscribe(event => {
                         EventMediator.dispatch(event);
                     }, err => {
                         createError(query, err);
