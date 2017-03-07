@@ -12,7 +12,6 @@ let items = [];
         }, function (err) {
 
         }, function () {
-            console.log(items);
             ret.next({name: 'FetchSquadsEvent', data: items});
         });
     return ret;

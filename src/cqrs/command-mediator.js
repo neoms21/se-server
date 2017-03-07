@@ -28,15 +28,14 @@ function init(log) {
             } else {
                 filenames.forEach(function (filename) {
 
-                    // instantiate so we can get command
-                    // let instance = require(filename);
-                    //
-                    // if (instance !== undefined) {
-                    //     let mapping = {command: instance.getCommand(), handler: instance};
-                    //     // add to our list
-                    //     mappings.push(mapping);
-                    //     log.info('Added command ' + mapping.command);
-                    // }
+                    //instantiate so we can get command
+                    let instance = require(filename);
+                    if (instance !== undefined && instance.getCommand) {
+                        let mapping = {command: instance.getCommand(), handler: instance};
+                        // add to our list
+                        mappings.push(mapping);
+                        log.info('Added command ' + mapping.command);
+                    }
                 });
             }
         });
@@ -69,10 +68,12 @@ function createCommand(request, clientId) {
     if (!Util.isNullOrUndefined(request.properties)) {
 
         // create it now
-        instance = { properties: {
-            commandName: request.properties.commandName,
-            correlationId: request.properties.correlationId,
-            clientId: clientId}
+        instance = {
+            properties: {
+                commandName: request.properties.commandName,
+                correlationId: request.properties.correlationId,
+                clientId: clientId
+            }
         };
 
         // add extra props
@@ -91,7 +92,10 @@ let createError = function (command, responses) {
 
 function dispatch(command) {
     logger.debug('Dispatching command ' + command.properties.commandName);
-
+    console.log(command);
+    console.log(
+        mappings
+    );
     let mapping = mappings.find(function (mapping) {
         return mapping.command === command.properties.commandName;
     });
@@ -118,7 +122,7 @@ function dispatch(command) {
     handler.command = command;
 
     handler.verify()
-        .toArray()
+       // .toArray()
         .subscribe(function (responses) { // we get object with keys set as response names
             const messageLength = responses.length;
             logger.info(`Verified command ${command.properties.commandName} and had ${messageLength} errors`);

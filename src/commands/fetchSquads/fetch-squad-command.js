@@ -1,5 +1,0 @@
-class FetchSquadsCommand {
-    commandName;
-    correlationId;
-
-}
