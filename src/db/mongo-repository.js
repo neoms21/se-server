@@ -107,7 +107,7 @@ const query = (collectionName, filters) => {
     connectToDb()
         .then(function (db) {
             const cursor = db.collection(collectionName).find(filters); // use internal mongo function
-let items = []
+let items = [];
             // cursor.count(function(err, count) {
             //     log.info('query count ' + count)
             // });

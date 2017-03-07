@@ -9,10 +9,7 @@ function init(log) {
 }
 
 function fetchSquads(event) {
-
     console.log(event);
-
-
     MongoRepository.query('squads', {});
 }
 

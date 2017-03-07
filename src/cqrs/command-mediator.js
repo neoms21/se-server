@@ -29,14 +29,14 @@ function init(log) {
                 filenames.forEach(function (filename) {
 
                     // instantiate so we can get command
-                    let instance = require(filename);
-
-                    if (instance !== undefined) {
-                        let mapping = {command: instance.getCommand(), handler: instance};
-                        // add to our list
-                        mappings.push(mapping);
-                        log.info('Added command ' + mapping.command);
-                    }
+                    // let instance = require(filename);
+                    //
+                    // if (instance !== undefined) {
+                    //     let mapping = {command: instance.getCommand(), handler: instance};
+                    //     // add to our list
+                    //     mappings.push(mapping);
+                    //     log.info('Added command ' + mapping.command);
+                    // }
                 });
             }
         });
