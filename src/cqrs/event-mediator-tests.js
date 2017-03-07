@@ -13,7 +13,9 @@ describe('Event mediator', function () {
         // create logger, add info method and then stub that
         loggerStub = sinon.stub();
         loggerStub.info = Function;
+        loggerStub.debug = Function;
         loggerInfoStub = sinon.stub(loggerStub, 'info');
+        sinon.stub(loggerStub, 'debug');
         // initialise our testee with ur stub
         eventMediator.init(loggerStub);
     });

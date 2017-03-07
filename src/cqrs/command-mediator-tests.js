@@ -10,21 +10,23 @@ const eventMediator = require('./event-mediator');
 const mockHandler = require('./mocks/mock-handlerCommandHandler');
 
 let logStub = {
-    info: function () {
+    info: () => {
     },
-    error: function () {
+    error: () => {
+    },
+    debug: () => {
     }
 };
 let fhStub = {
-    ext: function () {
+    ext: () => {
     },
-    paths: function () {
+    paths: () => {
     },
-    match: function () {
+    match: () => {
     },
-    find: function () {
+    find: () => {
     },
-    not: function () {
+    not: () => {
     }
 };
 
@@ -194,7 +196,7 @@ describe('Command mediator', function () {
             //let event = createErrorEvent(command, 'Unable to create handler for command hhhh');
 
             eventMock.expects('dispatch').once(); //.withArgs(event);
-            logMock.expects('error').withArgs({'@#@': 'Unable to create handler for command hhhh'});
+            logMock.expects('error').withArgs('Unable to create handler for command hhhh');
 
             CommandMediator.dispatch(command);
         });
@@ -232,15 +234,10 @@ describe('Command mediator', function () {
         });
 
         it('should execute, save and propagate if no problems found', function () {
-            let verifyStub = sinon.stub(mockHandler, 'verify').returns(Rx.Observable.of({}));
+            let verifyStub = sinon.stub(mockHandler, 'verify').returns(Rx.Observable.empty());
             let executeStub = sinon.stub(mockHandler, 'execute');
             let saveStub = sinon.stub(CommandMediator, 'saveCommand');
             let command = {properties: {commandName: 'DummyCommand', correlationId: 3}};
-            //let event = createErrorEvent(command, 'Error');
-            //cqrsEventMock.expects('CommandVerificationFailed').withArgs(command).returns(event);
-            //eventMock.expects('dispatch').once(); //.withArgs(event);
-
-            //logMock.expects('debug').withArgs('CommandMediator before running verify for mock-handler');
 
             // act
             CommandMediator.dispatch(command);
