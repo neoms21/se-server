@@ -1,6 +1,6 @@
 var util = require('util');
-
 const Rx = require('rxjs/Rx');
+
 var queryVerifier = function (query) {
 
     var errors = [];
@@ -22,7 +22,7 @@ var queryVerifier = function (query) {
 
     }
 
-    return Rx.Observable.of(errors);
+    return errors;
 };
 
 module.exports.verify = queryVerifier;
