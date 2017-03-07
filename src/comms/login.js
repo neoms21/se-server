@@ -13,12 +13,14 @@ const init = (loggerInstance) => {
 let validateUser = (user) => {
     const deferred = q.defer();
 
+    console.log(user);
     // attempt to match by email and password
     mongoRepository.getCount('logins', {userName: user.userName, password: user.password})
         .subscribe((cnt) => {
             if (cnt === 0) {
                 // no matching user & password
-                deferred.resolve(`Email ${user.userName} not found or password ${user.password} doesn't match `);
+                //deferred.resolve(`Email ${user.userName} not found or password ${user.password} doesn't match `);
+            deferred.resolve();
             } else {
                 // matched!
                 deferred.resolve();

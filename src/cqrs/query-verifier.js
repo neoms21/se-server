@@ -1,6 +1,8 @@
 var util = require('util');
 
+const Rx = require('rxjs/Rx');
 var queryVerifier = function (query) {
+
     var errors = [];
 
     if (util.isNullOrUndefined(query)) {
@@ -20,7 +22,7 @@ var queryVerifier = function (query) {
 
     }
 
-    return errors;
+    return Rx.Observable.of(errors);
 };
 
 module.exports.verify = queryVerifier;

@@ -27,10 +27,9 @@ function init(log) {
             } else {
                 filenames.forEach(function (filename) {
 
-                    // instantiate so we can get command
+                    //instantiate so we can get command
                     let instance = require(filename);
-
-                    if (instance !== undefined) {
+                    if (instance !== undefined && instance.getCommand) {
                         let mapping = {command: instance.getCommand(), handler: instance};
                         // add to our list
                         mappings.push(mapping);
@@ -92,7 +91,10 @@ let createError = function (command, responses) {
 
 function dispatch(command) {
     logger.debug('Dispatching command ' + command.properties.commandName);
-
+    console.log(command);
+    console.log(
+        mappings
+    );
     let mapping = mappings.find(function (mapping) {
         return mapping.command === command.properties.commandName;
     });
@@ -119,7 +121,7 @@ function dispatch(command) {
     handler.command = command;
 
     handler.verify()
-        .toArray()
+       // .toArray()
         .subscribe(function (responses) { // we get object with keys set as response names
             const messageLength = responses.length;
             logger.info(`Verified command ${command.properties.commandName} and had ${messageLength} errors`);

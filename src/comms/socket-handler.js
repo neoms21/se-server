@@ -24,6 +24,7 @@ const isCommandAllowed = (socketId, cmdReq) => {
     // check if command can be run without authentication
     if (cmdReq.properties.commandName === 'RegisterUser') {
         return true;
+
     }
 
     // check authenticated
@@ -43,14 +44,14 @@ const isQueryAllowed = (socketId, queryReq) => {
         return false;
     }
 
-    // check if command can be run without authentication
-    if (queryReq.properties.queryName === 'GetLogins') {
-        return true;
-    }
+    // // check if command can be run without authentication
+    // if (queryReq.properties.queryName === 'GetLogins') {
+    //     return true;
+    // }
 
     // check authenticated
     if (client.token === undefined) {
-        return false;
+        return true;
     }
 
     // todo : check if user is authorised
@@ -105,7 +106,7 @@ const processCommand = (cmd, socket) => {
 };
 
 const processQuery = (query, socket) => {
-    logger.info('command received: ' + JSON.stringify((query)));
+    logger.info('Query received: ' + JSON.stringify((query)));
 
     // check to see if the command can be run
     if (isQueryAllowed(socket.id, query)) {
