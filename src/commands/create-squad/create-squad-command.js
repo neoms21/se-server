@@ -25,7 +25,7 @@ const execute = (command) => {
     EventMediator.dispatch(event);
 };
 
-const verify = (query) => {
+const verify = () => {
     return Rx.Observable.of([]);
 };
 
