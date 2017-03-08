@@ -11,23 +11,7 @@ const Util = require('util');
 let logger;
 let clients = [];
 let sio;
-
-const processSockets = (io, log) => {
-    logger = log;
-    sio = io;
-    io.set('transports', ['websocket']);
-
-    io.on('connection', function (socket) {
-
-        log.info('a user connected on socket ' + socket.id);
-        clients.push(socket);
-
-        socket.on('authentication', (auth) => authenticate(auth, socket.id));
-        socket.on('disconnect', () => disconnected(socket));
-        socket.on('command', (cmdReq) => processCommand(cmdReq, socket));
-        socket.on('query', (queryReq) => processQuery(queryReq, socket));
-    });
-};
+let eventSubscription;
 
 const isCommandAllowed = (socketId, cmdReq) => {
     logger.debug('Checking socket ' + socketId);
@@ -131,33 +115,62 @@ const processQuery = (query, socket) => {
     }
 };
 
-const init = () => {
+const dealWithEvents = (ev) => {
+    let topic = 'event';
+    let clientId;
+
+    if (!Util.isNullOrUndefined(ev.command)) {
+        topic = 'commandEvent';
+        clientId = ev.command.clientId;
+    } else {
+        if (!Util.isNullOrUndefined(ev.query)) {
+            topic = 'queryEvent';
+            clientId = ev.query.clientId;
+        }
+    }
+
+    // now send it
+    logger.debug(`Sending event ${ev.properties.eventName} to client ${clientId}`);
+    if (clientId !== undefined) {
+        // find the client connection
+        let clientSocket = clients.find((item) => item.id === clientId);
+        if(clientSocket !== undefined) {
+            // send event to that specfic client
+            clientSocket.emit(topic, ev);
+        } else {
+            logger.error(`Couldnt find client connection for id ${clientId} for event ${ev.properties.eventName}`);
+        }
+    } else {
+        // send to all
+        sio.emit(topic, ev);
+    }
+};
+
+const init = (io, log) => {
+    logger = log;
+    sio = io;
 
     // listen for events and send them out
-    EventMediator.propagator.subscribe(function (ev) {
-        let topic = 'event';
-        let clientId;
+    eventSubscription = EventMediator.propagator.subscribe(dealWithEvents);
 
-        if (!Util.isNullOrUndefined(ev.command)) {
-            topic = 'commandEvent';
-            clientId = ev.command.clientId;
-        } else {
-            if (!Util.isNullOrUndefined(ev.query)) {
-                topic = 'queryEvent';
-                clientId = ev.query.clientId;
-            }
-        }
+    io.set('transports', ['websocket']);
 
-        // now send it
-        logger.debug(`Sending event ${ev.properties.eventName} to client ${clientId}`);
-        if (clientId !== undefined) {
-            sio.emit(topic, ev);
-        } else {
-            sio.emit(topic, ev);
-        }
+    io.on('connection', function (socket) {
+        logger.info('a user connected on socket ' + socket.id);
+        clients.push(socket);
+
+        socket.on('authentication', (auth) => authenticate(auth, socket.id));
+        socket.on('disconnect', () => disconnected(socket));
+        socket.on('command', (cmdReq) => processCommand(cmdReq, socket));
+        socket.on('query', (queryReq) => processQuery(queryReq, socket));
     });
 };
 
-init();
+const destroy = () => {
+    eventSubscription.unsubscribe();
+};
 
-module.exports = processSockets;
+module.exports = {
+    init: init,
+    destroy: destroy
+};

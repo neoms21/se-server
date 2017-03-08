@@ -46,7 +46,7 @@ let createError = function (query, responses) {
 };
 
 function dispatch(query) {
-console.log(mappings);
+    console.log(mappings);
     let mapping = mappings.find(function (mapping) {
         return mapping.query === query.properties.queryName;
     });
@@ -71,22 +71,15 @@ console.log(mappings);
     let handler = mapping.handler;
     handler.query = query;
 
-    let  messageLength = handler.verify();
-    // console.log(x);
-
-         // .toArray()
-        // x.subscribe((responses) => { // we get object with keys set as response names
-        //     const messageLength = responses.length;
+    handler.verify()
+        .toArray()
+        .subscribe((responses) => { // we get object with keys set as response names
+            const messageLength = responses.length;
 
             // verifier has run , so lets get its results
-            if (messageLength.length === 0) {
+            if (messageLength === 0) {
                 handler.execute() // all ok, so run it
-                    .subscribe(resp => {
-                        let event = EventFactory.createFromQuery(query, resp.name, false);
-                        event.messageNumber = resp.msgNum;
-                        event.maxMessages = resp.maxMsgs;
-                        event.data = resp.data;
-                        event.query = query;
+                    .subscribe(event => {
                         EventMediator.dispatch(event);
                     }, err => {
                         createError(query, err);
@@ -97,9 +90,9 @@ console.log(mappings);
                 // verification errors found
                 createError(query, responses);
             }
-        // }, (err) => {
-        //     createError(query, {'@#@': err.toString()}); //todo: not sure about this @#@
-        // });
+        }, (err) => {
+            createError(query, err.toString()); //todo: not sure about this @#@
+        });
 }
 
 module.exports = {

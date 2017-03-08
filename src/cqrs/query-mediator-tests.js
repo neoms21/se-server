@@ -154,14 +154,15 @@ describe('Query mediator', function () {
         });
 
         it('should execute, save and propagate if no problems found', function () {
-            let verifyStub = sinon.stub(mockHandler, 'verify').returns(Rx.Observable.of({}));
-            let executeStub = sinon.stub(mockHandler, 'execute')
-                .returns(Rx.Observable.of({name: 'GetLoginsEvent', msgNum: 1, maxMsgs: 1, data: ['test']}));
             let query = QueryFactory.create('DummyQuery', 1, undefined, 100);
-            let expectedEvent = EventFactory.createFromQuery(query, 'GetLoginsEvent', false);
+            let expectedEvent = EventFactory.createFromQuery(query, 'LoginQueryEvent', false);
             expectedEvent.messageNumber = 1;
             expectedEvent.maxMessages = 1;
             expectedEvent.data = ['test'];
+
+            let verifyStub = sinon.stub(mockHandler, 'verify').returns(Rx.Observable.empty());
+            let executeStub = sinon.stub(mockHandler, 'execute')
+                .returns(Rx.Observable.of(expectedEvent));
 
             eventMock.expects('dispatch').withArgs(expectedEvent);
 

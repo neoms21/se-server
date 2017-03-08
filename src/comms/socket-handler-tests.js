@@ -49,7 +49,7 @@ describe('Socket handler', () => {
             setStub = sinon.stub(io, 'set');
 
             socket.id = '123@';
-            socketHandler(io, logger);
+            socketHandler.init(io, logger);
         });
 
         afterEach(() => {
@@ -58,6 +58,7 @@ describe('Socket handler', () => {
             eventMediatorStub.restore();
             timeStub.restore();
             setStub.restore();
+            socketHandler.destroy();
         });
 
         it('should log when connected', () => {
@@ -95,8 +96,6 @@ describe('Socket handler', () => {
                         createdBy: 'unknown',
                         validFrom: tod,
                         validTo: new Date('9999-12-31'),
-                        messageNumber: 1,
-                        messageCount: 1,
                     },
                     error: 'Authentication token didnt match for socket 123@'
                 }));
@@ -120,9 +119,7 @@ describe('Socket handler', () => {
                     created: tod,
                     createdBy: 'unknown',
                     validFrom: tod,
-                    validTo: new Date('9999-12-31'),
-                    messageNumber: 1,
-                    messageCount: 1,
+                    validTo: new Date('9999-12-31')
                 },
                 error: 'Failed to find matching socket 123@'
             }));
@@ -136,7 +133,6 @@ describe('Socket handler', () => {
             jwtStub.restore();
 
             assert(eventMediatorStub.called);
-            console.log(eventMediatorStub.getCall(0).args)
             assert(eventMediatorStub.calledWith({
                 properties: {
                     eventName: 'AuthenticationSucceeded',
@@ -145,8 +141,6 @@ describe('Socket handler', () => {
                     createdBy: 'unknown',
                     validFrom: tod,
                     validTo: new Date('9999-12-31'),
-                    messageNumber: 1,
-                    messageCount: 1
                 }
             }));
 
