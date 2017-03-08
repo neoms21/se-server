@@ -3,7 +3,8 @@ const MongoRepository = require('../db/mongo-repository');
 const Rx = require('rxjs');
 const config = require('config');
 
-const execute = () => {
+const EventFactory = require('./../cqrs/event-factory');
+const execute = (query) => {
     const ret = new Rx.Subject();
     let items = [];
     MongoRepository.query('squads', {})
@@ -12,7 +13,8 @@ const execute = () => {
         }, function (err) {
 
         }, function () {
-            let event = EventFactory.createFromQuery(this.query, 'FetchSquadsEvent', false);
+            console.log(items);
+            let event = EventFactory.createFromQuery(query, 'FetchSquadsEvent', false);
             event.messageNumber = 1;
             event.maxMessages = 1;
             event.data = items;
@@ -23,7 +25,7 @@ const execute = () => {
 
 const verify = () => {
     // send back empty
-    return Rx.observable.empty();
+    return Rx.Observable.empty();
 };
 
 module.exports = {

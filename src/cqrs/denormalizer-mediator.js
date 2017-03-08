@@ -44,7 +44,7 @@ function init(log) {
     EventMediator.propagator.subscribe((evnt) => {
 
         logger.info('Denormalizer running for event ' + JSON.stringify(evnt));
-        console.log(mappings);
+       // console.log(mappings);
         // find the event in our map, or not
         let found = mappings.find(mp => mp.messages.find(m => m === evnt.properties.eventName) !== undefined);
         console.log(' found ' + JSON.stringify(found));

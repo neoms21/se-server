@@ -70,7 +70,6 @@ function dispatch(query) {
     // get handler
     let handler = mapping.handler;
     handler.query = query;
-
     handler.verify()
         .toArray()
         .subscribe((responses) => { // we get object with keys set as response names
@@ -78,8 +77,9 @@ function dispatch(query) {
 
             // verifier has run , so lets get its results
             if (messageLength === 0) {
-                handler.execute() // all ok, so run it
+                handler.execute(query) // all ok, so run it
                     .subscribe(event => {
+                        event.query = query;
                         EventMediator.dispatch(event);
                     }, err => {
                         createError(query, err);
