@@ -92,10 +92,7 @@ let createError = function (command, responses) {
 
 function dispatch(command) {
     logger.debug('Dispatching command ' + command.properties.commandName);
-    console.log(command);
-    console.log(
-        mappings
-    );
+
     let mapping = mappings.find(function (mapping) {
         return mapping.command === command.properties.commandName;
     });
@@ -119,6 +116,7 @@ function dispatch(command) {
 
     // get handler
     let handler = mapping.handler;
+    console.log(mapping);
     handler.command = command;
 
     handler.verify()
@@ -129,7 +127,9 @@ function dispatch(command) {
 
             // verifier has run , so lets get its results
             if (messageLength === 0) {
-                handler.execute(); // all ok, so run it
+                handler.execute(command ).subscribe(resp => {
+
+                }); // all ok, so run it
                 exports.saveCommand(command); // and save
                 logger.info('Command ' + command.commandName + ' executed successfully');
             } else {

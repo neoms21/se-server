@@ -8,9 +8,13 @@ function init(log) {
     logger = log;
 }
 
-function fetchSquads(event) {
+function createSquad(event) {
     console.log(event);
-    MongoRepository.query('squads', {});
+
+    let squad = {
+        name: event.command.payload.squadName,
+    };
+    MongoRepository.insert('squads', squad);
 }
 
 function getMessages() {
@@ -20,6 +24,6 @@ function getMessages() {
 //noinspection JSUnresolvedVariable
 module.exports = {
     init: init,
-    handleMessage: fetchSquads,
+    handleMessage: createSquad,
     getMessages: getMessages
 };
