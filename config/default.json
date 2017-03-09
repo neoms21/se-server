@@ -1,8 +1,8 @@
 {
   "dbConfig": {
     "name": "SportsEditor",
-    "host": "",
-    "port": 0
+    "host": "localhost",
+    "port": 27017
   },
   "pageSize": 50
 }

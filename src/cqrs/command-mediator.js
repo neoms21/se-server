@@ -127,9 +127,7 @@ function dispatch(command) {
 
             // verifier has run , so lets get its results
             if (messageLength === 0) {
-                handler.execute(command ).subscribe(resp => {
-
-                }); // all ok, so run it
+                handler.execute(command);
                 exports.saveCommand(command); // and save
                 logger.info('Command ' + command.commandName + ' executed successfully');
             } else {
