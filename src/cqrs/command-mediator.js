@@ -1,4 +1,5 @@
 'use strict';
+const path = require('path');
 const Rx = require('rxjs');
 const Filehound = require('filehound');
 const mongoRepository = require('../db/mongo-repository');
@@ -125,10 +126,7 @@ function dispatch(command) {
 
             // verifier has run , so lets get its results
             if (messageLength === 0) {
-                handler.execute(command )
-                //     .subscribe(resp => {
-                //
-                // }); // all ok, so run it
+                handler.execute(command);
                 exports.saveCommand(command); // and save
                 logger.info('Command ' + command.properties.commandName + ' executed successfully');
             } else {
