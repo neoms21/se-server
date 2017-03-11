@@ -119,13 +119,14 @@ function dispatch(command) {
     handler.command = command;
 
     handler.verify()
-        .subscribe(function (responses) { // we get object with keys set as response names
+        .toArray()
+        .subscribe(function (responses) {
             const messageLength = responses.length;
             logger.info(`Verified command ${command.properties.commandName} and had ${messageLength} errors`);
 
             // verifier has run , so lets get its results
             if (messageLength === 0) {
-                handler.execute(command )
+                handler.execute(command);
                 //     .subscribe(resp => {
                 //
                 // }); // all ok, so run it

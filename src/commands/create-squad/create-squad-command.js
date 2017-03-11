@@ -26,7 +26,7 @@ const execute = (command) => {
 };
 
 const verify = () => {
-    return Rx.Observable.of([]);
+    return Rx.Observable.empty();
 };
 
 module.exports = {

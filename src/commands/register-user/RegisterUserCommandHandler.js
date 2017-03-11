@@ -10,7 +10,6 @@ function verify() {
 
     setTimeout(function (command) { // use timeout as rx is async
 
-
         if (util.isNullOrUndefined(command.name)) {
             response.next({name: 'Name property was not defined'});
         }
