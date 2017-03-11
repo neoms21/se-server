@@ -128,7 +128,6 @@ describe('Register user command', function () {
             handler.execute();
 
             assert(dispatchStub.called);
-            console.log(dispatchStub.getCall(0).args)
             assert(dispatchStub.calledWith({
                     properties: {
                         eventName: 'UserRegisteredEvent',

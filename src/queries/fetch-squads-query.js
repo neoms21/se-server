@@ -13,7 +13,6 @@ const execute = (query) => {
         }, function (err) {
 
         }, function () {
-            console.log(items);
             let event = EventFactory.createFromQuery(query, 'FetchSquadsEvent', false);
             event.messageNumber = 1;
             event.maxMessages = 1;

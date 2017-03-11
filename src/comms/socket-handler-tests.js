@@ -86,7 +86,6 @@ describe('Socket handler', () => {
             socket.emit('disconnect'); // deletes the client
 
             assert(eventMediatorStub.called);
-            console.log(eventMediatorStub.getCall(0).args)
             assert(eventMediatorStub.calledWith(
                 {
                     properties: {
@@ -111,7 +110,6 @@ describe('Socket handler', () => {
             jwtStub.restore();
 
             assert(eventMediatorStub.called);
-            console.log(eventMediatorStub.getCall(0).args)
             assert(eventMediatorStub.calledWith({
                 properties: {
                     eventName: 'AuthenticationFailed',

@@ -115,7 +115,6 @@ function dispatch(command) {
 
     // get handler
     let handler = mapping.handler;
-    console.log(mapping);
     handler.command = command;
 
     handler.verify()

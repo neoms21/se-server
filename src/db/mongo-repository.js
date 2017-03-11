@@ -115,7 +115,6 @@ let items = [];
             cursor.forEach((item) => {
                 response.next(item);
             }, (err) => {
-                console.log(err);// error or complete!
                 if (err === null) {
                     // console.log(items);
                     //cursor done
