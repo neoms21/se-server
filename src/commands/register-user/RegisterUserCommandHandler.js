@@ -10,7 +10,6 @@ function verify() {
 
     setTimeout(function (command) { // use timeout as rx is async
 
-
         if (util.isNullOrUndefined(command.name)) {
             response.next({name: 'Name property was not defined'});
         }
@@ -49,6 +48,9 @@ function verify() {
 }
 
 function execute() {
+    console.log('in execute register user');
+    console.log(this.command);
+
     // has been verified , so just need to create event
     let event = EventFactory.createFromCommand(this.command, 'UserRegisteredEvent', false);
 
