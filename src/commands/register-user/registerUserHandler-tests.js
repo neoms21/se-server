@@ -29,7 +29,7 @@ describe('Register user command', function () {
             handler.command = {};
             handler.verify().toArray()
                 .subscribe(function (success) {
-                    assert(typeof success, 'array');
+                    assert(typeof success, '123');
                 }, function (err) {
                     assert(err, null);
                 }, function () {

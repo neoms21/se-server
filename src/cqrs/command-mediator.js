@@ -120,17 +120,14 @@ function dispatch(command) {
     console.log(command);
     handler.command = command;
 
-    handler.verify()
+    handler.verify().toArray()
         .subscribe(function (responses) { // we get object with keys set as response names
             const messageLength = responses.length;
             logger.info(`Verified command ${command.properties.commandName} and had ${messageLength} errors`);
 
             // verifier has run , so lets get its results
             if (!messageLength || messageLength === 0) {
-                handler.execute(command)
-                //     .subscribe(resp => {
-                //
-                // }); // all ok, so run it
+                handler.execute(command);
                 exports.saveCommand(command); // and save
                 logger.info('Command ' + command.properties.commandName + ' executed successfully');
             } else {
