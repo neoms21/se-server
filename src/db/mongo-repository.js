@@ -13,7 +13,7 @@ const init = (log) => {
 const connectToDb = () => {
 
     const configDB = config.get("dbConfig");
-
+    console.log(configDB);
     // create uri no user
     const uri = 'mongodb://' + configDB.host + ':' + configDB.port + '/' + configDB.name;
     logger.info('Trying to connect to ' + uri + ' for db');
@@ -85,16 +85,18 @@ const createOrOpenDb = () => {
 
     connectToDb()
         .then(function (db) {
-            createCollection(db, 'commands');
-            createCollection(db, 'events');
-            createCollection(db, 'clubs');
-            createCollection(db, 'teams');
-            createCollection(db, 'logins');
-            db.close();
+
+            Promise.all(createCollection(db, 'commands'), createCollection(db, 'events'),
+                createCollection(db, 'clubs'),
+                createCollection(db, 'squads'), createCollection(db, 'logins')).then(([result1, result2]) => {
+                db.close();
+            })
+                .catch(err => {
+                    db.close();
+                });
         })
         .catch(function (err) {
                 response.error(err.toString());
-                db.close();
             }
         );
 
@@ -107,7 +109,7 @@ const query = (collectionName, filters) => {
     connectToDb()
         .then(function (db) {
             const cursor = db.collection(collectionName).find(filters); // use internal mongo function
-let items = [];
+            let items = [];
             // cursor.count(function(err, count) {
             //     log.info('query count ' + count)
             // });
