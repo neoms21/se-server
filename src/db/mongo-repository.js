@@ -119,12 +119,15 @@ const createOrOpenDb = () => {
 
     connectToDb()
         .then(function (db) {
-            createCollection(db, 'commands');
-            createCollection(db, 'events');
-            createCollection(db, 'clubs');
-            createCollection(db, 'teams');
-            createCollection(db, 'logins');
-            db.close();
+
+            Promise.all(createCollection(db, 'commands'), createCollection(db, 'events'),
+                createCollection(db, 'clubs'),
+                createCollection(db, 'squads'), createCollection(db, 'logins')).then(([result1, result2]) => {
+                db.close();
+            })
+                .catch(err => {
+                    db.close();
+                });
         })
         .catch(function (err) {
                 response.error(err.toString());
@@ -140,7 +143,6 @@ const query = (collectionName, filters) => {
 
     connectToDb()
         .then(function (db) {
-            console.log('db connected', filters);
             const cursor = db.collection(collectionName).find(filters); // use internal mongo function
 
             cursor.count(function (err, count) {
@@ -148,7 +150,6 @@ const query = (collectionName, filters) => {
             });
 
             cursor.forEach((item) => {
-
                 response.next(item);
             }, (err) => {
                 console.log(err);// error or complete!
