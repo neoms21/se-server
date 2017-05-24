@@ -70,6 +70,40 @@ const insert = (collectionName, insertion) => {
     return response;
 };
 
+const update = (collectionName, insertion, key, propsToUpdate) => {
+    let response = new Rx.Subject();
+
+    connectToDb()
+        .then(function (db) {
+                let updates = {};
+                propsToUpdate.forEach(function (prop) {
+                    updates[prop] = insertion[prop];
+                });
+
+                let collection = db.collection(collectionName);
+                collection
+                    .updateOne({_id: insertion[key]},
+                        {$set: updates})
+                    .then(function (succ) {
+                            response.next(succ);
+                            response.complete();
+                            db.close();
+                        }
+                    )
+                    .catch(function (errInsert) {
+                            response.error(errInsert);
+                            logger.error(errInsert);
+                            db.close();
+                        }
+                    );
+            }, function (err) {
+                response.error(err);
+            }
+        );
+
+    return response;
+};
+
 const createCollection = (db, name) => {
     db.createCollection(name, function (err, collection) {
         if (util.isNullOrUndefined(err)) {
@@ -106,13 +140,15 @@ const query = (collectionName, filters) => {
 
     connectToDb()
         .then(function (db) {
+            console.log('db connected', filters);
             const cursor = db.collection(collectionName).find(filters); // use internal mongo function
-let items = [];
-            // cursor.count(function(err, count) {
-            //     log.info('query count ' + count)
-            // });
+
+            cursor.count(function (err, count) {
+                console.log('query count ' + count)
+            });
 
             cursor.forEach((item) => {
+
                 response.next(item);
             }, (err) => {
                 console.log(err);// error or complete!
@@ -127,6 +163,7 @@ let items = [];
             });
         })
         .catch(function (err) {
+            console.log(err);
             response.error(err);
             db.close();
         });
@@ -138,6 +175,7 @@ module.exports = {
     createOrOpenDb: createOrOpenDb,
     insert: insert,
     getCount: getCount,
+    update: update,
     connectToDb: connectToDb,
     query: query,
     init: init
