@@ -126,12 +126,12 @@ const createOrOpenDb = () => {
                 db.close();
             })
                 .catch(err => {
-                    db.close();
+                  //  db.close();
                 });
         })
         .catch(function (err) {
                 response.error(err.toString());
-                db.close();
+                //db.close();
             }
         );
 
