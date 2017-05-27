@@ -30,9 +30,9 @@ let fhStub = {
     }
 };
 
-let createErrorEvent = function (command, message) {
+let createEvent = function (command, message, eventName = 'CommandVerificationFailedEvent') {
     return {
-        eventName: 'CommandVerificationFailedEvent',
+        eventName: eventName,
         correlationId: command.correlationId,
         messageNumber: 1,
         messageCount: 1,
@@ -206,7 +206,7 @@ describe('Command mediator', function () {
 
             let command = {properties: {commandName: 'mock-handler', correlationId: 2}};
             //logMock.expects('debug').withArgs('CommandMediator before running verify for mock-handler');
-            let event = createErrorEvent(command, 'Error');
+            let event = createEvent(command, 'Error');
             cqrsEventMock.expects('CommandVerificationFailed').withArgs(command).returns(event);
             eventMock.expects('dispatch').once(); //withArgs(event);
 
@@ -219,10 +219,9 @@ describe('Command mediator', function () {
 
         it('should produce error event if verify has error messages', function () {
             let verifyStub = sinon.stub(mockHandler, 'verify').returns(Rx.Observable.of('#Error'));
-
             let command = {properties: {commandName: 'mock-handler', correlationId: 3}};
             //logMock.expects('debug').withArgs('CommandMediator before running verify for mock-handler');
-            let event = createErrorEvent(command, 'Error');
+            let event = createEvent(command, 'Error');
             cqrsEventMock.expects('CommandVerificationFailed').withArgs(command).returns(event);
             eventMock.expects('dispatch').withArgs(event);
 
@@ -234,10 +233,12 @@ describe('Command mediator', function () {
         });
 
         it('should execute, save and propagate if no problems found', function () {
-            let verifyStub = sinon.stub(mockHandler, 'verify').returns(Rx.Observable.of([]));
+            let verifyStub = sinon.stub(mockHandler, 'verify').returns(Rx.Observable.empty());
             let executeStub = sinon.stub(mockHandler, 'execute');
             let saveStub = sinon.stub(CommandMediator, 'saveCommand');
             let command = {properties: {commandName: 'DummyCommand', correlationId: 3}};
+            let event = createEvent(command, '', 'DummyCommand');
+            //eventMock.expects('dispatch').withArgs(event);
 
             // act
             CommandMediator.dispatch(command);
