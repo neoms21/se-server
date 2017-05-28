@@ -6,42 +6,25 @@ const Rx = require('rxjs');
 const EventFactory = require('../../cqrs/event-factory');
 
 function verify() {
-    var response = new Rx.Subject();
+    let response = new Rx.Subject();
 
     setTimeout(function (command) { // use timeout as rx is async
 
-        if (util.isNullOrUndefined(command.name)) {
-            response.next({name: 'Name property was not defined'});
+        if (util.isNullOrUndefined(command.squad)) {
+            response.next({squad: 'Squad property was not defined'});
         }
 
-        if (util.isNullOrUndefined(command.email)) {
-            response.next({email: 'Email property was not defined'});
+        if (util.isNullOrUndefined(command.matchDate)) {
+            response.next({matchDate: 'MatchDate property was not defined'});
         }
 
-        if (util.isNullOrUndefined(command.password)) {
-            response.next({password: 'Password property was not defined'});
-        } else {
-            if (command.password.length < 8) {
-                response.next({password: 'Password must be at least 8 characters long'});
-            }
+        if (util.isNullOrUndefined(command.opposition)) {
+            response.next({opposition: 'Opposition property was not defined'});
         }
 
-        const userNameToSearchFor = command.email || '';
+        // we are done
+        response.complete();
 
-        // check that the user is not sending a duplicate
-        MongoRepository.getCount('logins', {userName: userNameToSearchFor})
-            .subscribe(function (count) {
-
-                if (count > 0) {
-                    // oops duplicate
-                    response.next({'email': 'The email ' + userNameToSearchFor + ' is a duplicate'});
-                }
-
-                // we are done
-                response.complete();
-            }, function (err) {
-                response.error(err);
-            });
     }, 100, this.command);
 
     return response;
@@ -49,7 +32,7 @@ function verify() {
 
 function execute() {
     // has been verified , so just need to create event
-    let event = EventFactory.createFromCommand(this.command, 'UserRegisteredEvent', false);
+    let event = EventFactory.createFromCommand(this.command, 'CreateMatchEvent', false);
 
     // now send it
     EventMediator.dispatch(event);

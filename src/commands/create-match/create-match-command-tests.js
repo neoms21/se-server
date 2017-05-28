@@ -43,7 +43,7 @@ describe('Create match command', function () {
                 .subscribe(function (resp) {
                     assert.equal(resp.length, 3);
                     assert.deepEqual(resp[0], {squad: 'Squad property was not defined'});
-                    assert.deepEqual(resp[1], {matchDate: 'Match date property was not defined'});
+                    assert.deepEqual(resp[1], {matchDate: 'MatchDate property was not defined'});
                     assert.deepEqual(resp[2], {opposition: 'Opposition property was not defined'});
                 }, function (err) {
                     assert(err, null);
@@ -57,8 +57,8 @@ describe('Create match command', function () {
             handler.verify().toArray()
                 .subscribe(function (resp) {
                     assert.equal(resp.length, 2);
-                    assert.deepEqual(resp[0], {name: 'MatchDate property was not defined'});
-                    assert.deepEqual(resp[1], {email: 'Opposition property was not defined'});
+                    assert.deepEqual(resp[0], {matchDate: 'MatchDate property was not defined'});
+                    assert.deepEqual(resp[1], {opposition: 'Opposition property was not defined'});
                 }, function (err) {
                     assert(err, null);
                 }, function () {
@@ -140,11 +140,12 @@ describe('Create match command', function () {
                     },
                     command: {
                         squad: 1,
-                        name: 'mark s',
+                        matchDate: Date.parse('01-01-2017'),
+                        opposition: 'Esher Lions',
                         properties: {
                             correlationId: 1,
                             clientId: 200,
-                            commandName: 'BlastCommand'
+                            commandName: 'CreateMatchCommand'
                         }
                     }
                 }

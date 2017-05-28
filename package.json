@@ -5,9 +5,9 @@
   "scripts": {
     "lint": "node_modules/.bin/jslint src/**/*.js",
     "start": "cross-env NODE_ENV=dev nodemon -- src/app.js | bunyan",
-    "ci": "istanbul cover _mocha src/**/*-tests.js",
-    "test": "_mocha --watch src/**/*-tests.js",
-    "cover": "istanbul cover _mocha src/**/*-tests.js "
+    "ci": "istanbul cover _mocha src/**/*",
+    "test": "_mocha --watch ./src/**/*",
+    "cover": "istanbul cover _mocha src/**/*"
   },
   "dependencies": {
     "body-parser": "^1.16.0",
