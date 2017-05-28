@@ -10,7 +10,7 @@ function init(log) {
 
 function handleRegisterUser(event) {
     // check whether user has a login
-    //console.log('in handle register')
+
 
     MongoRepository.getCount('logins', {userName: event.command.email})
         .subscribe(function (count) {
