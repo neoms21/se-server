@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const assert = require('assert');
 const mongoRepository = require('../../db/mongo-repository');
-const handler = require('./create-match-command-handler');
+const handler = require('./create-match-command');
 const Rx = require('rxjs/Rx');
 const eventMediator = require('../../cqrs/event-mediator');
 const generalServices = require('../../cqrs/general-services');
@@ -12,7 +12,7 @@ describe('Create match command', function () {
     let timeStub;
 
     beforeEach(function () {
-        countStub = sinon.stub(mongoRepository, 'getCount', function () {
+        countStub = sinon.stub(mongoRepository, 'getCount').callsFake(() => {
             // supply dummy observable
             return Rx.Observable.from([count]);
         });

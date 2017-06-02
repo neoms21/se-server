@@ -1,5 +1,4 @@
 'use strict';
-const MongoRepository = require('../../db/mongo-repository');
 const EventMediator = require('../../cqrs/event-mediator');
 const util = require('util');
 const Rx = require('rxjs');
