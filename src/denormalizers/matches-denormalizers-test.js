@@ -4,9 +4,9 @@ const mongoRepository = require('../db/mongo-repository');
 const Rx = require('rxjs/Rx');
 const EventMediator = require('../cqrs/event-mediator');
 const GeneralServices = require('../cqrs/general-services');
-const deNormalizer = require('./logins-denormalizer');
+const deNormalizer = require('./matches-denormalizer');
 
-describe('Login denormalizers', function() {
+describe('Matches denormalizer', function() {
   let countStub;
   let insertStub;
   let count = 0;
@@ -62,7 +62,7 @@ describe('Login denormalizers', function() {
       const msgList = deNormalizer.getMessages();
       chai.assert.isArray(msgList, 'Should be array');
       chai.assert.equal(msgList.length, 1);
-      chai.assert.equal(msgList[0], 'UserRegisteredEvent');
+      chai.assert.equal(msgList[0], 'CreateMatchEvent');
     });
 
   });
