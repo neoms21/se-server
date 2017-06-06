@@ -6,7 +6,7 @@ const Rx = require('rxjs');
 const EventFactory = require('../../cqrs/event-factory');
 
 function verify() {
-    var response = new Rx.Subject();
+    const response = new Rx.Subject();
 
     setTimeout(function (command) { // use timeout as rx is async
 

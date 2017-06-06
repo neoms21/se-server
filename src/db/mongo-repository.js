@@ -87,13 +87,13 @@ const update = (collectionName, insertion, key, propsToUpdate) => {
                     .then(function (succ) {
                             response.next(succ);
                             response.complete();
-                            db.close();
+                           // db.close();
                         }
                     )
                     .catch(function (errInsert) {
                             response.error(errInsert);
                             logger.error(errInsert);
-                            db.close();
+                           // db.close();
                         }
                     );
             }, function (err) {
@@ -105,7 +105,7 @@ const update = (collectionName, insertion, key, propsToUpdate) => {
 };
 
 const createCollection = (db, name) => {
-    db.createCollection(name, function (err, collection) {
+    db.createCollection(name, function (err) {
         if (util.isNullOrUndefined(err)) {
             logger.info('[Db] - created ' + name + ' collection');
         } else {
@@ -123,9 +123,10 @@ const createOrOpenDb = () => {
             Promise.all(createCollection(db, 'commands'), createCollection(db, 'events'),
                 createCollection(db, 'clubs'),
                 createCollection(db, 'squads'), createCollection(db, 'logins')).then(([result1, result2]) => {
-                db.close();
+                //db.close();
             })
                 .catch(err => {
+                    logger.error(err);
                   //  db.close();
                 });
         })
@@ -145,9 +146,9 @@ const query = (collectionName, filters) => {
         .then(function (db) {
             const cursor = db.collection(collectionName).find(filters); // use internal mongo function
 
-            cursor.count(function (err, count) {
-                console.log('query count ' + count)
-            });
+            // cursor.count(function (err, count) {
+            //     console.log('query count ' + count)
+            // });
 
             cursor.forEach((item) => {
                 response.next(item);
@@ -160,13 +161,13 @@ const query = (collectionName, filters) => {
                 } else {
                     response.error(err);
                 }
-                db.close();
+              //  db.close();
             });
         })
         .catch(function (err) {
             console.log(err);
             response.error(err);
-            db.close();
+           // db.close();
         });
 
     return response;
