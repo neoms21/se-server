@@ -118,8 +118,9 @@ function dispatch(command) {
     console.log(mapping);
     handler.command = command;
 
-    handler.verify()
+    handler.verify().toArray()
         .subscribe(function (responses) { // we get object with keys set as response names
+            console.log(responses);
             const messageLength = responses.length;
             logger.info(`Verified command ${command.properties.commandName} and had ${messageLength} errors`);
 

@@ -39,6 +39,8 @@ const getCount = (collectionName, param) => {
                     logger.error(err);
                     db.close();
                 });
+        }, function(err){
+            console.log(err);
         });
 
     return response;

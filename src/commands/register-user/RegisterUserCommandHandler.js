@@ -32,7 +32,7 @@ function verify() {
         // check that the user is not sending a duplicate
         MongoRepository.getCount('logins', {userName: userNameToSearchFor})
             .subscribe(function (count) {
-
+                console.log(count);
                 if (count > 0) {
                     // oops duplicate
                     response.next({'email': 'The email ' + userNameToSearchFor + ' is a duplicate'});
@@ -41,6 +41,7 @@ function verify() {
                 // we are done
                 response.complete();
             }, function (err) {
+                console.log(err);
                 response.error(err);
             });
     }, 100, this.command);
