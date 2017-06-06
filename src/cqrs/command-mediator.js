@@ -129,7 +129,7 @@ function dispatch(command) {
             // verifier has run , so lets get its results
             if (!messageLength || messageLength === 0) {
                 handler.execute(command);
-                exports.saveCommand(command); // and save
+               // exports.saveCommand(command); // and save
                // logger.info('Command ' + command.properties.commandName + ' executed successfully');
             } else {
                 // verification errors found
@@ -140,7 +140,7 @@ function dispatch(command) {
         });
 }
 
-module.exports = exports = {
+module.exports = {
     init: init,
     dispatch: dispatch,
     createCommand: createCommand,
