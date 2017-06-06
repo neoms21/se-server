@@ -1,5 +1,4 @@
 'use strict';
-const Rx = require('rxjs');
 const Filehound = require('filehound');
 const mongoRepository = require('../db/mongo-repository');
 const eventMediator = require('./event-mediator');
