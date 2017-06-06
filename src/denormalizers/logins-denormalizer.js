@@ -27,7 +27,7 @@ function handleRegisterUser(event) {
                 MongoRepository.insert('logins', login);
             }
         }, function (err) {
-            logger.error(err)
+            logger.error(err);
         });
 }
 

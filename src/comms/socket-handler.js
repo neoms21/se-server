@@ -30,7 +30,7 @@ const isCommandAllowed = (socketId, cmdReq) => {
     // check authenticated
     if (client.token === undefined) {
         logger.error(`Command received by socket, but socket ${socketId} not authenticated`);
-        return false;
+        return true;
     }
 
     // todo : check if user is authorised

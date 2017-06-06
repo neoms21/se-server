@@ -29,6 +29,7 @@ function init(log) {
 
                     //instantiate so we can get command
                     let instance = require(filename);
+
                     if (instance !== undefined && instance.getCommand) {
                         let mapping = {command: instance.getCommand(), handler: instance};
                         // add to our list
@@ -115,22 +116,20 @@ function dispatch(command) {
 
     // get handler
     let handler = mapping.handler;
-    console.log(mapping);
+    console.log('in mediator');
+    console.log(command);
     handler.command = command;
 
-    handler.verify()
+    handler.verify().toArray()
         .subscribe(function (responses) { // we get object with keys set as response names
             const messageLength = responses.length;
-            logger.info(`Verified command ${command.properties.commandName} and had ${messageLength} errors`);
+            //logger.info(`Verified command ${command.properties.commandName} and had ${messageLength} errors`);
 
             // verifier has run , so lets get its results
-            if (messageLength === 0) {
-                handler.execute(command )
-                //     .subscribe(resp => {
-                //
-                // }); // all ok, so run it
+            if (!messageLength || messageLength === 0) {
+                handler.execute(command);
                 exports.saveCommand(command); // and save
-                logger.info('Command ' + command.properties.commandName + ' executed successfully');
+               // logger.info('Command ' + command.properties.commandName + ' executed successfully');
             } else {
                 // verification errors found
                 createError(command, responses);
