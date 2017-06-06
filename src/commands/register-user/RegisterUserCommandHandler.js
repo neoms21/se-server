@@ -11,23 +11,23 @@ function verify() {
     setTimeout(function (command) { // use timeout as rx is async
 
 
-        if (util.isNullOrUndefined(command.name)) {
+        if (util.isNullOrUndefined(command.payload.name)) {
             response.next({name: 'Name property was not defined'});
         }
 
-        if (util.isNullOrUndefined(command.email)) {
+        if (util.isNullOrUndefined(command.payload.email)) {
             response.next({email: 'Email property was not defined'});
         }
 
-        if (util.isNullOrUndefined(command.password)) {
+        if (util.isNullOrUndefined(command.payload.password)) {
             response.next({password: 'Password property was not defined'});
         } else {
-            if (command.password.length < 8) {
+            if (command.payload.password.length < 8) {
                 response.next({password: 'Password must be at least 8 characters long'});
             }
         }
 
-        const userNameToSearchFor = command.email || '';
+        const userNameToSearchFor = command.payload.email || '';
 
         // check that the user is not sending a duplicate
         MongoRepository.getCount('logins', {userName: userNameToSearchFor})
