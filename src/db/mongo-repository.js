@@ -40,7 +40,7 @@ const getCount = (collectionName, param) => {
                     db.close();
                 });
         }, function(err){
-            console.log(err);
+            logger.error(err);
         });
 
     return response;
