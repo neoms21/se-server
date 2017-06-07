@@ -1,23 +1,26 @@
 'use strict';
 const MongoRepository = require('../db/mongo-repository');
 const Rx = require('rxjs');
+const ObjectId = require('mongodb').ObjectId;
+
 const logger = require('../core/logger').logger();
 const EventFactory = require('./../cqrs/event-factory');
 const execute = (query) => {
-
+    console.log(query);
     const ret = new Rx.Subject();
     let items = [];
-    MongoRepository.query('squads', {"_id": {$ne: ''}}, {"players": 0})
+    MongoRepository.query('squads', {_id: ObjectId(query.payload.id)}, {players: 1})
         .subscribe(function (x) {
             items.push(x);
         }, function (err) {
             logger.error(err);
+            ret.error(err);
         }, function () {
-            logger.info(items);
-            let event = EventFactory.createFromQuery(query, 'FetchSquadsEvent', false);
+            logger.info(`Players found for squad id ${query.payload.id} ${items}`);
+            let event = EventFactory.createFromQuery(query, 'FetchPlayersEvent', false);
             event.messageNumber = 1;
             event.maxMessages = 1;
-            event.data = items;
+            event.data = items[0].players;
             ret.next(event);
         });
     return ret;
@@ -31,5 +34,6 @@ const verify = () => {
 module.exports = {
     verify: verify,
     execute: execute,
-    getQuery: () => "FetchSquads"
+    getQuery: () => "FetchPlayers"
 };
+

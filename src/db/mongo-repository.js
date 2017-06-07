@@ -39,7 +39,7 @@ const getCount = (collectionName, param) => {
                     logger.error(err);
                     db.close();
                 });
-        }, function(err){
+        }, function (err) {
             logger.error(err);
         });
 
@@ -89,13 +89,13 @@ const update = (collectionName, insertion, key, propsToUpdate) => {
                     .then(function (succ) {
                             response.next(succ);
                             response.complete();
-                           // db.close();
+                            // db.close();
                         }
                     )
                     .catch(function (errInsert) {
                             response.error(errInsert);
                             logger.error(errInsert);
-                           // db.close();
+                            // db.close();
                         }
                     );
             }, function (err) {
@@ -129,7 +129,7 @@ const createOrOpenDb = () => {
             })
                 .catch(err => {
                     logger.error(err);
-                  //  db.close();
+                    //  db.close();
                 });
         })
         .catch(function (err) {
@@ -141,12 +141,13 @@ const createOrOpenDb = () => {
     return response;
 };
 
-const query = (collectionName, filters) => {
+const query = (collectionName, conditions, filters) => {
     let response = new Rx.Subject();
 
     connectToDb()
         .then(function (db) {
-            const cursor = db.collection(collectionName).find(filters); // use internal mongo function
+            //const cursor = collection.find.apply(this, params)
+            const cursor = db.collection(collectionName).find(conditions, filters); // use internal mongo function
 
             // cursor.count(function (err, count) {
             //     console.log('query count ' + count)
@@ -163,13 +164,13 @@ const query = (collectionName, filters) => {
                 } else {
                     response.error(err);
                 }
-              //  db.close();
+                //  db.close();
             });
         })
         .catch(function (err) {
             console.log(err);
             response.error(err);
-           // db.close();
+            // db.close();
         });
 
     return response;
