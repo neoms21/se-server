@@ -10,28 +10,29 @@ function verify() {
 
     setTimeout(function (command) { // use timeout as rx is async
 
-        if (util.isNullOrUndefined(command.name)) {
+
+        if (util.isNullOrUndefined(command.payload.name)) {
             response.next({name: 'Name property was not defined'});
         }
 
-        if (util.isNullOrUndefined(command.email)) {
+        if (util.isNullOrUndefined(command.payload.email)) {
             response.next({email: 'Email property was not defined'});
         }
 
-        if (util.isNullOrUndefined(command.password)) {
+        if (util.isNullOrUndefined(command.payload.password)) {
             response.next({password: 'Password property was not defined'});
         } else {
-            if (command.password.length < 8) {
+            if (command.payload.password.length < 8) {
                 response.next({password: 'Password must be at least 8 characters long'});
             }
         }
 
-        const userNameToSearchFor = command.email || '';
+        const userNameToSearchFor = command.payload.email || '';
 
         // check that the user is not sending a duplicate
         MongoRepository.getCount('logins', {userName: userNameToSearchFor})
             .subscribe(function (count) {
-
+                console.log(count);
                 if (count > 0) {
                     // oops duplicate
                     response.next({'email': 'The email ' + userNameToSearchFor + ' is a duplicate'});
@@ -40,6 +41,7 @@ function verify() {
                 // we are done
                 response.complete();
             }, function (err) {
+                console.log(err);
                 response.error(err);
             });
     }, 100, this.command);
@@ -48,9 +50,6 @@ function verify() {
 }
 
 function execute() {
-    console.log('in execute register user');
-    console.log(this.command);
-
     // has been verified , so just need to create event
     let event = EventFactory.createFromCommand(this.command, 'UserRegisteredEvent', false);
 
