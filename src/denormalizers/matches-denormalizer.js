@@ -27,7 +27,7 @@ function handleRegisterUser(event) {
       id: event.command.id
     })
     .subscribe(function(count) {
-      let match =  Object.assign(event.command);
+      let match =  Object.assign(event.command.properties);
       GeneralServices.applyCommonFields(match, event);
 
       if (count > 0) {
