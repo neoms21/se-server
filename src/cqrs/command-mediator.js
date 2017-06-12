@@ -29,6 +29,7 @@ function init(log) {
 
                     //instantiate so we can get command
                     let instance = require(filename);
+
                     if (instance !== undefined && instance.getCommand) {
                         let mapping = {command: instance.getCommand(), handler: instance};
                         // add to our list
@@ -124,13 +125,10 @@ function dispatch(command) {
             logger.info(`Verified command ${command.properties.commandName} and had ${messageLength} errors`);
 
             // verifier has run , so lets get its results
-            if (messageLength === 0) {
+            if (!messageLength || messageLength === 0) {
                 handler.execute(command);
-                //     .subscribe(resp => {
-                //
-                // }); // all ok, so run it
-                exports.saveCommand(command); // and save
-                logger.info('Command ' + command.properties.commandName + ' executed successfully');
+               // exports.saveCommand(command); // and save
+               // logger.info('Command ' + command.properties.commandName + ' executed successfully');
             } else {
                 // verification errors found
                 createError(command, responses);
@@ -140,7 +138,7 @@ function dispatch(command) {
         });
 }
 
-module.exports = exports = {
+module.exports = {
     init: init,
     dispatch: dispatch,
     createCommand: createCommand,

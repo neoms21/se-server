@@ -7,7 +7,7 @@ const mongoRepository = require('./../db/mongo-repository');
 let logger;
 
 const init = (loggerInstance) => {
-    logger  =  loggerInstance;
+    logger = loggerInstance;
 };
 
 let validateUser = (user) => {
@@ -18,8 +18,7 @@ let validateUser = (user) => {
         .subscribe((cnt) => {
             if (cnt === 0) {
                 // no matching user & password
-                //deferred.resolve(`Email ${user.userName} not found or password ${user.password} doesn't match `);
-            deferred.resolve();
+                deferred.resolve(`Email or password is not valid.`);
             } else {
                 // matched!
                 deferred.resolve();
@@ -50,14 +49,14 @@ let postLogin = (req, res) => {
     // validate the user
     validateUser(user)
         .then((feedback) => {
-            if(feedback === undefined) {
+            if (feedback === undefined) {
                 // success, so send back token
                 const token = jwt.sign(user, jwtSecret, {expiresIn: 360 * 5});
                 res.status(200).json({token: token});
                 logger.info('Authenticated via login ' + user.userName);
             } else {
                 // was a non fatal error
-                logger.error({err:feedback});
+                logger.error({err: feedback});
                 res.status(202).send(feedback);
             }
         })

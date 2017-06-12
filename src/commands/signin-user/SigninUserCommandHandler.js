@@ -10,15 +10,15 @@ function verify() {
 
     setTimeout(function (command) { // use timeout as rx is async
 
-        if (util.isNullOrUndefined(command.userName)) {
+        if (util.isNullOrUndefined(command.payload.userName)) {
             response.next({field: 'name', message: 'Name property was not defined'});
         }
 
-        if (util.isNullOrUndefined(command.password)) {
+        if (util.isNullOrUndefined(command.payload.password)) {
             response.next({field: 'password', message: 'Password property was not defined'});
         }
 
-        const userNameToSearchFor = command.email || '';
+        const userNameToSearchFor = command.payload.userName || '';
 
         // check that the user is not sending a duplicate
         MongoRepository.getCount('logins', {userName: userNameToSearchFor})

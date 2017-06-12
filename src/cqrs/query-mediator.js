@@ -46,6 +46,7 @@ let createError = function (query, responses) {
 };
 
 function dispatch(query) {
+
     let mapping = mappings.find(function (mapping) {
         return mapping.query === query.properties.queryName;
     });
