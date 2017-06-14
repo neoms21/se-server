@@ -24,23 +24,24 @@ function handleRegisterUser(event) {
 
   // check whether user has a login
 
-  mongoRepository.getCount('logins', {userName: event.command.email})
-    .subscribe(function (count) {
-      if (count > 0) {
-        // oops duplicate
-        logger.error(`The user name ${event.command.email} is a duplicate`);
-      } else {
-        let login = {
-          name: event.command.name,
-          userName: event.command.email,
-          password: event.command.password
-        };
-        GeneralServices.applyCommonFields(login, event);
-        mongoRepository.insert('logins', login);
-      }
-    }, function (err) {
-      logger.error(err);
-    });
+
+    MongoRepository.getCount('logins', {userName: event.command.payload.email})
+        .subscribe(function (count) {
+            if (count > 0) {
+                // oops duplicate
+                logger.error(`The user name ${event.command.email} is a duplicate`);
+            } else {
+                let login = {
+                    name: event.command.payload.name,
+                    userName: event.command.payload.email,
+                    password: event.command.payload.password
+                };
+                GeneralServices.applyCommonFields(login, event);
+                MongoRepository.insert('logins', login);
+            }
+        }, function (err) {
+            logger.error(err);
+        });
 }
 
 function getMessages() {

@@ -26,10 +26,10 @@ describe('Register user command', function () {
 
     describe('Verify', function () {
         it('should check response is array', function (done) {
-            handler.command = {};
+            handler.command = {payload: {}};
             handler.verify().toArray()
                 .subscribe(function (success) {
-                    assert(typeof success, 'array');
+                    assert(typeof success, '123');
                 }, function (err) {
                     assert(err, null);
                 }, function () {
@@ -38,7 +38,7 @@ describe('Register user command', function () {
         });
 
         it('should check name, userName and password is defined', function (done) {
-            handler.command = {};
+            handler.command = {payload: {}};
             handler.verify().toArray()
                 .subscribe(function (resp) {
                     assert.equal(resp.length, 3);
@@ -54,7 +54,7 @@ describe('Register user command', function () {
         });
 
         it('should check name, userName not defined when password is defined', function (done) {
-            handler.command = {password: 'ghghghgh'};
+            handler.command = {payload: {password: 'ghghghgh'}};
             handler.verify().toArray()
                 .subscribe(function (resp) {
                     assert.equal(resp.length, 2);
@@ -68,7 +68,7 @@ describe('Register user command', function () {
         });
 
         it('should check password, userName not defined when name is defined', function (done) {
-            handler.command = {name: 'ghghghgh'};
+            handler.command = {payload: {name: 'ghghghgh'}};
             handler.verify().toArray()
                 .subscribe(function (resp) {
                     assert.equal(resp.length, 2);
@@ -82,7 +82,7 @@ describe('Register user command', function () {
         });
 
         it('should check password, name not defined when username is defined', function (done) {
-            handler.command = {email: 'ghg@hhhh.com'};
+            handler.command = {payload: {email: 'ghg@hhhh.com'}};
             handler.verify().toArray()
                 .subscribe(function (resp) {
                     assert.equal(resp.length, 2);

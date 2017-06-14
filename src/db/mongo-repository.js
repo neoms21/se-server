@@ -39,6 +39,8 @@ const getCount = (collectionName, param) => {
                     logger.error(err);
                     db.close();
                 });
+        }, function (err) {
+            logger.error(err);
         });
 
     return response;
@@ -70,8 +72,42 @@ const insert = (collectionName, insertion) => {
     return response;
 };
 
+const update = (collectionName, insertion, key, propsToUpdate) => {
+    let response = new Rx.Subject();
+
+    connectToDb()
+        .then(function (db) {
+                let updates = {};
+                propsToUpdate.forEach(function (prop) {
+                    updates[prop] = insertion[prop];
+                });
+
+                let collection = db.collection(collectionName);
+                collection
+                    .updateOne({_id: insertion[key]},
+                        {$set: updates})
+                    .then(function (succ) {
+                            response.next(succ);
+                            response.complete();
+                            // db.close();
+                        }
+                    )
+                    .catch(function (errInsert) {
+                            response.error(errInsert);
+                            logger.error(errInsert);
+                            // db.close();
+                        }
+                    );
+            }, function (err) {
+                response.error(err);
+            }
+        );
+
+    return response;
+};
+
 const createCollection = (db, name) => {
-    db.createCollection(name, function (err, collection) {
+    db.createCollection(name, function (err) {
         if (util.isNullOrUndefined(err)) {
             logger.info('[Db] - created ' + name + ' collection');
         } else {
@@ -85,31 +121,36 @@ const createOrOpenDb = () => {
 
     connectToDb()
         .then(function (db) {
-            createCollection(db, 'commands');
-            createCollection(db, 'events');
-            createCollection(db, 'clubs');
-            createCollection(db, 'teams');
-            createCollection(db, 'logins');
-            db.close();
+
+            Promise.all(createCollection(db, 'commands'), createCollection(db, 'events'),
+                createCollection(db, 'clubs'),
+                createCollection(db, 'squads'), createCollection(db, 'logins')).then(([result1, result2]) => {
+                //db.close();
+            })
+                .catch(err => {
+                    logger.error(err);
+                    //  db.close();
+                });
         })
         .catch(function (err) {
                 response.error(err.toString());
-                db.close();
+                //db.close();
             }
         );
 
     return response;
 };
 
-const query = (collectionName, filters) => {
+const query = (collectionName, conditions, filters) => {
     let response = new Rx.Subject();
 
     connectToDb()
         .then(function (db) {
-            const cursor = db.collection(collectionName).find(filters); // use internal mongo function
-let items = [];
-            // cursor.count(function(err, count) {
-            //     log.info('query count ' + count)
+            //const cursor = collection.find.apply(this, params)
+            const cursor = db.collection(collectionName).find(conditions, filters); // use internal mongo function
+
+            // cursor.count(function (err, count) {
+            //     console.log('query count ' + count)
             // });
 
             cursor.forEach((item) => {
@@ -122,12 +163,13 @@ let items = [];
                 } else {
                     response.error(err);
                 }
-                db.close();
+                //  db.close();
             });
         })
         .catch(function (err) {
+            console.log(err);
             response.error(err);
-            db.close();
+            // db.close();
         });
 
     return response;
@@ -137,6 +179,7 @@ module.exports = {
     createOrOpenDb: createOrOpenDb,
     insert: insert,
     getCount: getCount,
+    update: update,
     connectToDb: connectToDb,
     query: query,
     init: init
