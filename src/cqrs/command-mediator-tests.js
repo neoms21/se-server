@@ -235,7 +235,6 @@ describe('Command mediator', function () {
         it('should execute, save and propagate if no problems found', function () {
             let verifyStub = sinon.stub(mockHandler, 'verify').returns(Rx.Observable.empty());
             let executeStub = sinon.stub(mockHandler, 'execute');
-            let saveStub = sinon.stub(CommandMediator, 'saveCommand');
             let command = {properties: {commandName: 'DummyCommand', correlationId: 3}};
             let event = createEvent(command, '', 'DummyCommand');
             //eventMock.expects('dispatch').withArgs(event);
@@ -246,12 +245,10 @@ describe('Command mediator', function () {
             // check
             assert(verifyStub.called);
             assert(executeStub.called);
-            assert(saveStub.called);
 
             //tidy
             verifyStub.restore();
             executeStub.restore();
-            saveStub.restore();
         });
     });
 

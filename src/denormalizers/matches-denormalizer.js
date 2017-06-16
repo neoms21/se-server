@@ -24,17 +24,16 @@ function handleRegisterUser(event) {
 
   // check whether match already exists
   mongoRepository.getCount('matches', {
-      id: event.command.id
+      _id: event.command.payload._id
     })
     .subscribe(function(count) {
-      let match =  Object.assign(event.command.properties);
+      let match =  Object.assign({}, event.command.payload);
       GeneralServices.applyCommonFields(match, event);
 
       if (count > 0) {
         // duplicate so update
-        mongoRepository.update('matches', match);
+        mongoRepository.update('matches', match, match.id, Object.keys(match));
       } else {
-
         mongoRepository.insert('matches', match);
       }
     }, function(err) {

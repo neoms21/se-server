@@ -96,7 +96,7 @@ describe('Register user command', function () {
         });
 
       it('should return no errors when command is defined', function (done) {
-        handler.command = {email: 'ghg@hhhh.com', name: 'ghghghgh', password: 'zzzzwwww'};
+        handler.command = {payload: {email: 'ghg@hhhh.com', name: 'ghghghgh', password: 'zzzzwwww'}};
         handler.verify().toArray()
           .subscribe(function (resp) {
             assert.equal(resp.length, 0);
