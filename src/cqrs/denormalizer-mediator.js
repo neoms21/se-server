@@ -16,7 +16,7 @@ function init(log) {
     Filehound.create()
         .ext('js')
         .paths(process.cwd() + '/src/denormalizers')
-        .match('!(*-test*)*')
+        .match('*-tests*').not()
         .find(function (err, filenames) {
             if (err) {
                 logger.error("error finding denormalizers ", err);
