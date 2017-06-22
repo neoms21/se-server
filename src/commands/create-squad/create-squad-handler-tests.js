@@ -3,13 +3,9 @@ const assert = require('assert');
 const mongoRepository = require('../../db/mongo-repository');
 const handler = require('./CreateSquadCommandHandler');
 const Rx = require('rxjs/Rx');
-const eventMediator = require('../../cqrs/event-mediator');
-const generalServices = require('../../cqrs/general-services');
 
 describe('Create Squad command', function () {
     let countStub;
-    let count = 0;
-    let timeStub;
 
     beforeEach(function () {
 
