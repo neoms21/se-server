@@ -6,7 +6,7 @@ const EventMediator = require('../cqrs/event-mediator');
 const GeneralServices = require('../cqrs/general-services');
 const deNormalizer = require('./logins-denormalizer');
 
-describe('Login denormalizers', function() {
+describe('Login denormalizers', function () {
   let countStub;
   let insertStub;
   let count = 0;
@@ -14,7 +14,7 @@ describe('Login denormalizers', function() {
   let loggerStub;
   let dispatchStub;
 
-  beforeEach(function() {
+  beforeEach(function () {
     countStub = sinon.stub(mongoRepository, 'getCount').callsFake(() => {
       // supply dummy observable
       return Rx.Observable.from([count]);
@@ -30,34 +30,34 @@ describe('Login denormalizers', function() {
     deNormalizer.init(loggerStub);
   });
 
-  afterEach(function() {
+  afterEach(function () {
     countStub.restore();
     timeStub.restore();
     dispatchStub.restore();
     insertStub.restore();
   });
 
-  describe('handleRegisterUser', function() {
+  describe('handleRegisterUser', function () {
     let event = {
-      command: {}
+      command: { payload: {}}
     };
 
-    it('should give error when event properties not set', function(done) {
+    it('should give error when event properties not set', function (done) {
       deNormalizer.handleMessage({});
       chai.assert.isTrue(loggerStub.error.called);
       done();
     });
 
-    it('should give error when event properties not set', function(done) {
+    it('should give error when event properties not set', function (done) {
       deNormalizer.handleMessage(event);
       chai.assert.isTrue(countStub.called);
       done();
     });
   });
 
-  describe('getMessages', function() {
+  describe('getMessages', function () {
 
-    it('should return correct messages', function() {
+    it('should return correct messages', function () {
 
       const msgList = deNormalizer.getMessages();
       chai.assert.isArray(msgList, 'Should be array');

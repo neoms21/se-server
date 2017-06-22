@@ -39,7 +39,7 @@ describe('Matches denormalizer', function() {
 
   describe('handleRegisterUser', function() {
     let event = {
-      command: {}
+      command: {payload: {}, properties: {}}
     };
 
     it('should give error when event properties not set', function(done) {

@@ -13,7 +13,7 @@ const applyCommonFields = (decoratee, source) => {
     decoratee.properties.createdBy = source !== undefined && source.properties !== undefined
         ? source.properties.createdBy : 'unknown';
     decoratee.properties.validFrom = decoratee.properties.created;
-    decoratee.properties.validTo = new Date('31 dec 9999');
+    decoratee.properties.validTo = new Date('9999-12-31');
 };
 
 module.exports = exports = {

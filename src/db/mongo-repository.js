@@ -20,7 +20,6 @@ const connectToDb = () => {
 
   // Connect to the db
   return mongoClient.connect(uri);
-
 };
 
 const getCount = (collectionName, param) => {
