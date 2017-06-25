@@ -127,8 +127,8 @@ function dispatch(command) {
             // verifier has run , so lets get its results
             if (!messageLength || messageLength === 0) {
                 handler.execute(command);
-               // exports.saveCommand(command); // and save
-               // logger.info('Command ' + command.properties.commandName + ' executed successfully');
+                // exports.saveCommand(command); // and save
+                // logger.info('Command ' + command.properties.commandName + ' executed successfully');
             } else {
                 // verification errors found
                 createError(command, responses);

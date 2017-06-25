@@ -70,7 +70,6 @@ describe('Command mediator', function () {
         logMock.verify();
         mongoMock.verify();
         cqrsEventMock.verify();
-        fhMock.verify();
         eventMock.verify();
 
         fhMock.restore();
@@ -78,7 +77,6 @@ describe('Command mediator', function () {
         logMock.restore();
         mongoMock.restore();
         cqrsEventMock.restore();
-        fhMock.restore();
         eventMock.restore();
     });
 
@@ -219,6 +217,7 @@ describe('Command mediator', function () {
 
         it('should produce error event if verify has error messages', function () {
             let verifyStub = sinon.stub(mockHandler, 'verify').returns(Rx.Observable.of('#Error'));
+
             let command = {properties: {commandName: 'mock-handler', correlationId: 3}};
             //logMock.expects('debug').withArgs('CommandMediator before running verify for mock-handler');
             let event = createEvent(command, 'Error');

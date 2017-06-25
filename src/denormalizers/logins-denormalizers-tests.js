@@ -42,6 +42,12 @@ describe('Login denormalizers', function () {
       command: { payload: {}}
     };
 
+        it('should check the count', function (done) {
+            deNormalizer.handleMessage({id: 1, command: {payload: {}}});
+            chai.assert.isTrue(countStub.called);
+            done();
+        });
+    });
     it('should give error when event properties not set', function (done) {
       deNormalizer.handleMessage({});
       chai.assert.isTrue(loggerStub.error.called);
