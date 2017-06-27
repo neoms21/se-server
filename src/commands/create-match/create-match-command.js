@@ -25,18 +25,22 @@ function verify() {
     // check the player positions as well
     if (!util.isNullOrUndefined(command.payload.playerPositions)) {
       let playerPositionsErrors = [];
+      let errorCount = 0;
+
       command.payload.playerPositions.forEach((playerPos, index) => {
         playerPositionsErrors[index] = {};
-
         if (util.isNullOrUndefined(playerPos.Position)) {
           playerPositionsErrors[index].Position = 'Position was not defined';
+          errorCount++;
         }
         if (util.isNullOrUndefined(playerPos.Player)) {
           playerPositionsErrors[index].Player = 'Player was not defined';
+          errorCount++;
         }
+
       });
 
-      response.next(playerPositionsErrors);
+      if (errorCount > 0) response.next({playerPositions: playerPositionsErrors});
     }
 
     MongoRepository.getCount('matches', {squad: command.payload.squad, matchDate: command.payload.matchDate})

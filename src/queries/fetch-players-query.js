@@ -9,18 +9,18 @@ const execute = (query) => {
   console.log(query);
   const ret = new Rx.Subject();
   let items = [];
-  MongoRepository.query('squads', {_id: ObjectId(query.payload.id)}, {players: 1})
-    .subscribe(function (x) {
-      items.push(x);
+  MongoRepository.query('squads', {_id: ObjectId(query.payload)}, {players: 1})
+    .subscribe(function (player) {
+      items.push(player);
     }, function (err) {
       logger.error(err);
       ret.error(err);
     }, function () {
-      logger.info(`Players found for squad id ${query.payload.id} ${items}`);
+      logger.info(`Players found for squad id ${query.payload} ${items}`);
       let event = EventFactory.createFromQuery(query, 'FetchPlayersEvent', false);
       event.messageNumber = 1;
       event.maxMessages = 1;
-      event.data = items[0].players;
+      event.data = items[0].players || [];
       ret.next(event);
     });
   return ret;
