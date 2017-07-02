@@ -22,12 +22,12 @@ const connectToDb = () => {
   return mongoClient.connect(uri);
 };
 
-const getCount = (collectionName, param) => {
+const getCount = (collectionName, query) => {
   let response = new Rx.Subject();
 
   connectToDb()
     .then(function (db) {
-      db.collection(collectionName).count(param)
+      db.collection(collectionName).count(query)
         .then(function (count) {
           response.next(count);
           response.complete();

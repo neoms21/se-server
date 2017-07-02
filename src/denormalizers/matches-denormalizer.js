@@ -24,7 +24,7 @@ function handleRegisterUser(event) {
 
   // check whether match already exists
   mongoRepository.getCount('matches', {
-      _id: event.command.payload._id
+      matchId: event.command.payload.matchId
     })
     .subscribe(function(count) {
       let match =  Object.assign({}, event.command.payload);
@@ -32,7 +32,7 @@ function handleRegisterUser(event) {
 
       if (count > 0) {
         // duplicate so update
-        mongoRepository.update('matches', match, match.id, Object.keys(match));
+        mongoRepository.update('matches', match, match.matchId, Object.keys(match));
       } else {
         mongoRepository.insert('matches', match);
       }

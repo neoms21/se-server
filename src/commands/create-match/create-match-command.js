@@ -4,6 +4,9 @@ const util = require('util');
 const Rx = require('rxjs');
 const EventFactory = require('../../cqrs/event-factory');
 const MongoRepository = require('../../db/mongo-repository');
+const ObjectId = require('mongodb').ObjectId;
+const uuid = require('uuid');
+const logger = require('../../core/logger');
 
 function verify() {
   let response = new Rx.Subject();
@@ -37,7 +40,6 @@ function verify() {
           playerPositionsErrors[index].Player = 'Player was not defined';
           errorCount++;
         }
-
       });
 
       if (errorCount > 0) response.next({playerPositions: playerPositionsErrors});
@@ -51,8 +53,15 @@ function verify() {
           response.next('There is already a match for that squad and date');
         }
 
-        // we are done
-        response.complete();
+        // check that squad is valid
+        MongoRepository.getCount('squads', {_id: new ObjectId(command.payload.squad)})
+          .subscribe(function (count) {
+            if (count === 0) {
+              response.next('There is no squad for id ' + command.payload.squad);
+            }
+            // we are done
+            response.complete();
+          });
       }, function (err) {
         response.error(err);
       });
@@ -63,11 +72,23 @@ function verify() {
 }
 
 function execute() {
-  // has been verified , so just need to create event
-  let event = EventFactory.createFromCommand(this.command, 'CreateMatchEvent', false);
 
-  // now send it
-  EventMediator.dispatch(event);
+  // get squad name for event
+  MongoRepository.query('squads', {_id: ObjectId(this.command.payload.squad)}, {name: 1})
+    .subscribe((squad) => {
+      let event = EventFactory.createFromCommand(this.command, 'CreateMatchEvent', false);
+      event.payload = {
+        matchId: uuid.v4(),
+        squadName: squad.name,
+        matchDate: this.command.payload.matchDate,
+        position: this.command.payload.position
+      };
+      // now send it
+      EventMediator.dispatch(event);
+    }, (err) => {
+      //todo: log problem
+    });
+
 }
 
 module.exports = {
