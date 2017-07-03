@@ -82,7 +82,7 @@ describe('Login routes ', () => {
         });
 
         it('should error if repo throws error', (done) => {
-            mongoRepoStub = sinon.stub(mongoRepository, 'getCount')
+            mongoRepoStub = sinon.stub(mongoRepository, 'query')
                 .returns(Rx.Observable.throw(new Error('DB Fault')));
 
             request.body = {userName: 'kkkkk', password: '@@@'};
@@ -100,25 +100,26 @@ describe('Login routes ', () => {
         });
 
         it('should use post to set up login', (done) => {
-            mongoRepoStub = sinon.stub(mongoRepository, 'getCount')
-                .returns(Rx.Observable.of(1));
+            mongoRepoStub = sinon.stub(mongoRepository, 'query')
+                .returns(Rx.Observable.of({name: 'ABCD', userName: 'kkkkk'}));
             jwtStub = sinon.stub(jwt, 'sign').returns('#token');
             let jsonStub = sinon.stub(response, 'json');
 
             request.body = {userName: 'kkkkk', password: '@@@'};
             login.postLogin(request, response, logger);
-
+            mongoRepoStub.restore();
             setTimeout(() => {
+                mongoRepoStub.restore();
+                jwtStub.restore();
+                jsonStub.restore();
                 assert(loggerInfoSpy.called);
                 assert(loggerInfoSpy.calledWith('Authenticated via login kkkkk'));
                 assert(statusSpy.called);
                 assert(statusSpy.calledWith(200));
                 assert(jwtStub.called);
-                assert(jwtStub.calledWith(request.body, jwtSecret, {expiresIn: 360 * 5}));
-                assert(jsonStub.calledWith({token: '#token'}));
-                mongoRepoStub.restore();
-                jwtStub.restore();
-                jsonStub.restore();
+                assert(jwtStub.calledWith({name: 'ABCD', userName: 'kkkkk'}, jwtSecret, {expiresIn: 360 * 5}));
+                assert(jsonStub.calledWith({name: 'ABCD', userName: 'kkkkk', token: '#token'}));
+
                 done();
             }, 100);
         });
