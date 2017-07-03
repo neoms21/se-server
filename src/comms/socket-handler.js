@@ -24,7 +24,6 @@ const isCommandAllowed = (socketId, cmdReq) => {
     // check if command can be run without authentication
     if (cmdReq.properties.commandName === 'RegisterUser') {
         return true;
-
     }
 
     // check authenticated
