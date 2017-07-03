@@ -13,6 +13,7 @@ function createSquad(event) {
 
     let squad = {
         name: event.command.payload.squadName,
+        userId: event.command.payload.userId,
     };
     MongoRepository.insert('squads', squad);
 }

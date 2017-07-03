@@ -28,7 +28,7 @@ function verify() {
         const squadNameToSearchFor = command.payload.squadName || '';
 
         // check that the user is not sending a duplicate
-        MongoRepository.getCount('squads', {name: squadNameToSearchFor})
+        MongoRepository.getCount('squads', {name: squadNameToSearchFor, userId: command.payload.userId})
             .subscribe(function (count) {
 
                 if (count > 0) {

@@ -7,7 +7,10 @@ const execute = (query) => {
 
     const ret = new Rx.Subject();
     let items = [];
-    MongoRepository.query('squads', {"_id": {$ne: ''}}, {"players": 0})
+    console.log('in fetch squads', query);
+    MongoRepository.query('squads', {
+        "_id": {$ne: ''}, "userId": {$eq: query.payload.userId}
+    }, {"players": 0, "userId": 0})
         .subscribe(function (x) {
             items.push(x);
         }, function (err) {
