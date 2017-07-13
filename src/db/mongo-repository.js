@@ -72,32 +72,36 @@ const insert = (collectionName, insertion) => {
     return response;
 };
 
-const update = (collectionName, insertion, key, propsToUpdate) => {
+function updateRecord(propsToUpdate, record, db, collectionName, key, response) {
+    let updates = {};
+    propsToUpdate.forEach(function (prop) {
+        updates[prop] = record[prop];
+    });
+
+    let collection = db.collection(collectionName);
+    collection
+        .updateOne({_id: record[key]},
+            {$set: updates})
+        .then(function (succ) {
+                response.next(succ);
+                response.complete();
+                // db.close();
+            }
+        )
+        .catch(function (errInsert) {
+                response.error(errInsert);
+                logger.error(errInsert);
+                // db.close();
+            }
+        );
+}
+
+const update = (collectionName, record, key, propsToUpdate) => {
     let response = new Rx.Subject();
 
     connectToDb()
         .then(function (db) {
-                let updates = {};
-                propsToUpdate.forEach(function (prop) {
-                    updates[prop] = insertion[prop];
-                });
-
-                let collection = db.collection(collectionName);
-                collection
-                    .updateOne({_id: insertion[key]},
-                        {$set: updates})
-                    .then(function (succ) {
-                            response.next(succ);
-                            response.complete();
-                            // db.close();
-                        }
-                    )
-                    .catch(function (errInsert) {
-                            response.error(errInsert);
-                            logger.error(errInsert);
-                            // db.close();
-                        }
-                    );
+                updateRecord(propsToUpdate, record, db, collectionName, key, response);
             }, function (err) {
                 response.error(err);
             }
@@ -105,6 +109,17 @@ const update = (collectionName, insertion, key, propsToUpdate) => {
 
     return response;
 };
+
+const deleteRecord = (collectionName, id) => {
+    let response = new Rx.Subject();
+    connectToDb()
+        .then(function (db) {
+            db.collection(collectionName).findOne({_id: id}).then(function (record) {
+                updateRecord(['isDeleted'], record, db, collectionName, id, response);
+            });
+        });
+    return response;
+}
 
 const createCollection = (db, name) => {
     db.createCollection(name, function (err) {
@@ -181,6 +196,7 @@ module.exports = {
     insert: insert,
     getCount: getCount,
     update: update,
+    deleteRecord: deleteRecord,
     connectToDb: connectToDb,
     query: query,
     init: init

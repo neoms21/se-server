@@ -1,8 +1,4 @@
 'use strict';
-const jwt = require('jsonwebtoken');
-const q = require('q');
-const jwtSecret = require('../cqrs/jwtSecret');
-const mongoRepository = require('./../db/mongo-repository');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const login = require('./login');
@@ -15,6 +11,7 @@ let openRoutes = (server, logger) => {
     server.use(cors({origin: '*'}));
 
     server.post('/login', jsonParser, login.postLogin);
+    server.post('/verify', jsonParser, login.verifyToken);
 };
 
 module.exports = openRoutes;
