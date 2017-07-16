@@ -69,6 +69,6 @@ function execute() {
 module.exports = {
   verify: verify,
   execute: execute,
-  getCommand: () => 'SaveMatchSelection'
+  getCommand: () => 'CreateMatchSelection'
 };
 
