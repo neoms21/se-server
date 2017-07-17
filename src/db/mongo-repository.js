@@ -81,12 +81,15 @@ function updateRecord(propsToUpdate, record, db, collectionName, key, response) 
     });
 
     GeneralServices.applyCommonFields(updates);
-    logger.info(record, updates, key);
+
+    console.log(updates);
     let collection = db.collection(collectionName);
+    console.log(collection.updateOne);
     collection
         .updateOne({_id: new ObjectId(key)},
             {$set: updates})
         .then(function (succ) {
+                console.log('Updated', succ);
                 response.next(succ);
                 response.complete();
                 // db.close();
@@ -105,6 +108,7 @@ const update = (collectionName, record, key, propsToUpdate) => {
 
     connectToDb()
         .then(function (db) {
+
                 updateRecord(propsToUpdate, record, db, collectionName, key, response);
             }, function (err) {
                 response.error(err);

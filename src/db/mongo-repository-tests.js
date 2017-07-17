@@ -5,6 +5,8 @@ const sinon = require('sinon');
 const mongoClient = require('mongodb');
 const config = require('config');
 const q = require('q');
+const expect = require('chai').expect;
+
 
 describe('Mongo repository', function () {
     let mongoStub;
@@ -222,4 +224,41 @@ describe('Mongo repository', function () {
                 });
         });
     });
+
+    describe.only('Update', function () {
+        let connectionPromise;
+        let updatePromise;
+        beforeEach(function () {
+            connectionPromise = q.defer();
+            mongoStub.returns(connectionPromise.promise);
+
+            //now do collection stuff
+            updatePromise = q.defer();
+
+            connectionPromise.resolve({
+                collection: function () {
+                    return {
+                        updateOne: function () {
+                            return updatePromise.promise;
+                        }
+                    };
+                }
+            });
+        });
+        afterEach(function () {
+
+        });
+        it('should call update one with correct params', function (done) {
+
+            mongoRepository.update('aaaa', {p1: 'val1', p2: 'val2'}, 'a1', ['p1', 'p2'])
+                .subscribe(res => {
+                    console.log(res);
+                    done();
+                });
+
+            updatePromise.resolve({});
+            // assert(connectionPromise.called);
+        });
+
+    })
 });
