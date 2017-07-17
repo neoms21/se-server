@@ -5,7 +5,6 @@ const sinon = require('sinon');
 const Rx = require('rxjs/Rx');
 const jwt = require('jsonwebtoken');
 const EventMediator = require('./../cqrs/event-mediator');
-const EventFactory = require('./../cqrs/event-factory');
 const jwtSecret = require('../cqrs/jwtSecret');
 const EventEmitter = require('events');
 const GeneralServices = require('../cqrs/general-services');
@@ -28,6 +27,7 @@ describe('Socket handler', () => {
         let eventMediatorStub;
         let timeStub;
         let setStub;
+        let jwtStub;
         const tod = new Date('01 Sep 2016 08:00');
 
         beforeEach(() => {
@@ -41,10 +41,11 @@ describe('Socket handler', () => {
             loggerInfoSpy = sinon.spy(logger, 'info');
             eventMediatorStub = sinon.stub(EventMediator, 'dispatch');
             timeStub = sinon.stub(GeneralServices, 'getTime', () => tod);
-
+            jwtStub = sinon.stub(jwt, 'verify').yields('blah');
             // set up common stuff
             io = new EventEmitter();
-            io.set = () => {};
+            io.set = () => {
+            };
             socket = new EventEmitter();
             setStub = sinon.stub(io, 'set');
 
@@ -58,6 +59,8 @@ describe('Socket handler', () => {
             eventMediatorStub.restore();
             timeStub.restore();
             setStub.restore();
+
+            jwtStub.restore();
             socketHandler.destroy();
         });
 
@@ -80,10 +83,31 @@ describe('Socket handler', () => {
         });
 
         it('should give error if authentication wrong', () => {
-            let jwtStub = sinon.stub(jwt, 'verify').yields('blah'); // send error back
+             // send error back
             io.emit('connection', socket);
             socket.emit('authentication', {token: '@@@@@'});
             socket.emit('disconnect'); // deletes the client
+
+            assert(eventMediatorStub.called);
+            assert(eventMediatorStub.calledWith(
+                {
+                    properties: {
+                        eventName: 'AuthenticationFailed',
+                        isFailure: true,
+                        modified: sinon.match.date
+                    },
+                    error: 'Authentication token didnt match for socket 123@'
+                }));
+
+
+        });
+
+        it('should give error if socket wrong', () => {
+            jwtStub.restore();
+            jwtStub = sinon.stub(jwt, 'verify').yields(null);
+            io.emit('connection', socket);
+            socket.emit('disconnect'); // deletes the client
+            socket.emit('authentication', {token: '@@@@@'});
 
             assert(eventMediatorStub.called);
             console.log(eventMediatorStub.getCall(0).args)
@@ -92,55 +116,26 @@ describe('Socket handler', () => {
                     properties: {
                         eventName: 'AuthenticationFailed',
                         isFailure: true,
-                        created: tod,
-                        createdBy: 'unknown',
-                        validFrom: tod,
-                        validTo: new Date('9999-12-31'),
+                        modified: sinon.match.date
                     },
-                    error: 'Authentication token didnt match for socket 123@'
+
+                    error: 'Failed to find matching socket 123@'
                 }));
-
-            jwtStub.restore();
-        });
-
-        it('should give error if socket wrong', () => {
-            let jwtStub = sinon.stub(jwt, 'verify').yields(null); // verifies ok
-            io.emit('connection', socket);
-            socket.emit('disconnect'); // deletes the client
-            socket.emit('authentication', {token: '@@@@@'});
-            jwtStub.restore();
-
-            assert(eventMediatorStub.called);
-            console.log(eventMediatorStub.getCall(0).args)
-            assert(eventMediatorStub.calledWith({
-                properties: {
-                    eventName: 'AuthenticationFailed',
-                    isFailure: true,
-                    created: tod,
-                    createdBy: 'unknown',
-                    validFrom: tod,
-                    validTo: new Date('9999-12-31')
-                },
-                error: 'Failed to find matching socket 123@'
-            }));
         });
 
         it('should give success if authentication match', () => {
-            let jwtStub = sinon.stub(jwt, 'verify').yields(null); // verifies ok
+            jwtStub.restore();
+            jwtStub = sinon.stub(jwt, 'verify').yields(null);
             io.emit('connection', socket);
             socket.emit('authentication', {token: '@@@@@'});
-            socket.emit('disconnect'); // deletes the client
-            jwtStub.restore();
+            // socket.emit('disconnect'); // deletes the client
 
             assert(eventMediatorStub.called);
             assert(eventMediatorStub.calledWith({
                 properties: {
                     eventName: 'AuthenticationSucceeded',
                     isFailure: false,
-                    created: tod,
-                    createdBy: 'unknown',
-                    validFrom: tod,
-                    validTo: new Date('9999-12-31'),
+                    modified:sinon.match.date
                 }
             }));
 

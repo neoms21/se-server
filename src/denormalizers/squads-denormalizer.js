@@ -18,13 +18,7 @@ function createSquad(event) {
 
 
 function deleteSquad(event) {
-    let squad = {
-        name: event.command.payload.squadName,
-        userId: event.command.payload.userId,
-    };
-
-    GeneralServices.applyCommonFields(squad, event);
-    MongoRepository.deleteRecord('squads', squad);
+    MongoRepository.deleteRecord('squads', event.command.payload);
 }
 
 function handleMessage(event) {
@@ -38,7 +32,6 @@ function handleMessage(event) {
             deleteSquad(event);
             break;
     }
-    createSquad();
 }
 
 function getMessages() {

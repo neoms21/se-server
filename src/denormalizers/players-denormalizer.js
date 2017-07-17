@@ -25,8 +25,8 @@ function createPlayer(event) {
                 event.command.player.id = Guid.v4();
             }
             squad.players.push(event.command.player);
-            squad._id = new ObjectId(squad._id);
-            MongoRepository.update('squads', squad, '_id', ['players']);
+            // squad._id = new ObjectId(squad._id);
+            MongoRepository.update('squads', squad, event.command.player.squadId, ['players']);
         });
 }
 function getMessages() {

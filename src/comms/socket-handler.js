@@ -67,10 +67,10 @@ const disconnected = (socket) => {
 };
 
 const authenticate = (token, socketId) => {
-    console.log('In authenticate', token, socketId)
     // check the token
     verifier.verify(token, (err) => {
         if (err !== null) {
+
             logger.error(`'Authentication token didnt match for socket ${socketId} error ${err}`);
             let event = EventFactory.createFromNone('AuthenticationFailed', true);
             event.error = 'Authentication token didnt match for socket ' + socketId;
@@ -80,7 +80,7 @@ const authenticate = (token, socketId) => {
             const client = clients.find(client => client.id === socketId);
             if (client !== undefined) {
                 client.token = token;
-                logger.info('Authenticated socket ' + socketId);
+                console.log('Authenticated socket ' + socketId);
                 let event = EventFactory.createFromNone('AuthenticationSucceeded', false);
                 EventMediator.dispatch(event);
             } else {
