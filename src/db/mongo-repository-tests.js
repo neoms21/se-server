@@ -16,6 +16,7 @@ describe('Mongo repository', function () {
 
     before(function () {
         mongoStub = sinon.stub(mongoClient, 'connect');
+
         // create logger, add info method and then stub that
         loggerStub = sinon.stub();
         loggerStub.info = Function;
@@ -235,7 +236,7 @@ describe('Mongo repository', function () {
             //now do collection stuff
             updatePromise = q.defer();
 
-            connectionPromise.resolve({
+            let coll = {
                 collection: function () {
                     return {
                         updateOne: function () {
@@ -243,22 +244,26 @@ describe('Mongo repository', function () {
                         }
                     };
                 }
-            });
+            };
+            connectionPromise.resolve(coll);
         });
+
         afterEach(function () {
 
         });
+
         it('should call update one with correct params', function (done) {
 
-            mongoRepository.update('aaaa', {p1: 'val1', p2: 'val2'}, 'a1', ['p1', 'p2'])
+            mongoRepository.update('aaaa', {p1: 'val1', p2: 'val2'},
+                '596aa7428f68700575424cdf', ['p1', 'p2'])
                 .subscribe(res => {
                     console.log(res);
                     done();
                 });
 
             updatePromise.resolve({});
-            // assert(connectionPromise.called);
         });
+
 
     })
 });

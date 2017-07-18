@@ -84,12 +84,15 @@ function updateRecord(propsToUpdate, record, db, collectionName, key, response) 
 
     console.log(updates);
     let collection = db.collection(collectionName);
-    console.log(collection.updateOne);
+    try{
+        console.log(new ObjectId(key));
+    }catch(ex){
+        console.log(ex);
+    }
     collection
         .updateOne({_id: new ObjectId(key)},
             {$set: updates})
         .then(function (succ) {
-                console.log('Updated', succ);
                 response.next(succ);
                 response.complete();
                 // db.close();
