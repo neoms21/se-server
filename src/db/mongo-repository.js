@@ -74,64 +74,38 @@ const insert = (collectionName, insertion) => {
     return response;
 };
 
-function updateRecord(propsToUpdate, record, db, collectionName, key, response) {
-    let updates = {};
-    propsToUpdate.forEach(function (prop) {
-        updates[prop] = record[prop];
-    });
+function updateRecord(collectionName, key, updates, response) {
 
-    GeneralServices.applyCommonFields(updates);
+    connectToDb().then(function (db) {
+        db.collection(collectionName)
+            .updateOne({_id: new ObjectId(key)},
+                {$set: updates})
+            .then(function (succ) {
+                    response.next(succ);
+                    response.complete();
+                    db.close();
+                }
+            )
+            .catch(function (errInsert) {
+                    response.error(errInsert);
+                    logger.error(errInsert);
+                    db.close();
+                }
+            );
+    })
 
-    console.log(updates);
-    let collection = db.collection(collectionName);
-    try{
-        console.log(new ObjectId(key));
-    }catch(ex){
-        console.log(ex);
-    }
-    collection
-        .updateOne({_id: new ObjectId(key)},
-            {$set: updates})
-        .then(function (succ) {
-                response.next(succ);
-                response.complete();
-                // db.close();
-            }
-        )
-        .catch(function (errInsert) {
-                response.error(errInsert);
-                logger.error(errInsert);
-                // db.close();
-            }
-        );
 }
 
-const update = (collectionName, record, key, propsToUpdate) => {
+const update = (collectionName, key, propsToUpdate) => {
     let response = new Rx.Subject();
-
-    connectToDb()
-        .then(function (db) {
-
-                updateRecord(propsToUpdate, record, db, collectionName, key, response);
-            }, function (err) {
-                response.error(err);
-            }
-        );
-
+    updateRecord(collectionName, key, propsToUpdate, response);
     return response;
 };
 
 const deleteRecord = (collectionName, id) => {
     let response = new Rx.Subject();
-    connectToDb()
-        .then(function (db) {
-            logger.info('In Delete record', id, collectionName);
-            db.collection(collectionName).findOne({_id: new ObjectId(id)}).then(function (record) {
-                logger.info('Found Record', record);
-                record.isDeleted = true;
-                updateRecord(['isDeleted'], record, db, collectionName, id, response);
-            });
-        });
+    updateRecord(collectionName, id,
+        {isDeleted: true, "properties.modified": new Date()}, response);
     return response;
 };
 

@@ -226,7 +226,7 @@ describe('Mongo repository', function () {
         });
     });
 
-    describe.only('Update', function () {
+    describe('Update', function () {
         let connectionPromise;
         let updatePromise;
         beforeEach(function () {
@@ -254,8 +254,8 @@ describe('Mongo repository', function () {
 
         it('should call update one with correct params', function (done) {
 
-            mongoRepository.update('aaaa', {p1: 'val1', p2: 'val2'},
-                '596aa7428f68700575424cdf', ['p1', 'p2'])
+            mongoRepository.update('aaaa',
+                '596aa7428f68700575424cdf', {p1: 'val1', p2: 'val2'})
                 .subscribe(res => {
                     console.log(res);
                     done();

@@ -15,7 +15,8 @@ describe('Players denormalizer Tests', function () {
 
     beforeEach(function () {
 
-        timeStub = sinon.stub(generalServices, 'getTime', () => new Date('01 Sep 2016 08:00'));
+        timeStub = sinon.stub(generalServices, 'getTime',
+            () => new Date('01 Sep 2016 08:00'));
         loggerStub = {
             info: function () {
             }
@@ -38,8 +39,13 @@ describe('Players denormalizer Tests', function () {
 
         it('create the user with id', function (done) {
 
-            updateSpy = sinon.stub(mongoRepository, 'update', function (r, x) {
-                assert(x.players[2].id === 'abc223');
+            updateSpy = sinon.stub(mongoRepository, 'update', function (collectionName,
+                                                                        key, updates) {
+                assert(updates.players[2].id === 'abc223');
+                assert(updates.properties === undefined);
+                assert.notEqual(updates.players[2].properties, undefined);
+
+                done();
             });
 
             queryStub = sinon.stub(mongoRepository, 'query', function () {
@@ -47,19 +53,28 @@ describe('Players denormalizer Tests', function () {
                 return Rx.Observable.of({
                     _id: '507f1f77bcf86cd799439011',
                     squadName: 's1',
-                    players: [{playerName: 'MS', email: 'neo@gma.com', id: '1234'}, {
-                        playerName: 'MS1',
-                        email: 'neo@gddma.com'
-                    }]
+                    players: [
+                        {
+                            playerName: 'MS',
+                            email: 'neo@gma.com',
+                            id: '1234'
+                        },
+                        {
+                            playerName: 'MS1',
+                            email: 'neo@gddma.com'
+                        }]
                 });
             });
             guidStub = sinon.stub(Guid, 'v4', function () {
                 return 'abc223';
             });
-            deNormalizer.handleMessage({command: {player: {squadId: '507f1f77bcf86cd799439011'}}});
+            deNormalizer.handleMessage({
+                command: {
+                    player: {squadId: '507f1f77bcf86cd799439011'}
+                }
+            });
             assert(queryStub.called);
             assert(updateSpy.called);
-            done();
         });
 
 
@@ -69,9 +84,10 @@ describe('Players denormalizer Tests', function () {
 
         it('create replace the user if id exists', function (done) {
 
-            updateSpy = sinon.stub(mongoRepository, 'update', function (r, x) {
-                console.log(x);
-                assert(x.players[1].email === 'asjk@sde.com');
+            updateSpy = sinon.stub(mongoRepository, 'update', function (r, x, y) {
+                assert(y.players[1].email === 'asjk@sde.com');
+
+                done();
             });
 
             queryStub = sinon.stub(mongoRepository, 'query', function () {
@@ -82,7 +98,7 @@ describe('Players denormalizer Tests', function () {
                     players: [
                         {
                             squadId: '507f1f77bcf86cd799439011',
-                            playerName:"existing",
+                            playerName: "existing",
                             id: 'abc223',
                             email: 'xxxx'
                         },
@@ -106,7 +122,6 @@ describe('Players denormalizer Tests', function () {
             });
             assert(queryStub.called);
             assert(updateSpy.called);
-            done();
         });
 
 
