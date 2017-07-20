@@ -71,6 +71,9 @@ describe('Players denormalizer Tests', function () {
             deNormalizer.handleMessage({
                 command: {
                     player: {squadId: '507f1f77bcf86cd799439011'}
+                },
+                properties:{
+                    eventName:'CreatePlayerEvent'
                 }
             });
             assert(queryStub.called);
@@ -118,6 +121,59 @@ describe('Players denormalizer Tests', function () {
                         id: 'abc223',
                         email: 'asjk@sde.com'
                     }
+                },
+                properties:{
+                    eventName:'CreatePlayerEvent'
+                }
+            });
+            assert(queryStub.called);
+            assert(updateSpy.called);
+        });
+
+
+    });
+
+    describe('player delete', function () {
+
+        it('mark the player as deleted if delete event', function (done) {
+
+            updateSpy = sinon.stub(mongoRepository, 'update', function (r, x, y) {
+                assert(y.players[1].isDeleted === true);
+
+                done();
+            });
+
+            queryStub = sinon.stub(mongoRepository, 'query', function () {
+                // supply dummy observable
+                return Rx.Observable.of({
+                    _id: '507f1f77bcf86cd799439011',
+                    squadName: 's1',
+                    players: [
+                        {
+                            squadId: '507f1f77bcf86cd799439011',
+                            playerName: "existing",
+                            id: 'abc223',
+                            email: 'xxxx'
+                        },
+                        {
+                            playerName: 'MS1',
+                            email: 'neo@gddma.com'
+                        }]
+                });
+            });
+            guidStub = sinon.stub(Guid, 'v4', function () {
+                return 'abc223';
+            });
+            deNormalizer.handleMessage({
+                command: {
+                    player: {
+                        squadId: '507f1f77bcf86cd799439011',
+                        id: 'abc223',
+                        email: 'asjk@sde.com'
+                    }
+                },
+                properties:{
+                    eventName:'DeletePlayerEvent'
                 }
             });
             assert(queryStub.called);
