@@ -47,7 +47,6 @@ const isQueryAllowed = (socketId) => {
     // if (queryReq.properties.queryName === 'GetLogins') {
     //     return true;
     // }
-    console.log('Client Token:->', client.token);
     // check authenticated
     if (client.token === undefined) {
         return false;
@@ -80,7 +79,6 @@ const authenticate = (token, socketId) => {
             const client = clients.find(client => client.id === socketId);
             if (client !== undefined) {
                 client.token = token;
-                console.log('Authenticated socket ' + socketId);
                 let event = EventFactory.createFromNone('AuthenticationSucceeded', false);
                 EventMediator.dispatch(event);
             } else {

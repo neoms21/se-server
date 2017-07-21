@@ -20,7 +20,7 @@ function verify() {
     let response = new Rx.Subject();
 
     setTimeout(function (command) { // use timeout as rx is async
-        console.log(command);
+        console.log('In delete player handler', command);
         // we are done
         response.complete();
     }, 100, this.command);

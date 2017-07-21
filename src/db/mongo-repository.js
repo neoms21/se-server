@@ -150,14 +150,48 @@ const query = (collectionName, conditions, filters) => {
     connectToDb()
         .then(function (db) {
             //const cursor = collection.find.apply(this, params)
-            if (!conditions)
+            if (!conditions) {
                 conditions = {};
-            conditions['isDeleted'] = {$ne: true};
+            }
+
+            conditions.isDeleted = {$ne: true};
             const cursor = db.collection(collectionName).find(conditions, filters); // use internal mongo function
 
-            // cursor.count(function (err, count) {
-            //     console.log('query count ' + count)
-            // });
+
+            cursor.forEach((item) => {
+                response.next(item);
+            }, (err) => {
+                if (err === null) {
+                    // console.log(items);
+                    //cursor done
+                    response.complete();
+                } else {
+                    response.error(err);
+                }
+                //  db.close();
+            });
+        })
+        .catch(function (err) {
+            response.error(err);
+            // db.close();
+        });
+
+    return response;
+};
+
+const aggregateQuery = (collectionName, conditions, filters) => {
+    let response = new Rx.Subject();
+
+    connectToDb()
+        .then(function (db) {
+            //const cursor = collection.find.apply(this, params)
+            if (!conditions) {
+                conditions = {};
+            }
+
+            conditions.isDeleted = {$ne: true};
+            const cursor = db.collection(collectionName).aggregate(conditions, filters); // use internal mongo function
+
 
             cursor.forEach((item) => {
                 response.next(item);
@@ -188,5 +222,6 @@ module.exports = {
     deleteRecord: deleteRecord,
     connectToDb: connectToDb,
     query: query,
+    aggregateQuery: aggregateQuery,
     init: init
 };

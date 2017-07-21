@@ -110,7 +110,6 @@ describe('Socket handler', () => {
             socket.emit('authentication', {token: '@@@@@'});
 
             assert(eventMediatorStub.called);
-            console.log(eventMediatorStub.getCall(0).args)
             assert(eventMediatorStub.calledWith(
                 {
                     properties: {

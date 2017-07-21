@@ -12,25 +12,27 @@ function init(log) {
 }
 
 function createOrUpdatePlayer(event, toDelete) {
-    console.log('IN DENORM', event);
-    MongoRepository.query('squads', {_id: new ObjectId(event.command.player.squadId)})
+    console.log('IN DENORM', event.command.payload);
+    let player = event.command.payload.player;
+    MongoRepository.query('squads', {_id: new ObjectId(player.squadId)})
         .subscribe(squad => {
             if (!squad.players) {
                 squad.players = [];
             }
-            if (event.command.player.id) {
+            if (player.id) {
                 squad.players = squad.players.filter((p) => {
-                    return p.id !== event.command.player.id;
+                    return p.id !== player.id;
                 });
             } else {
-                event.command.player.id = Guid.v4();
+                player.id = Guid.v4();
             }
-            GeneralServices.applyCommonFields(event.command.player);
-            if(toDelete){
-                event.command.player.isDeleted = true;
+            GeneralServices.applyCommonFields(player);
+            if (toDelete) {
+                player.isDeleted = true;
             }
-            squad.players.push(event.command.player);
-            MongoRepository.update('squads', event.command.player.squadId, {
+            squad.players.push(player);
+            console.log('Deleted Player', player);
+            MongoRepository.update('squads', player.squadId, {
                 players: squad.players, "properties.modified": new Date()
             });
         });
@@ -50,7 +52,7 @@ function handleMessage(event) {
     }
 }
 function getMessages() {
-    return ['CreatePlayerEvent','DeletePlayerEvent'];
+    return ['CreatePlayerEvent', 'DeletePlayerEvent'];
 }
 
 //noinspection JSUnresolvedVariable

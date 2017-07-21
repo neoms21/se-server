@@ -257,7 +257,6 @@ describe('Mongo repository', function () {
             mongoRepository.update('aaaa',
                 '596aa7428f68700575424cdf', {p1: 'val1', p2: 'val2'})
                 .subscribe(res => {
-                    console.log(res);
                     done();
                 });
 

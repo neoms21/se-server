@@ -20,7 +20,6 @@ function verify() {
     let response = new Rx.Subject();
     let errors = [];
     setTimeout(function (command) { // use timeout as rx is async
-        console.log(command);
         if (util.isNullOrUndefined(command.payload.squadName)) {
             response.next({squadName: 'Squad name is mandatory'});
         }
