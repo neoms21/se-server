@@ -70,10 +70,12 @@ describe('Players denormalizer Tests', function () {
             });
             deNormalizer.handleMessage({
                 command: {
-                    player: {squadId: '507f1f77bcf86cd799439011'}
+                    payload: {
+                        player: {squadId: '507f1f77bcf86cd799439011'}
+                    }
                 },
-                properties:{
-                    eventName:'CreatePlayerEvent'
+                properties: {
+                    eventName: 'CreatePlayerEvent'
                 }
             });
             assert(queryStub.called);
@@ -116,14 +118,16 @@ describe('Players denormalizer Tests', function () {
             });
             deNormalizer.handleMessage({
                 command: {
-                    player: {
-                        squadId: '507f1f77bcf86cd799439011',
-                        id: 'abc223',
-                        email: 'asjk@sde.com'
+                    payload: {
+                        player: {
+                            squadId: '507f1f77bcf86cd799439011',
+                            id: 'abc223',
+                            email: 'asjk@sde.com'
+                        }
                     }
                 },
-                properties:{
-                    eventName:'CreatePlayerEvent'
+                properties: {
+                    eventName: 'CreatePlayerEvent'
                 }
             });
             assert(queryStub.called);
@@ -166,14 +170,16 @@ describe('Players denormalizer Tests', function () {
             });
             deNormalizer.handleMessage({
                 command: {
-                    player: {
-                        squadId: '507f1f77bcf86cd799439011',
-                        id: 'abc223',
-                        email: 'asjk@sde.com'
+                    payload: {
+                        player: {
+                            squadId: '507f1f77bcf86cd799439011',
+                            id: 'abc223',
+                            email: 'asjk@sde.com'
+                        }
                     }
                 },
-                properties:{
-                    eventName:'DeletePlayerEvent'
+                properties: {
+                    eventName: 'DeletePlayerEvent'
                 }
             });
             assert(queryStub.called);
