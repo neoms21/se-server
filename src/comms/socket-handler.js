@@ -1,12 +1,10 @@
 'use strict';
 const commandMediator = require('./../cqrs/command-mediator');
-const mongoRepository = require('./../db/mongo-repository');
 const EventMediator = require('./../cqrs/event-mediator');
 const EventFactory = require('./../cqrs/event-factory');
 const QueryMediator = require('./../cqrs/query-mediator');
-const jwt = require('jsonwebtoken');
-const jwtSecret = require('../cqrs/jwtSecret');
 const Util = require('util');
+const verifier = require('./jwtVerifier');
 
 let logger;
 let clients = [];
@@ -39,7 +37,7 @@ const isCommandAllowed = (socketId, cmdReq) => {
     return true;
 };
 
-const isQueryAllowed = (socketId, queryReq) => {
+const isQueryAllowed = (socketId) => {
     const client = clients.find(cl => cl.id === socketId);
     if (client === undefined) {
         return false;
@@ -49,10 +47,10 @@ const isQueryAllowed = (socketId, queryReq) => {
     // if (queryReq.properties.queryName === 'GetLogins') {
     //     return true;
     // }
-
+    console.log('Client Token:->', client.token);
     // check authenticated
     if (client.token === undefined) {
-        return true;
+        return false;
     }
 
     // todo : check if user is authorised
@@ -68,11 +66,11 @@ const disconnected = (socket) => {
     }
 };
 
-const authenticate = (auth, socketId) => {
-
+const authenticate = (token, socketId) => {
     // check the token
-    jwt.verify(auth.token, jwtSecret, (err) => {
+    verifier.verify(token, (err) => {
         if (err !== null) {
+
             logger.error(`'Authentication token didnt match for socket ${socketId} error ${err}`);
             let event = EventFactory.createFromNone('AuthenticationFailed', true);
             event.error = 'Authentication token didnt match for socket ' + socketId;
@@ -81,8 +79,8 @@ const authenticate = (auth, socketId) => {
             // was ok, get the socket
             const client = clients.find(client => client.id === socketId);
             if (client !== undefined) {
-                client.token = auth.token;
-                logger.info('Authenticated socket ' + socketId);
+                client.token = token;
+                console.log('Authenticated socket ' + socketId);
                 let event = EventFactory.createFromNone('AuthenticationSucceeded', false);
                 EventMediator.dispatch(event);
             } else {

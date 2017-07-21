@@ -4,7 +4,7 @@ const q = require('q');
 const jwtSecret = require('../cqrs/jwtSecret');
 const mongoRepository = require('./../db/mongo-repository');
 const pick = require('../utilities/pick');
-
+const verifier = require('./jwtVerifier');
 let logger;
 
 const init = (loggerInstance) => {
@@ -13,7 +13,6 @@ const init = (loggerInstance) => {
 
 let validateUser = (user) => {
     const deferred = q.defer();
-    console.log(user);
     // attempt to match by email and password
     mongoRepository.query('logins', {"userName": user.userName, "password": user.password})
         .subscribe((foundUser) => {
@@ -63,7 +62,6 @@ let postLogin = (req, res) => {
                 logger.info('Authenticated via login ' + userFromDb.userName);
             } else {
                 // was a non fatal error
-
                 res.status(202).send(`Email or password is not valid.`);
             }
         })
@@ -74,7 +72,19 @@ let postLogin = (req, res) => {
         });
 };
 
+const verifyToken = (req, res) => {
+    verifier.verify(req.body.token, (err) => {
+        if (!err) {
+            res.status(200).send(true);
+        } else {
+            logger.error(err);
+            res.status(500).send(false);
+        }
+    });
+};
+
 module.exports = {
     postLogin: postLogin,
+    verifyToken: verifyToken,
     init: init
 };

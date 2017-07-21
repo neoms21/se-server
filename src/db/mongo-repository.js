@@ -3,6 +3,8 @@ const config = require('config');
 const mongoClient = require('mongodb');
 const Rx = require('rxjs/Rx');
 const util = require('util');
+const ObjectId = require('mongodb').ObjectId;
+const GeneralServices = require('../cqrs/general-services');
 
 let logger;
 
@@ -72,37 +74,38 @@ const insert = (collectionName, insertion) => {
     return response;
 };
 
-const update = (collectionName, insertion, key, propsToUpdate) => {
+function updateRecord(collectionName, key, updates, response) {
+
+    connectToDb().then(function (db) {
+        db.collection(collectionName)
+            .updateOne({_id: new ObjectId(key)},
+                {$set: updates})
+            .then(function (succ) {
+                    response.next(succ);
+                    response.complete();
+                    db.close();
+                }
+            )
+            .catch(function (errInsert) {
+                    response.error(errInsert);
+                    logger.error(errInsert);
+                    db.close();
+                }
+            );
+    })
+
+}
+
+const update = (collectionName, key, propsToUpdate) => {
     let response = new Rx.Subject();
+    updateRecord(collectionName, key, propsToUpdate, response);
+    return response;
+};
 
-    connectToDb()
-        .then(function (db) {
-                let updates = {};
-                propsToUpdate.forEach(function (prop) {
-                    updates[prop] = insertion[prop];
-                });
-
-                let collection = db.collection(collectionName);
-                collection
-                    .updateOne({_id: insertion[key]},
-                        {$set: updates})
-                    .then(function (succ) {
-                            response.next(succ);
-                            response.complete();
-                            // db.close();
-                        }
-                    )
-                    .catch(function (errInsert) {
-                            response.error(errInsert);
-                            logger.error(errInsert);
-                            // db.close();
-                        }
-                    );
-            }, function (err) {
-                response.error(err);
-            }
-        );
-
+const deleteRecord = (collectionName, id) => {
+    let response = new Rx.Subject();
+    updateRecord(collectionName, id,
+        {isDeleted: true, "properties.modified": new Date()}, response);
     return response;
 };
 
@@ -147,6 +150,9 @@ const query = (collectionName, conditions, filters) => {
     connectToDb()
         .then(function (db) {
             //const cursor = collection.find.apply(this, params)
+            if (!conditions)
+                conditions = {};
+            conditions['isDeleted'] = {$ne: true};
             const cursor = db.collection(collectionName).find(conditions, filters); // use internal mongo function
 
             // cursor.count(function (err, count) {
@@ -156,7 +162,6 @@ const query = (collectionName, conditions, filters) => {
             cursor.forEach((item) => {
                 response.next(item);
             }, (err) => {
-                console.log(err);// error or complete!
                 if (err === null) {
                     // console.log(items);
                     //cursor done
@@ -168,7 +173,6 @@ const query = (collectionName, conditions, filters) => {
             });
         })
         .catch(function (err) {
-            console.log(err);
             response.error(err);
             // db.close();
         });
@@ -181,6 +185,7 @@ module.exports = {
     insert: insert,
     getCount: getCount,
     update: update,
+    deleteRecord: deleteRecord,
     connectToDb: connectToDb,
     query: query,
     init: init

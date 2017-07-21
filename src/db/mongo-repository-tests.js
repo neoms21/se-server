@@ -5,6 +5,8 @@ const sinon = require('sinon');
 const mongoClient = require('mongodb');
 const config = require('config');
 const q = require('q');
+const expect = require('chai').expect;
+
 
 describe('Mongo repository', function () {
     let mongoStub;
@@ -14,6 +16,7 @@ describe('Mongo repository', function () {
 
     before(function () {
         mongoStub = sinon.stub(mongoClient, 'connect');
+
         // create logger, add info method and then stub that
         loggerStub = sinon.stub();
         loggerStub.info = Function;
@@ -222,4 +225,45 @@ describe('Mongo repository', function () {
                 });
         });
     });
+
+    describe('Update', function () {
+        let connectionPromise;
+        let updatePromise;
+        beforeEach(function () {
+            connectionPromise = q.defer();
+            mongoStub.returns(connectionPromise.promise);
+
+            //now do collection stuff
+            updatePromise = q.defer();
+
+            let coll = {
+                collection: function () {
+                    return {
+                        updateOne: function () {
+                            return updatePromise.promise;
+                        }
+                    };
+                }
+            };
+            connectionPromise.resolve(coll);
+        });
+
+        afterEach(function () {
+
+        });
+
+        it('should call update one with correct params', function (done) {
+
+            mongoRepository.update('aaaa',
+                '596aa7428f68700575424cdf', {p1: 'val1', p2: 'val2'})
+                .subscribe(res => {
+                    console.log(res);
+                    done();
+                });
+
+            updatePromise.resolve({});
+        });
+
+
+    })
 });
