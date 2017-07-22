@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const q = require('q');
 const jwtSecret = require('../cqrs/jwtSecret');
 const mongoRepository = require('./../db/mongo-repository');
+const pick = require('../utilities/pick');
 
 let logger;
 
@@ -12,16 +13,18 @@ const init = (loggerInstance) => {
 
 let validateUser = (user) => {
     const deferred = q.defer();
-
+    console.log(user);
     // attempt to match by email and password
-    mongoRepository.getCount('logins', {userName: user.userName, password: user.password})
-        .subscribe((cnt) => {
-            if (cnt === 0) {
-                // no matching user & password
-                deferred.resolve(`Email or password is not valid.`);
+    mongoRepository.query('logins', {"userName": user.userName, "password": user.password})
+        .subscribe((foundUser) => {
+
+            if (foundUser) {
+                // matched
+                deferred.resolve(foundUser);
             } else {
-                // matched!
-                deferred.resolve();
+                // not found!!
+                logger.error({err: `Email or password is not valid. ${user}`});
+                deferred.resolve(false);
             }
         }, (err) => {
             deferred.reject("Database " + err);
@@ -48,16 +51,20 @@ let postLogin = (req, res) => {
 
     // validate the user
     validateUser(user)
-        .then((feedback) => {
-            if (feedback === undefined) {
+        .then((userFromDb) => {
+
+            if (userFromDb) {
                 // success, so send back token
-                const token = jwt.sign(user, jwtSecret, {expiresIn: 360 * 5});
-                res.status(200).json({token: token});
-                logger.info('Authenticated via login ' + user.userName);
+                const token = jwt.sign(userFromDb, jwtSecret, {expiresIn: 360 * 5});
+
+                let resultUser = pick(userFromDb, 'name', 'userName', '_id');
+                resultUser.token = token;
+                res.status(200).json(resultUser);
+                logger.info('Authenticated via login ' + userFromDb.userName);
             } else {
                 // was a non fatal error
-                logger.error({err: feedback});
-                res.status(202).send(feedback);
+
+                res.status(202).send(`Email or password is not valid.`);
             }
         })
         .catch((err) => {
