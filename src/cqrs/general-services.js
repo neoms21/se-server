@@ -5,7 +5,7 @@ const getTime = () => {
 };
 
 const applyCommonFields = (decoratee, source) => {
-    if (decoratee.properties === undefined) {
+    if (decoratee.properties === undefined ) {
         decoratee.properties = {};
         decoratee.properties.createdBy = source !== undefined &&
         source.properties !== undefined ? source.properties.createdBy : 'unknown';

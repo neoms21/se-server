@@ -18,10 +18,25 @@ function verify() {
 
 
     let response = new Rx.Subject();
-
     setTimeout(function (command) { // use timeout as rx is async
-        // we are done
-        response.complete();
+        if (util.isNullOrUndefined(command.payload)) {
+            response.next({squadName: 'Unable to delete, missing id'});
+        }
+
+        // check that the user is not sending a duplicate
+        MongoRepository.getCount('squads', {_id: command.payload})
+            .subscribe(function (count) {
+
+                if (count > 0) {
+                    // oops duplicate
+                    response.next({'squadName': 'Squad doesn\'t exist!!'});
+                }
+
+                // we are done
+                response.complete();
+            }, function (err) {
+                response.error(err);
+            });
     }, 100, this.command);
 
     return response;

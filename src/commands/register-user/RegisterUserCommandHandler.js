@@ -54,6 +54,7 @@ function execute() {
     let event = EventFactory.createFromCommand(this.command, 'UserRegisteredEvent', false);
 
     // now send it
+    console.log(event);
     EventMediator.dispatch(event);
 }
 
