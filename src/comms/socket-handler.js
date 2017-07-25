@@ -16,6 +16,7 @@ let eventSubscription;
 const isCommandAllowed = (socketId, cmdReq) => {
     logger.debug('Checking socket ' + socketId);
     const client = clients.find(cl => cl.id === socketId);
+    logger.debug('Client Found' + client);
     if (client === undefined) {
         logger.error('Command received by socket, but unable to find client ' + socketId);
         return false;
@@ -29,7 +30,7 @@ const isCommandAllowed = (socketId, cmdReq) => {
     // check authenticated
     if (client.token === undefined) {
         logger.error(`Command received by socket, but socket ${socketId} not authenticated`);
-        return true;
+        return false;
     }
 
     // todo : check if user is authorised
@@ -115,16 +116,17 @@ const processQuery = (query, socket) => {
 };
 
 const dealWithEvents = (ev) => {
+
     let topic = 'event';
     let clientId;
 
     if (!Util.isNullOrUndefined(ev.command)) {
         topic = 'commandEvent';
-        clientId = ev.command.clientId;
+        clientId = ev.command.properties.clientId;
     } else {
         if (!Util.isNullOrUndefined(ev.query)) {
             topic = 'queryEvent';
-            clientId = ev.query.clientId;
+            clientId = ev.query.properties.clientId;
         }
     }
 
@@ -133,7 +135,7 @@ const dealWithEvents = (ev) => {
     if (clientId !== undefined) {
         // find the client connection
         let clientSocket = clients.find((item) => item.id === clientId);
-        if(clientSocket !== undefined) {
+        if (clientSocket !== undefined) {
             // send event to that specfic client
             clientSocket.emit(topic, ev);
         } else {
