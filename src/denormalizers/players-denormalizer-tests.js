@@ -15,7 +15,7 @@ describe('Players denormalizer Tests', function () {
 
     beforeEach(function () {
 
-        timeStub = sinon.stub(generalServices, 'getTime', () => new Date('01 Sep 2016 08:00'));
+        timeStub = sinon.stub(generalServices, 'getTime').callsFake(() => new Date('01 Sep 2016 08:00'));
         loggerStub = {
             info: function () {
             }
@@ -53,7 +53,7 @@ describe('Players denormalizer Tests', function () {
                     }]
                 });
             });
-            guidStub = sinon.stub(Guid, 'v4', function () {
+            guidStub = sinon.stub(Guid, 'v4').callsFake(() => {
                 return 'abc223';
             });
             deNormalizer.handleMessage({command: {player: {squadId: '507f1f77bcf86cd799439011'}}});
