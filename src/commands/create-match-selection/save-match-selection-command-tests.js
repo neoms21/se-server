@@ -6,7 +6,7 @@ const Rx = require('rxjs/Rx');
 const eventMediator = require('../../cqrs/event-mediator');
 const generalServices = require('../../cqrs/general-services');
 
-describe('Create match command', function () {
+xdescribe('Create match sel command', function () {
   let countStub;
   let count = 0;
   let timeStub;
