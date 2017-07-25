@@ -21,7 +21,7 @@ describe('Players denormalizer Tests', function () {
             }
         };
         eventMediator.init(loggerStub);
-        dispatchStub = sinon.stub(eventMediator, 'dispatch', function () {
+        dispatchStub = sinon.stub(eventMediator, 'dispatch').callsFake(() => {
         });
 
     });
@@ -38,11 +38,11 @@ describe('Players denormalizer Tests', function () {
 
         it('create the user with id', function (done) {
 
-            updateSpy = sinon.stub(mongoRepository, 'update', function (r, x) {
+            updateSpy = sinon.stub(mongoRepository, 'update').callsFake((r, x) => {
                 assert(x.players[2].id === 'abc223');
             });
 
-            queryStub = sinon.stub(mongoRepository, 'query', function () {
+            queryStub = sinon.stub(mongoRepository, 'query').callsFake(() => {
                 // supply dummy observable
                 return Rx.Observable.of({
                     _id: '507f1f77bcf86cd799439011',
@@ -69,12 +69,11 @@ describe('Players denormalizer Tests', function () {
 
         it('create replace the user if id exists', function (done) {
 
-            updateSpy = sinon.stub(mongoRepository, 'update', function (r, x) {
-                console.log(x);
+            updateSpy = sinon.stub(mongoRepository, 'update').callsFake((r, x) => {
                 assert(x.players[1].email === 'asjk@sde.com');
             });
 
-            queryStub = sinon.stub(mongoRepository, 'query', function () {
+            queryStub = sinon.stub(mongoRepository, 'query').callsFake(() => {
                 // supply dummy observable
                 return Rx.Observable.of({
                     _id: '507f1f77bcf86cd799439011',
@@ -92,7 +91,7 @@ describe('Players denormalizer Tests', function () {
                         }]
                 });
             });
-            guidStub = sinon.stub(Guid, 'v4', function () {
+            guidStub = sinon.stub(Guid, 'v4').callsFake(() => {
                 return 'abc223';
             });
             deNormalizer.handleMessage({

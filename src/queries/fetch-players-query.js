@@ -6,7 +6,7 @@ const ObjectId = require('mongodb').ObjectId;
 const logger = require('../core/logger').logger();
 const EventFactory = require('./../cqrs/event-factory');
 const execute = (query) => {
-  console.log(query);
+
   const ret = new Rx.Subject();
   let items = [];
   MongoRepository.query('squads', {_id: ObjectId(query.payload)}, {players: 1})

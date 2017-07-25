@@ -41,7 +41,6 @@ function verify() {
                 // we are done
                 response.complete();
             }, function (err) {
-                console.log(err);
                 response.error(err);
             });
     }, 100, this.command);

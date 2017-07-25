@@ -13,7 +13,7 @@ const init = (loggerInstance) => {
 
 let validateUser = (user) => {
     const deferred = q.defer();
-    console.log(user);
+
     // attempt to match by email and password
     mongoRepository.query('logins', {"userName": user.userName, "password": user.password})
         .subscribe((foundUser) => {

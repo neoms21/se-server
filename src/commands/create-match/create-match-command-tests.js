@@ -120,7 +120,7 @@ describe('Create match command', function () {
     });
 
     it('should raise CreateMatchEvent', function () {
-      dispatchStub = sinon.stub(eventMediator, 'dispatch', function () {
+      dispatchStub = sinon.stub(eventMediator, 'dispatch').callsFake(() => {
       });
 
       handler.command = {

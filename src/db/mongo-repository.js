@@ -12,7 +12,7 @@ const init = (log) => {
 
 const connectToDb = () => {
 
-  const configDB = config.get("dbConfig");
+  const configDB = config.get('dbConfig');
 
   // create uri no user
   const uri = 'mongodb://' + configDB.host + ':' + configDB.port + '/' + configDB.name;
@@ -80,7 +80,7 @@ const update = (collectionName, insertion, key, propsToUpdate) => {
 
       let collection = db.collection(collectionName);
       collection
-        .updateOne({ _id: insertion[key] }, { $set: updates })
+        .updateOne({_id: insertion[key]}, {$set: updates})
         .then(function (succ) {
           response.next(succ);
           response.complete();
@@ -115,20 +115,20 @@ const createOrOpenDb = () => {
     .then(function (db) {
 
       Promise.all([createCollection(db, 'commands'),
-            createCollection(db, 'events'),
-                createCollection(db, 'clubs'),
-                createCollection(db, 'squads'),
-                createCollection(db, 'logins')]).then(([result1, result2]) => {
-          //db.close();
-        })
+        createCollection(db, 'events'),
+        createCollection(db, 'clubs'),
+        createCollection(db, 'squads'),
+        createCollection(db, 'logins')]).then(([result1, result2]) => {
+        //db.close();
+      })
         .catch(err => {
           logger.error(err);
-          //  db.close();
+          db.close();
         });
     })
     .catch(function (err) {
       response.error(err.toString());
-      //db.close();
+      db.close();
     });
 
   return response;
@@ -150,7 +150,6 @@ const query = (collectionName, conditions, filters) => {
         response.next(item);
       }, (err) => {
         if (err === null) {
-          // console.log(items);
           //cursor done
           response.complete();
         } else {
@@ -160,7 +159,6 @@ const query = (collectionName, conditions, filters) => {
       });
     })
     .catch(function (err) {
-      console.log(err);
       response.error(err);
       // db.close();
     });

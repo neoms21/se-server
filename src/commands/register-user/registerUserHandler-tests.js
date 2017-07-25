@@ -12,11 +12,11 @@ describe('Register user command', function () {
     let timeStub;
 
     beforeEach(function () {
-        countStub = sinon.stub(mongoRepository, 'getCount', function () {
+        countStub = sinon.stub(mongoRepository, 'getCount').callsFake(() => {
             // supply dummy observable
             return Rx.Observable.from([count]);
         });
-        timeStub = sinon.stub(generalServices, 'getTime', () => new Date('01 Sep 2016 08:00'));
+        timeStub = sinon.stub(generalServices, 'getTime').callsFake(() => new Date('01 Sep 2016 08:00'));
     });
 
     afterEach(function () {
@@ -126,7 +126,7 @@ describe('Register user command', function () {
         });
 
         it('should raise UserRegisteredEvent', function () {
-            dispatchStub = sinon.stub(eventMediator, 'dispatch', function () {
+            dispatchStub = sinon.stub(eventMediator, 'dispatch').callsFake(() => {
             });
 
             handler.command = {

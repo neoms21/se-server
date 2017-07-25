@@ -9,7 +9,6 @@ function init(log) {
 }
 
 function createSquad(event) {
-    console.log(event);
 
     let squad = {
         name: event.command.payload.squadName,

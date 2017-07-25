@@ -11,7 +11,6 @@ function init(log) {
 
 function createPlayer(event) {
 
-    console.log(event);
     MongoRepository.query('squads', {_id: new ObjectId(event.command.player.squadId)})
         .subscribe(squad => {
             if (!squad.players) {
