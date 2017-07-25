@@ -40,7 +40,7 @@ describe('Socket handler', () => {
             loggerErrorSpy = sinon.spy(logger, 'error');
             loggerInfoSpy = sinon.spy(logger, 'info');
             eventMediatorStub = sinon.stub(EventMediator, 'dispatch');
-            timeStub = sinon.stub(GeneralServices, 'getTime', () => tod);
+            timeStub = sinon.stub(GeneralServices, 'getTime').returns(tod);
 
             // set up common stuff
             io = new EventEmitter();
