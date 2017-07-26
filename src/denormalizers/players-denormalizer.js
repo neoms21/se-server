@@ -12,7 +12,7 @@ function init(log) {
 }
 
 function createOrUpdatePlayer(event, toDelete) {
-    console.log('IN DENORM', event.command.payload);
+
     let player = event.command.payload.player;
     MongoRepository.query('squads', {_id: new ObjectId(player.squadId)})
         .subscribe(squad => {
@@ -31,7 +31,7 @@ function createOrUpdatePlayer(event, toDelete) {
                 player.isDeleted = true;
             }
             squad.players.push(player);
-            console.log('Deleted Player', player);
+
             MongoRepository.update('squads', player.squadId, {
                 players: squad.players, "properties.modified": new Date()
             });

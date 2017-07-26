@@ -16,13 +16,29 @@ function execute() {
 
 function verify() {
 
-
     let response = new Rx.Subject();
-
     setTimeout(function (command) { // use timeout as rx is async
-        console.log('In delete player handler', command);
-        // we are done
-        response.complete();
+        if (util.isNullOrUndefined(command.payload.player.squadId)) {
+            response.next({squadName: 'Unable to delete, missing squad id'});
+        }
+        if (util.isNullOrUndefined(command.payload.player.id)) {
+            response.next({squadName: 'Unable to delete, missing player id'});
+        }
+
+        // check that player to be deleted exists in the system
+        MongoRepository.query('squads', {"players.id": command.payload.player.id})
+            .subscribe(function (squad) {
+
+                if (!squad) {
+                    // oops duplicate
+                    response.next({'playerName': 'Player doesn\'t exist!!'});
+                }
+
+                // we are done
+                response.complete();
+            }, function (err) {
+                response.error(err);
+            });
     }, 100, this.command);
 
     return response;
