@@ -92,7 +92,7 @@ function updateRecord(collectionName, key, updates, response) {
                     db.close();
                 }
             );
-    })
+    });
 
 }
 
@@ -149,6 +149,7 @@ const query = (collectionName, conditions, filters) => {
 
     connectToDb()
         .then(function (db) {
+            let recordsFound = false;
             //const cursor = collection.find.apply(this, params)
             if (!conditions) {
                 conditions = {};
@@ -156,14 +157,15 @@ const query = (collectionName, conditions, filters) => {
 
             conditions.isDeleted = {$ne: true};
             const cursor = db.collection(collectionName).find(conditions, filters); // use internal mongo function
-
-
             cursor.forEach((item) => {
+                recordsFound = true;
                 response.next(item);
             }, (err) => {
                 if (err === null) {
-                    // console.log(items);
-                    //cursor done
+                    if (!recordsFound) {
+                        response.next(false); // To let the listening party know that no records were found, can't use count in every scenario
+                    }
+
                     response.complete();
                 } else {
                     response.error(err);
