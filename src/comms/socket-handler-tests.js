@@ -83,7 +83,7 @@ describe('Socket handler', () => {
         });
 
         it('should give error if authentication wrong', () => {
-             // send error back
+            // send error back
             io.emit('connection', socket);
             socket.emit('authentication', {token: '@@@@@'});
             socket.emit('disconnect'); // deletes the client
@@ -93,8 +93,10 @@ describe('Socket handler', () => {
                 {
                     properties: {
                         eventName: 'AuthenticationFailed',
-                        isFailure: true,
-                        modified: sinon.match.date
+                        isFailure: true,created: tod,
+                        createdBy: 'unknown',
+                        validFrom: tod,
+                        validTo: new Date('9999-12-31')
                     },
                     error: 'Authentication token didnt match for socket 123@'
                 }));
@@ -110,13 +112,15 @@ describe('Socket handler', () => {
             socket.emit('authentication', {token: '@@@@@'});
 
             assert(eventMediatorStub.called);
-            console.log(eventMediatorStub.getCall(0).args)
             assert(eventMediatorStub.calledWith(
                 {
                     properties: {
                         eventName: 'AuthenticationFailed',
                         isFailure: true,
-                        modified: sinon.match.date
+                        created: tod,
+                        createdBy: 'unknown',
+                        validFrom: tod,
+                        validTo: new Date('9999-12-31')
                     },
 
                     error: 'Failed to find matching socket 123@'
@@ -135,7 +139,10 @@ describe('Socket handler', () => {
                 properties: {
                     eventName: 'AuthenticationSucceeded',
                     isFailure: false,
-                    modified:sinon.match.date
+                    created: tod,
+                    createdBy: 'unknown',
+                    validFrom: tod,
+                    validTo: new Date('9999-12-31')
                 }
             }));
 

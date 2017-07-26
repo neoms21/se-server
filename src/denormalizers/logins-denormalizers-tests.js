@@ -29,6 +29,7 @@ describe('Login denormalizers', function () {
             }
         };
 
+        deNormalizer.init(loggerStub);
         eventMediator.init(loggerStub);
         dispatchStub = sinon.stub(eventMediator, 'dispatch', function () {
         });

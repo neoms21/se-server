@@ -44,7 +44,6 @@ describe('Create Player command', function () {
                 });
                 handler.verify().toArray()
                     .subscribe(function (errors) {
-                        console.log(errors);
                         assert.equal(errors instanceof Array, true);
                         assert.equal(errors.length, 0);
 

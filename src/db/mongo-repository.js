@@ -92,7 +92,7 @@ function updateRecord(collectionName, key, updates, response) {
                     db.close();
                 }
             );
-    })
+    });
 
 }
 
@@ -149,15 +149,51 @@ const query = (collectionName, conditions, filters) => {
 
     connectToDb()
         .then(function (db) {
+            let recordsFound = false;
             //const cursor = collection.find.apply(this, params)
-            if (!conditions)
+            if (!conditions) {
                 conditions = {};
-            conditions['isDeleted'] = {$ne: true};
-            const cursor = db.collection(collectionName).find(conditions, filters); // use internal mongo function
+            }
 
-            // cursor.count(function (err, count) {
-            //     console.log('query count ' + count)
-            // });
+            conditions.isDeleted = {$ne: true};
+            const cursor = db.collection(collectionName).find(conditions, filters); // use internal mongo function
+            cursor.forEach((item) => {
+                recordsFound = true;
+                response.next(item);
+            }, (err) => {
+                if (err === null) {
+                    if (!recordsFound) {
+                        response.next(false); // To let the listening party know that no records were found, can't use count in every scenario
+                    }
+
+                    response.complete();
+                } else {
+                    response.error(err);
+                }
+                //  db.close();
+            });
+        })
+        .catch(function (err) {
+            response.error(err);
+            // db.close();
+        });
+
+    return response;
+};
+
+const aggregateQuery = (collectionName, conditions, filters) => {
+    let response = new Rx.Subject();
+
+    connectToDb()
+        .then(function (db) {
+            //const cursor = collection.find.apply(this, params)
+            if (!conditions) {
+                conditions = {};
+            }
+
+            conditions.isDeleted = {$ne: true};
+            const cursor = db.collection(collectionName).aggregate(conditions, filters); // use internal mongo function
+
 
             cursor.forEach((item) => {
                 response.next(item);
@@ -188,5 +224,6 @@ module.exports = {
     deleteRecord: deleteRecord,
     connectToDb: connectToDb,
     query: query,
+    aggregateQuery: aggregateQuery,
     init: init
 };

@@ -111,12 +111,11 @@ function dispatch(command) {
         createError(command, checks);
         return;
     }
-    logger.debug('Verified basic info for command ' + command.properties.commandName);
+    logger.debug('Verified basic info for command ' + command);
 
     // get handler
     let handler = mapping.handler;
-    console.log('in mediator');
-    console.log(command);
+
     handler.command = command;
 
     handler.verify().toArray()

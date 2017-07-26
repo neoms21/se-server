@@ -13,6 +13,7 @@ function createSquad(event) {
         name: event.command.payload.squadName,
         userId: event.command.payload.userId,
     };
+    GeneralServices.applyCommonFields(squad);
     MongoRepository.insert('squads', squad);
 }
 
@@ -22,7 +23,7 @@ function deleteSquad(event) {
 }
 
 function handleMessage(event) {
-    console.log(event);
+
     switch (event.properties.eventName) {
 
         case 'CreateSquadEvent':

@@ -48,7 +48,6 @@ describe('Event Factory', () => {
             it('should return event', function () {
                 //verifierStub.returns(['correlationId']);
                 const results = EventFactory.CommandExecuted(command);
-                console.log('result', results);
                 //assert(verifierStub.called);
                 assert.equal(results.command.properties.correlationId, 1);
                 assert.equal(results.properties.eventName, 'CommandExecutedEvent');

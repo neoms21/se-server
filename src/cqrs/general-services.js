@@ -5,10 +5,11 @@ const getTime = () => {
 };
 
 const applyCommonFields = (decoratee, source) => {
-    if (decoratee.properties === undefined) {
+    if (!decoratee.properties)
         decoratee.properties = {};
-        decoratee.properties.createdBy = source !== undefined &&
-        source.properties !== undefined ? source.properties.createdBy : 'unknown';
+
+    if (!decoratee.properties.created) {
+        decoratee.properties.createdBy = source && source.properties ? source.properties.createdBy : 'unknown';
         decoratee.properties.created = exports.getTime();
         decoratee.properties.validFrom = decoratee.properties.created;
         decoratee.properties.validTo = new Date('31 dec 9999');
