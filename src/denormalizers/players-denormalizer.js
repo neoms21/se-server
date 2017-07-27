@@ -3,6 +3,8 @@ const MongoRepository = require('../db/mongo-repository');
 const ObjectId = require('mongodb').ObjectId;
 let logger;
 
+const GeneralServices = require('../cqrs/general-services');
+
 const Guid = require('uuid');
 
 function init(log) {
@@ -23,10 +25,11 @@ function createPlayer(event) {
             } else {
                 event.command.player.id = Guid.v4();
             }
+            GeneralServices.applyCommonFields(event.command.player);
             squad.players.push(event.command.player);
-
-            squad._id = new ObjectId(squad._id);
-            MongoRepository.update('squads', squad, '_id', ['players']);
+            MongoRepository.update('squads', event.command.player.squadId, {
+                players: squad.players, "properties.modified": new Date()
+            });
         });
 }
 function getMessages() {

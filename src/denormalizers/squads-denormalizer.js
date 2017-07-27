@@ -9,7 +9,6 @@ function init(log) {
 }
 
 function createSquad(event) {
-
     let squad = {
         name: event.command.payload.squadName,
         userId: event.command.payload.userId,
@@ -17,13 +16,31 @@ function createSquad(event) {
     MongoRepository.insert('squads', squad);
 }
 
+
+function deleteSquad(event) {
+    MongoRepository.deleteRecord('squads', event.command.payload);
+}
+
+function handleMessage(event) {
+    console.log(event);
+    switch (event.properties.eventName) {
+
+        case 'CreateSquadEvent':
+            createSquad(event);
+            break;
+        case 'DeleteSquadEvent':
+            deleteSquad(event);
+            break;
+    }
+}
+
 function getMessages() {
-    return ['CreateSquadEvent'];
+    return ['CreateSquadEvent', 'DeleteSquadEvent'];
 }
 
 //noinspection JSUnresolvedVariable
 module.exports = {
     init: init,
-    handleMessage: createSquad,
+    handleMessage: handleMessage,
     getMessages: getMessages
 };

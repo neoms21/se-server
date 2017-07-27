@@ -81,12 +81,13 @@ function execute() {
         matchId: uuid.v4(),
         squadName: squad.name,
         matchDate: this.command.payload.matchDate,
-        position: this.command.payload.position
+        opposition: this.command.payload.opposition,
+        selections: this.command.payload.positions
       };
       // now send it
       EventMediator.dispatch(event);
     }, (err) => {
-      //todo: log problem
+      logger.error(err);
     });
 
 }

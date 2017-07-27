@@ -47,7 +47,7 @@ describe('Event Factory', () => {
         describe('commandExecuted', function () {
             it('should return event', function () {
                 //verifierStub.returns(['correlationId']);
-                var results = EventFactory.CommandExecuted(command);
+                const results = EventFactory.CommandExecuted(command);
 
                 //assert(verifierStub.called);
                 assert.equal(results.command.properties.correlationId, 1);
@@ -60,12 +60,12 @@ describe('Event Factory', () => {
 
         describe('commandVerificationFailed', function () {
             it('should return event', function () {
-                var results = EventFactory.CommandVerificationFailed(command);
+                const results = EventFactory.CommandVerificationFailed(command);
 
                 assert.equal(results.command.properties.correlationId, 1);
                 assert.equal(results.properties.eventName, 'CommandVerificationFailedEvent');
                 assert.equal(results.properties.isFailure, true);
-                assert.equal(results.properties.createdBy, 222);
+                assert.equal(results.command.properties.createdBy, 222);
                 assert.ok(results.errors);
                 assert.notEqual(results.properties.created, null);
             });
@@ -73,20 +73,19 @@ describe('Event Factory', () => {
 
         describe('commandSaveCommandErrorEvent', function () {
             it('should give error if command verifier gives error', function () {
-                var results = EventFactory.SaveCommandError(command);
+                const results = EventFactory.SaveCommandError(command);
 
                 assert.equal(results.command.properties.correlationId, 1);
                 assert.equal(results.properties.eventName, 'SaveCommandErrorEvent');
                 assert.equal(results.properties.isFailure, true);
-                assert.equal(results.properties.createdBy, 222);
-                assert.notEqual(results.properties.created, null);
+                assert.equal(results.command.properties.createdBy, 222);
             });
 
         });
 
         describe('commandSaved', function () {
-            it('should create saved command with no failure', function () {
-                var results = EventFactory.CommandSaved(command);
+            it('should give error if command verifier gives error', function () {
+                const results = EventFactory.CommandSaved(command);
 
                 assert.equal(results.command.properties.correlationId, 1);
                 assert.equal(results.properties.eventName, 'CommandSavedEvent');

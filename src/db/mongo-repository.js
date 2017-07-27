@@ -3,6 +3,8 @@ const config = require('config');
 const mongoClient = require('mongodb');
 const Rx = require('rxjs/Rx');
 const util = require('util');
+const ObjectId = require('mongodb').ObjectId;
+const GeneralServices = require('../cqrs/general-services');
 
 let logger;
 
@@ -68,33 +70,36 @@ const insert = (collectionName, insertion) => {
   return response;
 };
 
-const update = (collectionName, insertion, key, propsToUpdate) => {
-  let response = new Rx.Subject();
-
-  connectToDb()
-    .then(function (db) {
-      let updates = {};
-      propsToUpdate.forEach(function (prop) {
-        updates[prop] = insertion[prop];
-      });
-
-      let collection = db.collection(collectionName);
-      collection
-        .updateOne({_id: insertion[key]}, {$set: updates})
-        .then(function (succ) {
+function updateRecord(collectionName, key, updates, response) {
+  connectToDb().then(function (db) {
+    db.collection(collectionName)
+      .updateOne({_id: new ObjectId(key)},
+        {$set: updates})
+      .then(function (succ) {
           response.next(succ);
           response.complete();
-          // db.close();
-        })
-        .catch(function (errInsert) {
+          db.close();
+        }
+      )
+      .catch(function (errInsert) {
           response.error(errInsert);
           logger.error(errInsert);
-          // db.close();
-        });
-    }, function (err) {
-      response.error(err);
-    });
+          db.close();
+        }
+      );
+  })
+}
 
+const update = (collectionName, key, propsToUpdate) => {
+  let response = new Rx.Subject();
+  updateRecord(collectionName, key, propsToUpdate, response);
+  return response;
+};
+
+const deleteRecord = (collectionName, id) => {
+  let response = new Rx.Subject();
+  updateRecord(collectionName, id,
+    {isDeleted: true, "properties.modified": new Date()}, response);
   return response;
 };
 
@@ -119,7 +124,7 @@ const createOrOpenDb = () => {
         createCollection(db, 'clubs'),
         createCollection(db, 'squads'),
         createCollection(db, 'logins')]).then(([result1, result2]) => {
-        //db.close();
+        db.close();
       })
         .catch(err => {
           logger.error(err);
@@ -155,12 +160,12 @@ const query = (collectionName, conditions, filters) => {
         } else {
           response.error(err);
         }
-        //  db.close();
+        db.close();
       });
     })
     .catch(function (err) {
       response.error(err);
-      // db.close();
+      db.close();
     });
 
   return response;
@@ -171,6 +176,7 @@ module.exports = {
   insert: insert,
   getCount: getCount,
   update: update,
+  deleteRecord: deleteRecord,
   connectToDb: connectToDb,
   query: query,
   init: init
