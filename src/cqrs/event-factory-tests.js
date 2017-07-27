@@ -53,8 +53,7 @@ describe('Event Factory', () => {
                 assert.equal(results.command.properties.correlationId, 1);
                 assert.equal(results.properties.eventName, 'CommandExecutedEvent');
                 assert.equal(results.properties.isFailure, false);
-                assert.equal(results.properties.createdBy, 222);
-                assert.notEqual(results.properties.created, null);
+                assert.equal(results.command.properties.createdBy, 222);
             });
         });
 
@@ -67,7 +66,6 @@ describe('Event Factory', () => {
                 assert.equal(results.properties.isFailure, true);
                 assert.equal(results.command.properties.createdBy, 222);
                 assert.ok(results.errors);
-                assert.notEqual(results.properties.created, null);
             });
         });
 
@@ -89,9 +87,8 @@ describe('Event Factory', () => {
 
                 assert.equal(results.command.properties.correlationId, 1);
                 assert.equal(results.properties.eventName, 'CommandSavedEvent');
-                assert.equal(results.properties.isFailure, false);
-                assert.equal(results.properties.createdBy, 222);
-                assert.notEqual(results.properties.created, null);
+                assert.equal(results.properties.isFailure, true);
+                assert.equal(results.command.properties.createdBy, 222);
             });
         });
     });

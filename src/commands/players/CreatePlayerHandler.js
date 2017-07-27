@@ -15,7 +15,6 @@ function execute() {
 function verify() {
     let response = new Rx.Subject();
     setTimeout(function (command) { // use timeout as rx is async
-
         if (util.isNullOrUndefined(command.payload.player.playerName)) {
             response.next({squadName: 'Player name is mandatory'});
             return;
@@ -40,7 +39,6 @@ function verify() {
                 }
                 response.complete();
             });
-        command.player = command.payload.player;
     }, 100, this.command);
 
     return response;

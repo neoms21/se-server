@@ -7,7 +7,6 @@ const execute = (query) => {
 
     const ret = new Rx.Subject();
     let items = [];
-
     MongoRepository.query('squads', {
         "_id": {$ne: ''}, "userId": {$eq: query.payload.userId}
     }, {"players": 0, "userId": 0})

@@ -14,21 +14,27 @@ describe('Login denormalizers', function () {
   let loggerStub;
   let dispatchStub;
 
-  beforeEach(function () {
-    countStub = sinon.stub(mongoRepository, 'getCount').callsFake(() => {
-      // supply dummy observable
-      return Rx.Observable.from([count]);
+    beforeEach(function () {
+        countStub = sinon.stub(mongoRepository, 'getCount', function () {
+            // supply dummy observable
+            return Rx.Observable.of(0);
+        });
+        insertStub = sinon.stub(mongoRepository, 'insert', function () {
+            // supply dummy observable
+            return Rx.Observable.of('');
+        });
+        timeStub = sinon.stub(generalServices, 'getTime', () => new Date('01 Sep 2016 08:00'));
+        loggerStub = {
+            info: function () {
+            }
+        };
+
+        deNormalizer.init(loggerStub);
+        eventMediator.init(loggerStub);
+        dispatchStub = sinon.stub(eventMediator, 'dispatch', function () {
+        });
+
     });
-    insertStub = sinon.stub(mongoRepository, 'insert');
-    timeStub = sinon.stub(GeneralServices, 'getTime').callsFake(() => new Date('01 Sep 2016 08:00'));
-    loggerStub = {
-      info: sinon.spy(),
-      error: sinon.spy()
-    };
-    dispatchStub = sinon.stub(EventMediator, 'dispatch');
-    EventMediator.init(loggerStub);
-    deNormalizer.init(loggerStub);
-  });
 
   afterEach(function () {
     countStub.restore();

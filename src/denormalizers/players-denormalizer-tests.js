@@ -68,7 +68,12 @@ describe('Players denormalizer Tests', function () {
       });
       deNormalizer.handleMessage({
         command: {
-          player: {squadId: '507f1f77bcf86cd799439011'}
+          payload: {
+            player: {squadId: '507f1f77bcf86cd799439011'}
+          }
+        },
+        properties: {
+          eventName: 'CreatePlayerEvent'
         }
       });
       assert(queryStub.called);
@@ -109,30 +114,74 @@ describe('Players denormalizer Tests', function () {
 
       deNormalizer.handleMessage({
         command: {
-          player: {
-            squadId: '507f1f77bcf86cd799439011',
-            id: 'abc223',
-            email: 'asjk@sde.com'
+          payload: {
+            player: {
+              squadId: '507f1f77bcf86cd799439011',
+              id: 'abc223',
+              email: 'asjk@sde.com'
+            }
           }
+        },
+        properties: {
+          eventName: 'CreatePlayerEvent'
         }
       });
       assert(queryStub.called);
       assert(updateSpy.called);
     });
 
+            queryStub = sinon.stub(mongoRepository, 'query', function () {
+                // supply dummy observable
+                return Rx.Observable.of({
+                    _id: '507f1f77bcf86cd799439011',
+                    squadName: 's1',
+                    players: [
+                        {
+                            squadId: '507f1f77bcf86cd799439011',
+                            playerName: "existing",
+                            id: 'abc223',
+                            email: 'xxxx'
+                        },
+                        {
+                            playerName: 'MS1',
+                            email: 'neo@gddma.com'
+                        }]
+                });
+            });
+            guidStub = sinon.stub(Guid, 'v4', function () {
+                return 'abc223';
+            });
+            deNormalizer.handleMessage({
+                command: {
+                    payload: {
+                        player: {
+                            squadId: '507f1f77bcf86cd799439011',
+                            id: 'abc223',
+                            email: 'asjk@sde.com'
+                        }
+                    }
+                },
+                properties: {
+                    eventName: 'DeletePlayerEvent'
+                }
+            });
+            assert(queryStub.called);
+            assert(updateSpy.called);
+        });
+
 
   });
 
-  // describe('getMessages', function () {
-  //
-  //     it('should return correct messages', function () {
-  //
-  //         const msgList = deNormalizer.getMessages();
-  //         chai.assert.isArray(msgList, 'Should be array');
-  //         chai.assert.equal(msgList.length, 1);
-  //         chai.assert.equal(msgList[0], 'UserRegisteredEvent');
-  //     });
-  //
-  // });
+    // describe('getMessages', function () {
+    //
+    //     it('should return correct messages', function () {
+    //
+    //         const msgList = deNormalizer.getMessages();
+    //         chai.assert.isArray(msgList, 'Should be array');
+    //         chai.assert.equal(msgList.length, 1);
+    //         chai.assert.equal(msgList[0], 'UserRegisteredEvent');
+    //     });
+    //
+    // });
 });
 

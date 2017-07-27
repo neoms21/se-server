@@ -11,34 +11,53 @@ function init(log) {
     logger = log;
 }
 
-function createPlayer(event) {
+function createOrUpdatePlayer(event, toDelete) {
 
-    MongoRepository.query('squads', {_id: new ObjectId(event.command.player.squadId)})
+    let player = event.command.payload.player;
+    MongoRepository.query('squads', {_id: new ObjectId(player.squadId)})
         .subscribe(squad => {
             if (!squad.players) {
                 squad.players = [];
             }
-            if (event.command.player.id) {
+            if (player.id) {
                 squad.players = squad.players.filter((p) => {
-                    return p.id !== event.command.player.id;
+                    return p.id !== player.id;
                 });
             } else {
-                event.command.player.id = Guid.v4();
+                player.id = Guid.v4();
             }
-            GeneralServices.applyCommonFields(event.command.player);
-            squad.players.push(event.command.player);
-            MongoRepository.update('squads', event.command.player.squadId, {
+            GeneralServices.applyCommonFields(player);
+            if (toDelete) {
+                player.isDeleted = true;
+            }
+            squad.players.push(player);
+
+            MongoRepository.update('squads', player.squadId, {
                 players: squad.players, "properties.modified": new Date()
             });
         });
 }
+function handleMessage(event) {
+
+
+    switch (event.properties.eventName) {
+
+        case 'CreatePlayerEvent': //also updates the player
+
+            createOrUpdatePlayer(event);
+            break;
+        case 'DeletePlayerEvent':
+            createOrUpdatePlayer(event, true);
+            break;
+    }
+}
 function getMessages() {
-    return ['CreatePlayerEvent'];
+    return ['CreatePlayerEvent', 'DeletePlayerEvent'];
 }
 
 //noinspection JSUnresolvedVariable
 module.exports = {
     init: init,
-    handleMessage: createPlayer,
+    handleMessage: handleMessage,
     getMessages: getMessages
 };

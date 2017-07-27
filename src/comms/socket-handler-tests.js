@@ -40,12 +40,12 @@ describe('Socket handler', () => {
             loggerErrorSpy = sinon.spy(logger, 'error');
             loggerInfoSpy = sinon.spy(logger, 'info');
             eventMediatorStub = sinon.stub(EventMediator, 'dispatch');
-            timeStub = sinon.stub(GeneralServices, 'getTime').returns(tod);
-          jwtStub = sinon.stub(jwt, 'verify').yields('blah');
-
+            timeStub = sinon.stub(GeneralServices, 'getTime', () => tod);
+            jwtStub = sinon.stub(jwt, 'verify').yields('blah');
             // set up common stuff
             io = new EventEmitter();
-            io.set = () => {};
+            io.set = () => {
+            };
             socket = new EventEmitter();
             setStub = sinon.stub(io, 'set');
 
