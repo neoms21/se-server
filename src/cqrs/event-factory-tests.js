@@ -87,7 +87,7 @@ describe('Event Factory', () => {
 
                 assert.equal(results.command.properties.correlationId, 1);
                 assert.equal(results.properties.eventName, 'CommandSavedEvent');
-                assert.equal(results.properties.isFailure, true);
+                assert.equal(results.properties.isFailure, false);
                 assert.equal(results.command.properties.createdBy, 222);
             });
         });
