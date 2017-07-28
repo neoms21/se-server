@@ -8,6 +8,7 @@ const EventFactory = require('./../cqrs/event-factory');
 const execute = (query) => {
     const ret = new Rx.Subject();
     let items = [];
+
     MongoRepository.aggregateQuery('squads', [{
         $match: {_id: ObjectId(query.payload.id)}
     },

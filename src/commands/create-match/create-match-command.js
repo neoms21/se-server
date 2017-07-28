@@ -32,12 +32,12 @@ function verify() {
 
       command.payload.playerPositions.forEach((playerPos, index) => {
         playerPositionsErrors[index] = {};
-        if (util.isNullOrUndefined(playerPos.Position)) {
-          playerPositionsErrors[index].Position = 'Position was not defined';
+        if (util.isNullOrUndefined(playerPos.position)) {
+          playerPositionsErrors[index].position = 'Position was not defined';
           errorCount++;
         }
-        if (util.isNullOrUndefined(playerPos.Player)) {
-          playerPositionsErrors[index].Player = 'Player was not defined';
+        if (util.isNullOrUndefined(playerPos.player)) {
+          playerPositionsErrors[index].player = 'Player was not defined';
           errorCount++;
         }
       });
