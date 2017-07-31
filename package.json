@@ -5,9 +5,9 @@
   "scripts": {
     "lint": "node_modules/.bin/jslint src/**/*.js",
     "start": "cross-env NODE_ENV=dev nodemon -- src/app.js | bunyan",
-    "ci": "istanbul cover _mocha src/**/*-tests.js",
-    "test": "_mocha --watch src/**/*/*-tests.js src/**/*-tests.js",
-    "cover": "istanbul cover _mocha src/**/*-tests.js "
+    "ci": "istanbul cover _mocha $(find src -name '*test*.js')",
+    "test": "_mocha --watch $(find src -name '*test*.js')",
+    "cover": "istanbul cover _mocha $(find src -name '*test*.js')"
   },
   "dependencies": {
     "asyncawait": "^1.0.6",
@@ -30,6 +30,6 @@
     "istanbul": "^0.4.5",
     "jslint": "^0.10.3",
     "mocha": "^3.1.0",
-    "sinon": "^1.17.6"
+    "sinon": "^2.3.2"
   }
 }

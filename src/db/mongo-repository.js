@@ -9,69 +9,65 @@ const GeneralServices = require('../cqrs/general-services');
 let logger;
 
 const init = (log) => {
-    logger = log;
+  logger = log;
 };
 
 const connectToDb = () => {
 
-    const configDB = config.get("dbConfig");
+  const configDB = config.get('dbConfig');
 
-    // create uri no user
-    const uri = 'mongodb://' + configDB.host + ':' + configDB.port + '/' + configDB.name;
-    logger.info('Trying to connect to ' + uri + ' for db');
+  // create uri no user
+  const uri = 'mongodb://' + configDB.host + ':' + configDB.port + '/' + configDB.name;
+  logger.info('Trying to connect to ' + uri + ' for db');
 
-    // Connect to the db
-    return mongoClient.connect(uri);
-
+  // Connect to the db
+  return mongoClient.connect(uri);
 };
 
-const getCount = (collectionName, param) => {
-    let response = new Rx.Subject();
+const getCount = (collectionName, query) => {
+  let response = new Rx.Subject();
 
-    connectToDb()
-        .then(function (db) {
-            db.collection(collectionName).count(param)
-                .then(function (count) {
-                    response.next(count);
-                    response.complete();
-                    db.close();
-                })
-                .catch(function (err) {
-                    response.error(err);
-                    logger.error(err);
-                    db.close();
-                });
-        }, function (err) {
-            logger.error(err);
+  connectToDb()
+    .then(function (db) {
+      db.collection(collectionName).count(query)
+        .then(function (count) {
+          response.next(count);
+          response.complete();
+          db.close();
+        })
+        .catch(function (err) {
+          response.error(err);
+          logger.error(err);
+          db.close();
         });
+    }, function (err) {
+      logger.error(err);
+    });
 
-    return response;
+  return response;
 };
 
 const insert = (collectionName, insertion) => {
-    let response = new Rx.Subject();
+  let response = new Rx.Subject();
 
-    connectToDb()
-        .then(function (db) {
-                db.collection(collectionName).insertOne(insertion)
-                    .then(function (succ) {
-                            response.next(succ);
-                            response.complete();
-                            db.close();
-                        }
-                    )
-                    .catch(function (errInsert) {
-                            response.error(errInsert);
-                            logger.error(errInsert);
-                            db.close();
-                        }
-                    );
-            }, function (err) {
-                response.error(err);
-            }
-        );
+  connectToDb()
+    .then(function (db) {
+      db.collection(collectionName).insertOne(insertion)
+        .then(function (succ) {
+          response.next(succ);
+          response.complete();
+          db.close();
+        })
+        .catch(function (errInsert) {
+          response.error(errInsert);
+          logger.error(errInsert);
+          db.close();
+        });
+    }, function (err) {
+      response.error(err);
+    });
 
-    return response;
+  return response;
 };
 
 function updateRecord(collectionName, key, updates, response) {
@@ -120,32 +116,33 @@ const createCollection = (db, name) => {
 };
 
 const createOrOpenDb = () => {
-    let response = new Rx.Subject();
+  let response = new Rx.Subject();
 
-    connectToDb()
-        .then(function (db) {
+  connectToDb()
+    .then(function (db) {
 
-            Promise.all(createCollection(db, 'commands'), createCollection(db, 'events'),
-                createCollection(db, 'clubs'),
-                createCollection(db, 'squads'), createCollection(db, 'logins')).then(([result1, result2]) => {
-                //db.close();
-            })
-                .catch(err => {
-                    logger.error(err);
-                    //  db.close();
-                });
-        })
-        .catch(function (err) {
-                response.error(err.toString());
-                //db.close();
-            }
-        );
+      Promise.all([createCollection(db, 'commands'),
+        createCollection(db, 'events'),
+        createCollection(db, 'clubs'),
+        createCollection(db, 'squads'),
+        createCollection(db, 'logins')]).then(([result1, result2]) => {
+        db.close();
+      })
+        .catch(err => {
+          logger.error(err);
+          db.close();
+        });
+    })
+    .catch(function (err) {
+      response.error(err.toString());
+      db.close();
+    });
 
-    return response;
+  return response;
 };
 
 const query = (collectionName, conditions, filters) => {
-    let response = new Rx.Subject();
+  let response = new Rx.Subject();
 
     connectToDb()
         .then(function (db) {
@@ -213,7 +210,7 @@ const aggregateQuery = (collectionName, conditions, filters) => {
             // db.close();
         });
 
-    return response;
+  return response;
 };
 
 module.exports = {

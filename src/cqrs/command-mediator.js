@@ -1,4 +1,5 @@
 'use strict';
+const Rx = require('rxjs');
 const Filehound = require('filehound');
 const mongoRepository = require('../db/mongo-repository');
 const eventMediator = require('./event-mediator');
@@ -111,18 +112,17 @@ function dispatch(command) {
         createError(command, checks);
         return;
     }
-    logger.debug('Verified basic info for command ' + command);
+    logger.debug('Verified basic info for command ' + command.properties.commandName);
 
     // get handler
     let handler = mapping.handler;
-
     handler.command = command;
 
-    handler.verify().toArray()
-        .subscribe(function (responses) { // we get object with keys set as response names
-            logger.debug('Verification Responses', responses);
+    handler.verify()
+        .toArray()
+        .subscribe(function (responses) {
             const messageLength = responses.length;
-            //logger.info(`Verified command ${command.properties.commandName} and had ${messageLength} errors`);
+            logger.info(`Verified command ${command.properties.commandName} and had ${messageLength} errors`);
 
             // verifier has run , so lets get its results
             if (!messageLength || messageLength === 0) {

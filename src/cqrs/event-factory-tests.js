@@ -48,6 +48,7 @@ describe('Event Factory', () => {
             it('should return event', function () {
                 //verifierStub.returns(['correlationId']);
                 const results = EventFactory.CommandExecuted(command);
+
                 //assert(verifierStub.called);
                 assert.equal(results.command.properties.correlationId, 1);
                 assert.equal(results.properties.eventName, 'CommandExecutedEvent');
@@ -86,7 +87,7 @@ describe('Event Factory', () => {
 
                 assert.equal(results.command.properties.correlationId, 1);
                 assert.equal(results.properties.eventName, 'CommandSavedEvent');
-                assert.equal(results.properties.isFailure, true);
+                assert.equal(results.properties.isFailure, false);
                 assert.equal(results.command.properties.createdBy, 222);
             });
         });

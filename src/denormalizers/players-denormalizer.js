@@ -39,7 +39,6 @@ function createOrUpdatePlayer(event, toDelete) {
 }
 function handleMessage(event) {
 
-
     switch (event.properties.eventName) {
 
         case 'CreatePlayerEvent': //also updates the player

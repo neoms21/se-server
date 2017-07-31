@@ -23,7 +23,6 @@ const isCommandAllowed = (socketId, cmdReq) => {
     // check if command can be run without authentication
     if (cmdReq.properties.commandName === 'RegisterUser') {
         return true;
-
     }
 
     // check authenticated
@@ -47,6 +46,7 @@ const isQueryAllowed = (socketId) => {
     // if (queryReq.properties.queryName === 'GetLogins') {
     //     return true;
     // }
+
     // check authenticated
     if (client.token === undefined) {
         return false;
@@ -69,11 +69,9 @@ const authenticate = (token, socketId) => {
     // check the token
     verifier.verify(token, (err) => {
         if (err !== null) {
-
             logger.error(`'Authentication token didnt match for socket ${socketId} error ${err}`);
             let event = EventFactory.createFromNone('AuthenticationFailed', true);
             event.error = 'Authentication token didnt match for socket ' + socketId;
-
             EventMediator.dispatch(event);
         } else {
             // was ok, get the socket
@@ -81,14 +79,12 @@ const authenticate = (token, socketId) => {
             if (client !== undefined) {
                 client.token = token;
                 let event = EventFactory.createFromNone('AuthenticationSucceeded', false);
-                console.log('$$$', event);
                 EventMediator.dispatch(event);
             } else {
                 // failed to find client
                 logger.error('Failed to find matching socket ' + socketId);
                 let event = EventFactory.createFromNone('AuthenticationFailed', true);
                 event.error = 'Failed to find matching socket ' + socketId;
-                console.log('$$$', event);
                 EventMediator.dispatch(event);
             }
         }

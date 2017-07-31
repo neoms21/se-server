@@ -31,7 +31,7 @@ describe('Create Player command', function () {
                     }
                 };
 
-                countStub = sinon.stub(mongoRepository, 'query', function () {
+                countStub = sinon.stub(mongoRepository, 'query').callsFake(() => {
                     // supply dummy observable
                     return Rx.Observable.of({
                         _id: '1',

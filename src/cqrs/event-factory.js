@@ -98,7 +98,7 @@ let saveCommandError = function (command) {
 let commandSaved = function (command) {
     let ret;
 
-    ret = exports.createFromCommand(command, 'CommandSavedEvent', true);
+    ret = exports.createFromCommand(command, 'CommandSavedEvent', false);
 
     return ret;
 };
